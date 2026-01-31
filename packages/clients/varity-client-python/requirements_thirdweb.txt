@@ -1,0 +1,25 @@
+# Varity Thirdweb Python Client - Requirements
+# Python 3.8+ required
+
+# Core dependencies
+web3>=6.0.0,<7.0.0
+eth-account>=0.8.0,<1.0.0
+eth-utils>=2.0.0,<3.0.0
+eth-typing>=3.0.0,<4.0.0
+
+# Async support
+aiohttp>=3.8.0,<4.0.0
+
+# SIWE authentication
+siwe>=3.0.0,<4.0.0
+
+# IPFS storage
+ipfshttpclient>=0.8.0a2
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+pydantic>=2.0.0,<3.0.0
+
+# Development dependencies (optional)
+# Install with: pip install -r requirements_thirdweb.txt -r requirements_dev.txt

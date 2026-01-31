@@ -1,0 +1,206 @@
+# {{ company_name }} - Finance Dashboard
+
+Built with **VarityKit** and powered by **Varity L3 Blockchain**
+
+## Overview
+
+This is a production-ready finance dashboard application built using the Varity Finance Template. It provides comprehensive financial operations management, compliance monitoring, fraud detection, and risk analysis capabilities.
+
+**Institution Type:** {{ institution_type }}
+
+## Features
+
+{% if enable_transaction_monitoring %}
+### Transaction Monitoring
+- Real-time transaction tracking
+- Advanced filtering and search
+- Transaction analytics and trends
+- Export capabilities
+{% endif %}
+
+{% if enable_fraud_detection %}
+### AI-Powered Fraud Detection
+- Real-time anomaly detection
+- ML-based pattern recognition
+- Automated alert system
+- Investigation workflow
+- AI fraud analyst chat
+{% endif %}
+
+{% if enable_aml_monitoring %}
+### AML/Compliance Tracking
+- Anti-Money Laundering monitoring
+- Regulatory compliance dashboard
+- Automated reporting
+- Audit trail management
+- Multi-framework support ({{ regulatory_framework }})
+{% endif %}
+
+{% if enable_kyc_verification %}
+### KYC Verification
+- Multi-step identity verification
+- Encrypted document upload (Lit Protocol)
+- Automated document analysis
+- Approval workflow
+- Customer risk assessment
+{% endif %}
+
+{% if enable_risk_forecasting %}
+### Risk Management
+- Portfolio risk analysis
+- VaR (Value at Risk) calculations
+- Stress testing scenarios
+- Predictive risk forecasting
+- Regulatory capital tracking
+{% endif %}
+
+## Tech Stack
+
+- **Frontend:** React 18 + TypeScript 5 + Vite
+- **UI Library:** @varity/ui-kit
+- **Styling:** Tailwind CSS v3
+- **Blockchain:** Varity L3 (Chain ID: {{ varity_chain_id }})
+- **Storage:** Filecoin + Lit Protocol encryption
+- **AI/ML:** Varity Compute Engine
+- **RAG:** {{ industry_rag_namespace }} (10,000+ finance documents)
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+ and npm 9+
+- Varity API credentials
+- (Optional) Wallet for Web3 features
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.template .env
+# Edit .env with your Varity API credentials
+
+# Start development server
+npm run dev
+```
+
+Visit `http://localhost:5173` to see your dashboard.
+
+### Build for Production
+
+```bash
+npm run build
+npm run preview
+```
+
+## Configuration
+
+### Environment Variables
+
+```env
+VITE_VARITY_API_URL={{ varity_api_url }}
+VITE_VARITY_API_KEY=your_api_key_here
+VITE_VARITY_CHAIN_ID={{ varity_chain_id }}
+VITE_RAG_NAMESPACE={{ industry_rag_namespace }}
+```
+
+### Branding
+
+Customize your dashboard appearance in `.env`:
+
+```env
+VITE_PRIMARY_COLOR={{ primary_color }}
+VITE_SECONDARY_COLOR={{ secondary_color }}
+VITE_COMPANY_NAME={{ company_name }}
+VITE_LOGO_URL={{ logo_url }}
+```
+
+## User Roles
+
+{% if banker_role %}
+### Banker Dashboard
+Access at `/` - Full transaction and customer management
+{% endif %}
+
+{% if compliance_role %}
+### Compliance Officer Dashboard
+Access at `/compliance-officer` - Compliance monitoring and reporting
+{% endif %}
+
+{% if customer_role %}
+### Customer Portal
+Access at `/customer` - Self-service customer dashboard
+{% endif %}
+
+{% if risk_manager_role %}
+### Risk Manager Dashboard
+Access at `/risk` - Risk analysis and forecasting
+{% endif %}
+
+## Compliance
+
+**Regulatory Framework:** {{ regulatory_framework | upper }}
+
+This dashboard is built with compliance in mind:
+
+- All data encrypted at rest using Lit Protocol
+- Decentralized storage on Filecoin
+- Immutable audit trails on Varity L3 blockchain
+- SOC 2 Type II compliant infrastructure
+- GDPR/CCPA data privacy controls
+
+## RAG Knowledge Base
+
+This dashboard leverages **{{ industry_rag_namespace }}** with 10,000+ finance industry documents:
+
+- Banking regulations and compliance
+- Risk management best practices
+- Fraud detection patterns
+- Industry standards and guidelines
+
+## Testing
+
+```bash
+# Run tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# E2E tests
+npm run test:e2e
+```
+
+## Deployment
+
+### Deploy to Varity L3 Testnet
+
+```bash
+# Build production bundle
+npm run build
+
+# Deploy to Varity (requires VarityKit CLI)
+varietykit deploy --network testnet
+```
+
+### Deploy to Production
+
+```bash
+varietykit deploy --network mainnet
+```
+
+## Support
+
+- **Documentation:** https://docs.varity.network
+- **Discord:** https://discord.gg/varity
+- **GitHub:** https://github.com/varity-network
+
+## License
+
+MIT License - Powered by Varity
+
+---
+
+**Built with VarityKit Finance Template v1.0.0**

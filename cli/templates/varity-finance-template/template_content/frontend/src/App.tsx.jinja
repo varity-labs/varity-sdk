@@ -1,0 +1,128 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  DashboardLayout,
+  DashboardHeader,
+  DashboardSidebar,
+  LoginButton
+} from '@varity/ui-kit';
+
+// Import components
+import TransactionMonitor from './components/TransactionMonitor';
+import ComplianceTracker from './components/ComplianceTracker';
+import KYCVerification from './components/KYCVerification';
+import FraudDetection from './components/FraudDetection';
+import RiskDashboard from './components/RiskDashboard';
+
+// Import pages
+{% if banker_role %}
+import BankerDashboard from './pages/BankerDashboard';
+{% endif %}
+{% if compliance_role %}
+import ComplianceOfficerDashboard from './pages/ComplianceOfficerDashboard';
+{% endif %}
+{% if customer_role %}
+import CustomerPortal from './pages/CustomerPortal';
+{% endif %}
+
+/**
+ * {{ company_name }} Finance Dashboard
+ * Built with Varity L3 and @varity/ui-kit
+ *
+ * Institution Type: {{ institution_type }}
+ * Features:
+ {% if enable_fraud_detection %} * - Fraud Detection{% endif %}
+ {% if enable_aml_monitoring %} * - AML Monitoring{% endif %}
+ {% if enable_risk_forecasting %} * - Risk Forecasting{% endif %}
+ {% if enable_kyc_verification %} * - KYC Verification{% endif %}
+ */
+function App() {
+  const sidebarItems = [
+    {
+      label: 'Overview',
+      path: '/',
+      icon: 'Dashboard'
+    },
+    {
+      label: 'Transactions',
+      path: '/transactions',
+      icon: 'Activity'
+    },
+    {% if enable_fraud_detection %}
+    {
+      label: 'Fraud Detection',
+      path: '/fraud',
+      icon: 'ShieldAlert'
+    },
+    {% endif %}
+    {
+      label: 'Compliance',
+      path: '/compliance',
+      icon: 'Shield'
+    },
+    {% if enable_kyc_verification %}
+    {
+      label: 'KYC',
+      path: '/kyc',
+      icon: 'UserCheck'
+    },
+    {% endif %}
+    {% if enable_risk_forecasting %}
+    {
+      label: 'Risk',
+      path: '/risk',
+      icon: 'TrendingUp'
+    },
+    {% endif %}
+  ];
+
+  return (
+    <Router>
+      <DashboardLayout
+        sidebar={<DashboardSidebar items={sidebarItems} branding={{
+          name: '{{ company_name }}',
+          logo: '{{ logo_url }}' || undefined,
+          primaryColor: '{{ primary_color }}'
+        }} />}
+        header={<DashboardHeader
+          title="{{ company_name }}"
+          actions={<LoginButton />}
+        />}
+      >
+        <Routes>
+          {% if banker_role %}
+          <Route path="/" element={<BankerDashboard />} />
+          {% else %}
+          <Route path="/" element={<TransactionMonitor />} />
+          {% endif %}
+
+          <Route path="/transactions" element={<TransactionMonitor />} />
+
+          {% if enable_fraud_detection %}
+          <Route path="/fraud" element={<FraudDetection />} />
+          {% endif %}
+
+          <Route path="/compliance" element={<ComplianceTracker />} />
+
+          {% if enable_kyc_verification %}
+          <Route path="/kyc" element={<KYCVerification />} />
+          {% endif %}
+
+          {% if enable_risk_forecasting %}
+          <Route path="/risk" element={<RiskDashboard />} />
+          {% endif %}
+
+          {% if compliance_role %}
+          <Route path="/compliance-officer" element={<ComplianceOfficerDashboard />} />
+          {% endif %}
+
+          {% if customer_role %}
+          <Route path="/customer" element={<CustomerPortal />} />
+          {% endif %}
+        </Routes>
+      </DashboardLayout>
+    </Router>
+  );
+}
+
+export default App;

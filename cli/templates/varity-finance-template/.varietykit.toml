@@ -1,0 +1,37 @@
+[template]
+name = "varity-finance-template"
+version = "1.0.0"
+description = "Production-ready Finance Dashboard Template for Varity L3"
+author = "Varity Team"
+license = "MIT"
+
+[requirements]
+min_varietykit_version = "0.1.0"
+min_copier_version = "9.0.0"
+node_version = ">=18.0.0"
+npm_version = ">=9.0.0"
+
+[features]
+fraud_detection = true
+aml_monitoring = true
+risk_forecasting = true
+kyc_verification = true
+transaction_monitoring = true
+multi_role_support = true
+
+[dependencies]
+"@varity/ui-kit" = "^1.0.0"
+react = "^18.2.0"
+typescript = "^5.0.0"
+vite = "^5.0.0"
+tailwindcss = "^3.4.0"
+
+[rag_integration]
+namespace = "industry-finance-rag"
+target_documents = 10000
+categories = ["banking_regulations", "compliance", "best_practices", "risk_management"]
+
+[compliance]
+frameworks = ["FDIC", "OCC", "Fed", "SOC2", "PCI-DSS"]
+data_encryption = true
+audit_logging = true

@@ -1,0 +1,172 @@
+# Varity Local Development Configuration
+# This configuration is for LocalDePin development environment
+
+# Blockchain Networks
+networks:
+  # Local Arbitrum Fork (LocalDePin)
+  arbitrum:
+    name: LocalDePin
+    chainId: 421614  # Same as Sepolia for compatibility
+    rpc: http://localhost:8547
+    explorer: http://localhost:8080
+    nativeCurrency:
+      name: Ethereum
+      symbol: ETH
+      decimals: 18
+
+# DePin Infrastructure Configurations (Local Services)
+depin:
+  # Local Akash Simulation
+  akash:
+    name: Akash Local
+    rpc: http://localhost:26657
+    api: http://localhost:1317
+    chainId: local-akash
+    nativeCurrency:
+      name: AKT
+      symbol: AKT
+      decimals: 6
+    defaults:
+      minCPU: 100
+      minMemory: 256
+      minStorage: 1
+      maxCPU: 8000
+      maxMemory: 16384
+      maxStorage: 100
+      timeout: 120
+
+  # Local Filecoin/IPFS (via local IPFS node or Pinata)
+  filecoin:
+    name: Filecoin Local
+    pinata:
+      api: http://localhost:5001/api/v0  # Local IPFS API
+      gateway: http://localhost:8081
+      uploadEndpoint: /add
+      # For local dev, can still use Pinata with test credentials
+      # api: https://api.pinata.cloud
+      # gateway: https://gateway.pinata.cloud
+
+  # Local Celestia Simulation
+  celestia:
+    name: Celestia Local
+    network: local-celestia
+    rpc: http://localhost:26658
+    api: http://localhost:1318
+    namespaces:
+      varity_internal: "0x76617269747900000000000000000000000000000001"
+      industry_rag: "0x76617269747900000000000000000000000000000002"
+      customer_data: "0x76617269747900000000000000000000000000000003"
+
+  # Lit Protocol (uses test network even in local mode)
+  lit:
+    name: Lit Protocol Datil Test
+    network: datil-test
+    nodes:
+      - https://datil-test-1.getlit.dev
+      - https://datil-test-2.getlit.dev
+    chainId: 1
+
+# Deployed Contract Addresses (Local - deployed by localdepin)
+contracts:
+  dashboardRegistry: ""
+  templateManager: ""
+  accessControl: ""
+  billingModule: ""
+  zkmlVerifier: ""
+  oracleClient: ""
+
+# Gas Configuration (Low costs for local development)
+gas:
+  limits:
+    deployContract: 10000000  # Higher limit for local testing
+    registerDashboard: 500000
+    grantAccess: 150000
+    recordUsage: 100000
+  price:
+    standard: 0.01  # Very low for local
+    fast: 0.01
+    rapid: 0.01
+
+# Storage Layer Configuration
+storage:
+  varity_internal:
+    layer: varity-internal
+    namespace_prefix: varity-internal
+    encryption_enabled: false  # Disabled for faster local testing
+    lit_protocol_access: varity-admins-only
+    celestia_da_enabled: false
+    max_file_size_mb: 500
+    allowed_extensions:
+      - "*"
+
+  industry_rag:
+    layer: industry-rag
+    namespace_prefix: industry-{industry}-rag
+    encryption_enabled: false
+    lit_protocol_access: industry-customers
+    celestia_da_enabled: false
+    target_documents: 100  # Smaller for local testing
+    max_file_size_mb: 100
+    allowed_extensions:
+      - "*"
+
+  customer_data:
+    layer: customer-data
+    namespace_prefix: customer-{company-id}
+    encryption_enabled: false
+    lit_protocol_access: customer-only
+    celestia_da_enabled: false
+    zk_proofs_enabled: false
+    max_file_size_mb: 1000
+    allowed_extensions:
+      - "*"
+
+# Template Configuration
+templates:
+  industries:
+    - finance
+    - healthcare
+    - retail
+    - iso-merchant
+  template_cid_prefix: "Qm"
+  version_format: "v{major}.{minor}.{patch}"
+
+# Deployment Configuration (Fast for local development)
+deployment:
+  timeout: 120
+  retries:
+    max_attempts: 2
+    backoff_multiplier: 1
+    initial_delay: 2
+  health_check:
+    enabled: true
+    interval: 10
+    timeout: 5
+    retries: 2
+  verification:
+    enabled: false  # No verification on local network
+    wait_confirmations: 1
+    timeout: 60
+
+# Monitoring & Logging
+monitoring:
+  log_level: DEBUG  # Verbose for local development
+  verbose: true
+  metrics_enabled: false
+  sentry_dsn: ""
+
+# Cost Estimation (Local - all free)
+cost_estimates:
+  gas_price_gwei: 0.01
+  eth_usd_price: 0
+  akt_usd_price: 0
+  pinata_monthly_cost: 0
+
+# Security Configuration (Relaxed for local development)
+security:
+  require_hardware_wallet: false
+  enable_multisig: false
+  multisig_threshold: 0
+  rate_limit:
+    enabled: false
+    max_requests_per_minute: 1000

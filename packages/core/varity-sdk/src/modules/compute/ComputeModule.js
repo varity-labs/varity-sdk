@@ -1,0 +1,381 @@
+/**
+ * Varity SDK - Compute Module
+ *
+ * Universal AI/LLM computation on Akash Network.
+ * Works across all templates (ISO, Healthcare, Retail, etc.)
+ */
+/**
+ * ComputeModule - Universal AI/LLM computation
+ *
+ * @example
+ * ```typescript
+ * // Simple LLM query
+ * const response = await sdk.compute.query("Analyze this merchant data")
+ *
+ * // Query with RAG (Retrieval Augmented Generation)
+ * const response = await sdk.compute.queryWithRAG(
+ *   "Show performance trends",
+ *   "iso-merchants-knowledge"
+ * )
+ *
+ * // Advanced computation job
+ * const jobId = await sdk.compute.initiateAIComputation({
+ *   modelId: 'gemini-2.0-flash',
+ *   input: { prompt: "Complex analysis..." }
+ * })
+ * const status = await sdk.compute.getComputationStatus(jobId)
+ * const result = await sdk.compute.fetchComputationResult(jobId)
+ * ```
+ */
+export class ComputeModule {
+    sdk;
+    constructor(sdk) {
+        this.sdk = sdk;
+    }
+    /**
+     * Initiate AI computation job
+     *
+     * @param params - Computation parameters
+     * @returns Job ID
+     */
+    async initiateAIComputation(params) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/llm/compute`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({
+                modelId: params.modelId || 'gemini-2.0-flash',
+                input: params.input,
+                options: params.options
+            })
+        });
+        if (!response.ok) {
+            throw new Error(`Compute initiation failed: ${response.statusText}`);
+        }
+        const result = await response.json();
+        return result.jobId;
+    }
+    /**
+     * Get computation job status
+     *
+     * @param jobId - Job identifier
+     * @returns Job status
+     */
+    async getComputationStatus(jobId) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/llm/compute/${jobId}/status`, {
+            headers: {
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Status check failed: ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Fetch computation result
+     *
+     * @param jobId - Job identifier
+     * @returns Computation result
+     */
+    async fetchComputationResult(jobId) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/llm/compute/${jobId}/result`, {
+            headers: {
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Result fetch failed: ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Cancel computation job
+     *
+     * @param jobId - Job identifier
+     */
+    async cancelComputation(jobId) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/llm/compute/${jobId}/cancel`, {
+            method: 'POST',
+            headers: {
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Cancel failed: ${response.statusText}`);
+        }
+        console.log(`✅ Computation cancelled: ${jobId}`);
+    }
+    /**
+     * Simple LLM query (synchronous)
+     *
+     * @param prompt - Query prompt
+     * @param context - Optional context
+     * @returns AI response
+     */
+    async query(prompt, context) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/llm/query`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({ prompt, context })
+        });
+        if (!response.ok) {
+            throw new Error(`Query failed: ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Query with RAG (Retrieval Augmented Generation)
+     *
+     * @param query - User query
+     * @param knowledgeBase - Knowledge base identifier
+     * @returns AI response with sources
+     */
+    async queryWithRAG(query, knowledgeBase) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/llm/query-rag`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({ query, knowledgeBase })
+        });
+        if (!response.ok) {
+            throw new Error(`RAG query failed: ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Ingest document into knowledge base
+     *
+     * @param document - Document to ingest
+     * @param knowledgeBase - Knowledge base identifier
+     * @returns Document ID
+     */
+    async ingestDocument(document, knowledgeBase) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/rag/ingest`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({
+                document,
+                knowledgeBase
+            })
+        });
+        if (!response.ok) {
+            throw new Error(`Document ingest failed: ${response.statusText}`);
+        }
+        const result = await response.json();
+        return result.documentId;
+    }
+    /**
+     * Search knowledge base
+     *
+     * @param query - Search query
+     * @param knowledgeBase - Knowledge base identifier
+     * @returns Search results
+     */
+    async searchKnowledge(query, knowledgeBase) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/rag/search`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({ query, knowledgeBase })
+        });
+        if (!response.ok) {
+            throw new Error(`Knowledge search failed: ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Wait for computation to complete
+     *
+     * @param jobId - Job identifier
+     * @param pollInterval - Polling interval in ms (default: 1000)
+     * @param timeout - Timeout in ms (default: 300000 / 5 minutes)
+     * @returns Computation result
+     */
+    async waitForCompletion(jobId, pollInterval = 1000, timeout = 300000) {
+        const startTime = Date.now();
+        while (true) {
+            if (Date.now() - startTime > timeout) {
+                throw new Error(`Computation timeout after ${timeout}ms`);
+            }
+            const status = await this.getComputationStatus(jobId);
+            if (status.status === 'completed') {
+                return await this.fetchComputationResult(jobId);
+            }
+            if (status.status === 'failed') {
+                throw new Error(`Computation failed: ${status.error}`);
+            }
+            // Wait before next poll
+            await new Promise(resolve => setTimeout(resolve, pollInterval));
+        }
+    }
+    // ========================================================================
+    // TEE (Trusted Execution Environment) Methods
+    // ========================================================================
+    /**
+     * Query LLM with TEE encryption
+     *
+     * Performs an LLM query with Trusted Execution Environment encryption,
+     * ensuring that the query and response are protected by hardware-backed security.
+     *
+     * @param prompt - Query prompt
+     * @param options - TEE query options
+     * @returns TEE-encrypted AI response with optional attestation
+     *
+     * @example
+     * ```typescript
+     * // Basic TEE query
+     * const response = await sdk.compute.queryTEE(
+     *   "Analyze sensitive merchant data"
+     * )
+     *
+     * // TEE query with attestation
+     * const response = await sdk.compute.queryTEE(
+     *   "Process confidential transaction",
+     *   {
+     *     requireAttestation: true,
+     *     teeProvider: 'phala',
+     *     temperature: 0.7
+     *   }
+     * )
+     * console.log('Encrypted:', response.encrypted)
+     * console.log('TEE verified:', response.attestation?.verified)
+     * ```
+     */
+    async queryTEE(prompt, options) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/llm/query-tee`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({
+                prompt,
+                context: options?.context,
+                requireAttestation: options?.requireAttestation ?? false,
+                teeProvider: options?.teeProvider ?? 'phala',
+                temperature: options?.temperature,
+                maxTokens: options?.maxTokens,
+                knowledgeBase: options?.knowledgeBase
+            })
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: response.statusText }));
+            throw new Error(`TEE query failed: ${error.message || response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Get TEE attestation
+     *
+     * Retrieves an attestation quote from a Trusted Execution Environment,
+     * providing cryptographic proof of the enclave's integrity.
+     *
+     * @param teeProvider - TEE provider to use
+     * @returns TEE attestation with quote and public key
+     *
+     * @example
+     * ```typescript
+     * // Get attestation from Phala Network
+     * const attestation = await sdk.compute.getTEEAttestation('phala')
+     * console.log('TEE Provider:', attestation.provider)
+     * console.log('Public Key:', attestation.publicKey)
+     * console.log('Quote:', attestation.quote)
+     *
+     * // Verify the attestation
+     * const isValid = await sdk.compute.verifyTEEAttestation(attestation)
+     * console.log('Attestation valid:', isValid)
+     * ```
+     */
+    async getTEEAttestation(teeProvider = 'phala') {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/tee/attestation`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({ teeProvider })
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: response.statusText }));
+            throw new Error(`TEE attestation failed: ${error.message || response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Verify TEE attestation
+     *
+     * Verifies the cryptographic integrity of a TEE attestation quote,
+     * ensuring the enclave is running authentic code in a secure environment.
+     *
+     * @param attestation - TEE attestation to verify
+     * @returns True if attestation is valid
+     *
+     * @example
+     * ```typescript
+     * const attestation = await sdk.compute.getTEEAttestation('intel-sgx')
+     *
+     * // Verify the attestation
+     * const isValid = await sdk.compute.verifyTEEAttestation(attestation)
+     *
+     * if (isValid) {
+     *   console.log('✅ TEE attestation verified')
+     *   console.log('MRENCLAVE:', attestation.mrenclave)
+     *   console.log('TCB Status:', attestation.verificationDetails?.tcbStatus)
+     * } else {
+     *   console.log('❌ TEE attestation verification failed')
+     * }
+     * ```
+     */
+    async verifyTEEAttestation(attestation) {
+        const apiEndpoint = this.sdk.getAPIEndpoint();
+        const apiKey = this.sdk.getAPIKey();
+        const response = await fetch(`${apiEndpoint}/api/v1/tee/verify-attestation`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+            },
+            body: JSON.stringify({ attestation })
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: response.statusText }));
+            throw new Error(`TEE attestation verification failed: ${error.message || response.statusText}`);
+        }
+        const result = await response.json();
+        return result.valid;
+    }
+}
+//# sourceMappingURL=ComputeModule.js.map

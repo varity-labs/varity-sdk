@@ -1,0 +1,21 @@
+{
+  "name": "varietykit-thirdweb-scripts",
+  "version": "1.0.0",
+  "description": "Thirdweb SDK helper scripts for VarityKit CLI",
+  "type": "module",
+  "scripts": {
+    "deploy": "node deploy.js",
+    "read": "node read.js",
+    "write": "node write.js",
+    "upload": "node upload.js",
+    "download": "node download.js"
+  },
+  "dependencies": {
+    "@thirdweb-dev/sdk": "^4.0.0",
+    "@thirdweb-dev/storage": "^2.0.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "author": "Varity Platform",
+  "license": "MIT"
+}

@@ -1,0 +1,268 @@
+version: '3.8'
+
+services:
+  # 1. Arbitrum L3 Local Node (Development blockchain)
+  arbitrum-node:
+    image: offchainlabs/nitro-node:v2.3.4-b4cc111
+    ports:
+      - "8547:8547"  # HTTP RPC
+      - "8548:8548"  # WebSocket
+    environment:
+      - CHAIN_ID=421614
+    volumes:
+      - arbitrum-data:/data
+      - ./config/arbitrum.json:/config/arbitrum.json
+    command: >
+      --node.chain-id=421614
+      --http.addr=0.0.0.0
+      --http.port=8547
+      --http.vhosts=*
+      --http.corsdomain=*
+      --ws.addr=0.0.0.0
+      --ws.port=8548
+      --ws.origins=*
+      --node.dev-mode
+      --persistent.chain=/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8547"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 2. Filecoin/IPFS Local Node (Storage)
+  ipfs-node:
+    image: ipfs/kubo:v0.25.0
+    ports:
+      - "5001:5001"  # API
+      - "8081:8080"  # Gateway
+      - "4001:4001"  # Swarm TCP
+      - "4001:4001/udp"  # Swarm UDP
+    volumes:
+      - ipfs-data:/data/ipfs
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data/ipfs
+    command: >
+      daemon
+      --migrate=true
+      --enable-gc
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 3. Pinata Mock Server (Filecoin pinning simulation)
+  pinata-mock:
+    build:
+      context: ./services/pinata-mock
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - IPFS_API_URL=http://ipfs-node:5001
+      - IPFS_GATEWAY_URL=http://ipfs-node:8080
+      - NODE_ENV=development
+    depends_on:
+      ipfs-node:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 4. Akash Compute Simulator (LLM inference)
+  akash-simulator:
+    build:
+      context: ./services/akash-simulator
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - LLM_MODEL=gemini-2.5-flash-mock
+      - COMPUTE_UNITS=1000
+      - NODE_ENV=development
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 5. Celestia DA Local Node (Data Availability)
+  celestia-node:
+    image: ghcr.io/celestiaorg/celestia-node:v0.12.4
+    ports:
+      - "26658:26658"  # RPC
+      - "26659:26659"  # Gateway
+    volumes:
+      - celestia-data:/home/celestia
+    command: >
+      celestia light start
+      --core.ip consensus
+      --p2p.network private
+      --rpc.addr 0.0.0.0
+      --rpc.port 26658
+      --gateway
+      --gateway.addr 0.0.0.0
+      --gateway.port 26659
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:26659/head"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 6. PostgreSQL (Indexer database)
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=varity
+      - POSTGRES_PASSWORD=varity_local
+      - POSTGRES_DB=varity_indexer
+      - POSTGRES_INITDB_ARGS=-E UTF8
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U varity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 7. Redis (Cache layer)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --save 60 1
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 8. Varity API Server (Local)
+  varity-api-local:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgresql://varity:varity_local@postgres:5432/varity_indexer
+      - REDIS_URL=redis://redis:6379
+      - ARBITRUM_RPC_URL=http://arbitrum-node:8547
+      - ARBITRUM_WS_URL=ws://arbitrum-node:8548
+      - IPFS_API_URL=http://ipfs-node:5001
+      - IPFS_GATEWAY_URL=http://ipfs-node:8080
+      - PINATA_API_URL=http://pinata-mock:3002
+      - AKASH_API_URL=http://akash-simulator:3003
+      - CELESTIA_RPC_URL=http://celestia-node:26658
+      - CELESTIA_GATEWAY_URL=http://celestia-node:26659
+      - LOG_LEVEL=debug
+    volumes:
+      - ./services/varity-api:/app
+      - /app/node_modules
+    command: >
+      sh -c "npm install && npm run dev"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      arbitrum-node:
+        condition: service_healthy
+      ipfs-node:
+        condition: service_healthy
+      pinata-mock:
+        condition: service_healthy
+      akash-simulator:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+  # 9. VarityKit Explorer (Local)
+  varietykit-explorer:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - VITE_API_URL=http://localhost:3001
+      - VITE_NETWORK=localdepin
+      - VITE_ARBITRUM_RPC=http://localhost:8547
+      - VITE_IPFS_GATEWAY=http://localhost:8081
+    volumes:
+      - ../../varietykit-explorer:/app
+      - /app/node_modules
+    command: >
+      sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 8080"
+    depends_on:
+      varity-api-local:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - localdepin
+
+volumes:
+  arbitrum-data:
+    driver: local
+  ipfs-data:
+    driver: local
+  celestia-data:
+    driver: local
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  localdepin:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

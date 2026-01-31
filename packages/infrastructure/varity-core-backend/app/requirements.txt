@@ -1,0 +1,32 @@
+# Varity Core Backend - Python Dependencies
+# Gas tracking API and billing system
+
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+
+# Database
+motor>=3.3.2              # Async MongoDB driver
+pymongo>=4.6.1            # MongoDB driver
+
+# HTTP & Async
+httpx>=0.26.0            # Async HTTP client
+asyncio>=3.4.3
+
+# Date/Time
+python-dateutil>=2.8.2
+
+# Environment
+python-dotenv>=1.0.0
+
+# Monitoring & Logging
+structlog>=24.1.0
+
+# Testing (optional)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.26.0            # For testing API calls
+
+# Production Server
+gunicorn>=21.2.0

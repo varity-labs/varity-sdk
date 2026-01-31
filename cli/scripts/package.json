@@ -1,0 +1,16 @@
+{
+  "name": "varietykit-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js bridge scripts for VarietyKit CLI",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node upload_to_ipfs.js --help"
+  },
+  "dependencies": {
+    "thirdweb": "^5.117.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

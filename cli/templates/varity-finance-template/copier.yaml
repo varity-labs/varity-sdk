@@ -1,0 +1,148 @@
+_min_copier_version: "9.0.0"
+
+# Project metadata
+project_name:
+  type: str
+  help: "What is your project name?"
+  placeholder: "acme-bank-dashboard"
+  validator: "{% if not project_name %}Project name is required{% endif %}"
+
+company_name:
+  type: str
+  help: "What is the company name?"
+  placeholder: "Acme Bank"
+  validator: "{% if not company_name %}Company name is required{% endif %}"
+
+description:
+  type: str
+  help: "Brief description of the dashboard"
+  default: "Finance dashboard with compliance and risk monitoring"
+
+# Finance-specific configuration
+institution_type:
+  type: str
+  help: "Type of financial institution"
+  choices:
+    Bank: bank
+    Investment Firm: investment
+    Credit Union: credit_union
+    Fintech: fintech
+  default: bank
+
+# Feature toggles
+enable_fraud_detection:
+  type: bool
+  help: "Enable AI-powered fraud detection?"
+  default: true
+
+enable_aml_monitoring:
+  type: bool
+  help: "Enable AML (Anti-Money Laundering) compliance monitoring?"
+  default: true
+
+enable_risk_forecasting:
+  type: bool
+  help: "Enable risk forecasting models?"
+  default: true
+
+enable_kyc_verification:
+  type: bool
+  help: "Enable KYC (Know Your Customer) verification?"
+  default: true
+
+enable_transaction_monitoring:
+  type: bool
+  help: "Enable real-time transaction monitoring?"
+  default: true
+
+# User role dashboards
+banker_role:
+  type: bool
+  help: "Include Banker role dashboard?"
+  default: true
+
+compliance_role:
+  type: bool
+  help: "Include Compliance Officer dashboard?"
+  default: true
+
+customer_role:
+  type: bool
+  help: "Include Customer portal?"
+  default: false
+
+risk_manager_role:
+  type: bool
+  help: "Include Risk Manager dashboard?"
+  default: false
+
+# Varity L3 Configuration
+varity_api_url:
+  type: str
+  help: "Varity API endpoint"
+  default: "https://api.varity.network"
+
+varity_chain_id:
+  type: int
+  help: "Varity L3 Chain ID (421614 for testnet)"
+  default: 421614
+
+# RAG Configuration
+industry_rag_namespace:
+  type: str
+  help: "Industry RAG namespace"
+  default: "industry-finance-rag"
+
+# Branding customization
+primary_color:
+  type: str
+  help: "Primary brand color (hex)"
+  default: "#0066CC"
+  validator: "{% if not primary_color.startswith('#') %}Must be a hex color starting with #{% endif %}"
+
+secondary_color:
+  type: str
+  help: "Secondary brand color (hex)"
+  default: "#00AA55"
+  validator: "{% if not secondary_color.startswith('#') %}Must be a hex color starting with #{% endif %}"
+
+logo_url:
+  type: str
+  help: "Logo URL (optional)"
+  default: ""
+
+# Compliance settings
+regulatory_framework:
+  type: str
+  help: "Primary regulatory framework"
+  choices:
+    US (FDIC, OCC, Fed): us
+    EU (MiFID II, PSD2): eu
+    UK (FCA): uk
+    Global: global
+  default: us
+
+# Development settings
+include_mock_data:
+  type: bool
+  help: "Include mock data for testing?"
+  default: true
+
+enable_hot_reload:
+  type: bool
+  help: "Enable hot module reloading?"
+  default: true
+
+# Bootstrap tasks
+_tasks:
+  - "cd {{ _copier_conf.dst_path }}/frontend && npm install"
+  - "cd {{ _copier_conf.dst_path }}/frontend && npm run build"
+
+# Template metadata
+_metadata:
+  template_version: "1.0.0"
+  template_name: "varity-finance-template"
+  template_description: "Production-ready Finance Dashboard Template for Varity L3"
+  min_varietykit_version: "0.1.0"
+  author: "Varity Team"
+  license: "MIT"

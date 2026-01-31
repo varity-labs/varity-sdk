@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  varity-s3-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: varity-s3-gateway
+    ports:
+      - "3001:3001"
+    environment:
+      # Server configuration
+      - PORT=3001
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+
+      # AWS credentials
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+      # Varity SDK
+      - VARITY_NETWORK=${VARITY_NETWORK:-arbitrum-sepolia}
+      - VARITY_API_KEY=${VARITY_API_KEY}
+
+      # Storage backend
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-filecoin-ipfs}
+      - PINATA_API_KEY=${PINATA_API_KEY}
+      - PINATA_SECRET_KEY=${PINATA_SECRET_KEY}
+
+      # Security
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - MAX_UPLOAD_SIZE=${MAX_UPLOAD_SIZE:-100mb}
+
+      # Rate limiting
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-1000}
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+    networks:
+      - varity-network
+
+networks:
+  varity-network:
+    driver: bridge

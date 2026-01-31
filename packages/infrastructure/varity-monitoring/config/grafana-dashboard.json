@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "title": "Varity Infrastructure Monitoring",
+    "tags": ["varity", "monitoring", "depin"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Storage Usage by Layer",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "varity_storage_bytes",
+            "legendFormat": "{{layer}} - {{backend}}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "title": "Upload/Download Operations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(varity_uploads_total[5m])",
+            "legendFormat": "Uploads - {{layer}}"
+          },
+          {
+            "expr": "rate(varity_downloads_total[5m])",
+            "legendFormat": "Downloads - {{layer}}"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "title": "API Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(varity_http_request_duration_seconds_sum[5m]) / rate(varity_http_request_duration_seconds_count[5m])",
+            "legendFormat": "{{method}} {{route}}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+      },
+      {
+        "title": "LLM Inference Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(varity_llm_inference_duration_seconds_sum[5m]) / rate(varity_llm_inference_duration_seconds_count[5m])",
+            "legendFormat": "{{model}} - {{task_type}}"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+      },
+      {
+        "title": "Monthly Infrastructure Costs",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "sum(varity_storage_monthly_cost_usd) + sum(varity_compute_monthly_cost_usd)"
+          }
+        ],
+        "format": "currencyUSD",
+        "gridPos": { "x": 0, "y": 16, "w": 6, "h": 4 }
+      },
+      {
+        "title": "DePin vs Cloud Savings",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "varity_depin_cloud_savings_percent{service_type=\"total\"}"
+          }
+        ],
+        "format": "percent",
+        "gridPos": { "x": 6, "y": 16, "w": 6, "h": 4 }
+      },
+      {
+        "title": "Profit Margin",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "avg(varity_profit_margin_percent)"
+          }
+        ],
+        "format": "percent",
+        "gridPos": { "x": 12, "y": 16, "w": 6, "h": 4 }
+      },
+      {
+        "title": "Active Customers",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "count(varity_customer_monthly_cost_usd)"
+          }
+        ],
+        "gridPos": { "x": 18, "y": 16, "w": 6, "h": 4 }
+      },
+      {
+        "title": "Blockchain Transaction Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(varity_blockchain_tx_duration_seconds_sum[5m]) / rate(varity_blockchain_tx_duration_seconds_count[5m])",
+            "legendFormat": "{{chain}} - {{tx_type}}"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 }
+      },
+      {
+        "title": "System Resource Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg(varity_cpu_usage_percent)",
+            "legendFormat": "CPU Usage %"
+          },
+          {
+            "expr": "100 * varity_memory_usage_bytes{type=\"used\"} / varity_memory_usage_bytes{type=\"total\"}",
+            "legendFormat": "Memory Usage %"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 }
+      }
+    ],
+    "refresh": "30s",
+    "time": { "from": "now-1h", "to": "now" }
+  }
+}

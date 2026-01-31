@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  varity-api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: varity-api-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HOST=0.0.0.0
+      - API_BASE_PATH=/api/v1
+      - CORS_ORIGIN=http://localhost:3000
+      - CORS_CREDENTIALS=true
+      - JWT_SECRET=${JWT_SECRET}
+      - SIWE_DOMAIN=${SIWE_DOMAIN:-localhost}
+      - SIWE_URI=${SIWE_URI:-http://localhost:3001}
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - PINATA_API_KEY=${PINATA_API_KEY}
+      - PINATA_SECRET_KEY=${PINATA_SECRET_KEY}
+      - AKASH_NODE_URL=${AKASH_NODE_URL:-https://rpc.akash.network}
+      - ARBITRUM_L3_RPC_URL=${ARBITRUM_L3_RPC_URL:-http://localhost:8545}
+      - CELESTIA_NODE_URL=${CELESTIA_NODE_URL:-http://localhost:26658}
+      - LOG_LEVEL=info
+      - ENABLE_REQUEST_LOGGING=true
+      - HELMET_ENABLED=true
+    networks:
+      - varity-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  varity-network:
+    driver: bridge

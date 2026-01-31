@@ -1,0 +1,40 @@
+{
+  "name": "varietykit-contracts",
+  "version": "1.0.0",
+  "description": "VarityKit Smart Contracts - Template Marketplace with 30/70 Revenue Split",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:arbitrum-sepolia": "hardhat run scripts/deploy.js --network arbitrumSepolia",
+    "deploy:varity-l3": "hardhat run scripts/deploy.js --network varityL3",
+    "verify:arbitrum-sepolia": "hardhat verify --network arbitrumSepolia",
+    "verify:varity-l3": "hardhat verify --network varityL3",
+    "node": "hardhat node",
+    "clean": "hardhat clean"
+  },
+  "keywords": [
+    "varietykit",
+    "varity",
+    "smart-contracts",
+    "arbitrum",
+    "marketplace",
+    "templates"
+  ],
+  "author": "Varity Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@openzeppelin/hardhat-upgrades": "^3.0.0",
+    "hardhat": "^2.19.0",
+    "hardhat-deploy": "^0.11.45",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.5"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "dotenv": "^16.3.1"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "network": "private",
+  "nodeType": "light",
+  "namespace": "0000000000000000000000000000000000000000000076617269747900",
+  "namespaceHex": "varity",
+  "rpcUrl": "http://localhost:26658",
+  "gatewayUrl": "http://localhost:26659",
+  "features": {
+    "blobSubmission": true,
+    "proxyDataAvailability": true,
+    "zkProofs": false
+  },
+  "limits": {
+    "maxBlobSize": 1048576,
+    "maxBlobsPerBlock": 100,
+    "blockTime": 12
+  },
+  "storageConfiguration": {
+    "layer1": {
+      "enabled": false,
+      "description": "Varity internal storage does not require Celestia DA"
+    },
+    "layer2": {
+      "enabled": true,
+      "description": "Industry RAG storage uses Celestia DA for shared knowledge verification"
+    },
+    "layer3": {
+      "enabled": true,
+      "zkProofs": true,
+      "description": "Customer data uses Celestia DA + ZK proofs for privacy"
+    }
+  }
+}

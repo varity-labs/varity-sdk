@@ -1,0 +1,617 @@
+// Varity API Server - PostgreSQL Database Schema
+// Comprehensive schema for all Varity platform entities
+// Supports: Users, Templates, Dashboards, Storage, Analytics, Subscriptions
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+// ============================================================================
+// AUTHENTICATION & USERS
+// ============================================================================
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // Wallet authentication
+  walletAddress String   @unique
+  chainId       Int      @default(1)
+  nonce         String?
+  lastLoginAt   DateTime?
+
+  // Profile
+  email       String?  @unique
+  username    String?  @unique
+  displayName String?
+  avatarUrl   String?
+  bio         String?
+
+  // Status
+  isActive    Boolean  @default(true)
+  isAdmin     Boolean  @default(false)
+  emailVerified Boolean @default(false)
+
+  // Metadata
+  metadata Json?
+
+  // Relations
+  dashboards       Dashboard[]
+  templates        Template[]
+  files            File[]
+  sessions         Session[]
+  analytics        AnalyticsEvent[]
+  subscriptions    Subscription[]
+  notifications    Notification[]
+  deployments      Deployment[]
+  customizations   TemplateCustomization[]
+
+  @@index([walletAddress])
+  @@index([email])
+  @@index([isActive])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  userId       String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessToken  String   @unique
+  refreshToken String?  @unique
+
+  isActive     Boolean  @default(true)
+  ipAddress    String?
+  userAgent    String?
+
+  @@index([userId])
+  @@index([accessToken])
+  @@index([refreshToken])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ============================================================================
+// TEMPLATES
+// ============================================================================
+
+model Template {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // Basic info
+  name        String
+  slug        String   @unique
+  description String?
+  version     String   @default("1.0.0")
+
+  // Industry and categorization
+  industry    String
+  category    String?
+  tags        String[]
+
+  // Status
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  isPublic    Boolean  @default(true)
+
+  // Creator
+  creatorId   String
+  creator     User     @relation(fields: [creatorId], references: [id])
+
+  // Pricing
+  tier            String   @default("professional") // basic, standard, professional, enterprise
+  monthlyPrice    Decimal  @default(0) @db.Decimal(10, 2)
+  yearlyPrice     Decimal? @db.Decimal(10, 2)
+  setupFee        Decimal  @default(0) @db.Decimal(10, 2)
+
+  // Features and configuration
+  features        Json     // Array of features
+  defaultConfig   Json     // Default configuration
+  requirements    Json?    // System requirements
+  documentation   Json?    // Documentation links and content
+
+  // Storage configuration (3-layer architecture)
+  storageConfig   Json?    // Storage layer configuration
+
+  // IPFS/Filecoin
+  ipfsCid         String?  @unique
+  ipfsUrl         String?
+
+  // Metadata
+  metadata        Json?
+
+  // Relations
+  dashboards      Dashboard[]
+  subscriptions   Subscription[]
+  customizations  TemplateCustomization[]
+  deployments     Deployment[]
+
+  @@index([industry])
+  @@index([category])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([creatorId])
+  @@index([tier])
+  @@map("templates")
+}
+
+model TemplateCustomization {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Customization data
+  branding   Json?    // Logo, colors, fonts
+  features   Json?    // Enabled/disabled features
+  settings   Json?    // Custom settings
+
+  @@index([templateId])
+  @@index([userId])
+  @@map("template_customizations")
+}
+
+// ============================================================================
+// DASHBOARDS
+// ============================================================================
+
+model Dashboard {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // Basic info
+  name         String
+  slug         String   @unique
+  description  String?
+
+  // Owner
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+
+  // Template
+  templateId   String
+  template     Template @relation(fields: [templateId], references: [id])
+
+  // Status
+  status       String   @default("active") // active, inactive, suspended, deactivated
+  tier         String   @default("basic")  // basic, standard, professional, enterprise
+
+  // Configuration
+  config       Json     // Dashboard configuration
+  components   Json?    // Dashboard components layout
+  branding     Json?    // Custom branding
+
+  // L3 Network info
+  l3NetworkId  String?
+  l3NodeUrl    String?
+  l3ChainId    Int?
+
+  // Storage
+  storageUsed  BigInt   @default(0)  // Bytes
+  storageLimit BigInt   @default(10737418240) // 10GB default
+
+  // Compute
+  computeUsed  BigInt   @default(0)  // CPU seconds
+  computeLimit BigInt   @default(86400000) // Daily limit
+
+  // Metadata
+  metadata     Json?
+
+  // Relations
+  files        File[]
+  metrics      DashboardMetric[]
+  logs         DashboardLog[]
+  deployments  Deployment[]
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([status])
+  @@index([tier])
+  @@map("dashboards")
+}
+
+model DashboardMetric {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  dashboardId String
+  dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  // Metric data
+  metricType  String   // cpu, memory, storage, requests, errors
+  value       Decimal  @db.Decimal(20, 4)
+  unit        String   // percentage, bytes, count, seconds
+
+  // Metadata
+  metadata    Json?
+
+  @@index([dashboardId])
+  @@index([metricType])
+  @@index([createdAt])
+  @@map("dashboard_metrics")
+}
+
+model DashboardLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  dashboardId String
+  dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  // Log data
+  level       String   // error, warn, info, debug
+  message     String
+  source      String?  // Component/service that generated log
+
+  // Metadata
+  metadata    Json?
+  stackTrace  String?
+
+  @@index([dashboardId])
+  @@index([level])
+  @@index([createdAt])
+  @@map("dashboard_logs")
+}
+
+// ============================================================================
+// STORAGE (3-Layer Architecture)
+// ============================================================================
+
+model File {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // File info
+  fileName    String
+  fileSize    BigInt
+  mimeType    String?
+
+  // Owner
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  dashboardId String?
+  dashboard   Dashboard? @relation(fields: [dashboardId], references: [id])
+
+  // Storage layer (3-layer architecture)
+  storageLayer String   // varity-internal, industry-rag, customer-data
+  namespace    String   // Namespace for organization
+  category     String?  // Additional categorization
+
+  // Filecoin/IPFS
+  ipfsCid      String   @unique
+  ipfsUrl      String?
+  isPinned     Boolean  @default(true)
+
+  // Encryption (Lit Protocol)
+  isEncrypted      Boolean  @default(true)
+  encryptionKey    String?  // Encrypted key
+  accessConditions Json?    // Lit Protocol access conditions
+
+  // Celestia DA (for Layer 2 & 3)
+  celestiaBlobId   String?
+  celestiaHeight   BigInt?
+
+  // ZK Proofs (for Layer 3)
+  zkProof          String?
+  zkProofVerified  Boolean  @default(false)
+
+  // Metadata
+  metadata         Json?
+  tags             String[]
+
+  @@index([userId])
+  @@index([dashboardId])
+  @@index([storageLayer])
+  @@index([namespace])
+  @@index([ipfsCid])
+  @@index([createdAt])
+  @@map("files")
+}
+
+// ============================================================================
+// ANALYTICS
+// ============================================================================
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Event info
+  eventType   String   // page_view, click, api_call, error, etc.
+  eventName   String
+
+  // User
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  // Session
+  sessionId   String?
+
+  // Event data
+  properties  Json?    // Event-specific properties
+  metadata    Json?
+
+  // Context
+  ipAddress   String?
+  userAgent   String?
+  referer     String?
+  path        String?
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([eventName])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+model RevenueRecord {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Transaction info
+  amount       Decimal  @db.Decimal(20, 4)
+  currency     String   @default("USD")
+  status       String   // success, pending, failed, refunded
+
+  // Source
+  source       String?  // subscription, one-time, setup-fee
+
+  // Relations
+  userId       String?
+
+  // Metadata
+  metadata     Json?
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("revenue_records")
+}
+
+model CustomerMetric {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Metric info
+  metricType  String   // active, new, churned, retention
+  value       Int
+  period      String   // day, week, month, year
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Metadata
+  metadata    Json?
+
+  @@index([metricType])
+  @@index([period])
+  @@index([periodStart])
+  @@map("customer_metrics")
+}
+
+model TransactionRecord {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Transaction info
+  transactionId String   @unique
+  amount        Decimal  @db.Decimal(20, 4)
+  currency      String   @default("USD")
+  status        String   // success, pending, failed
+
+  // User
+  userId        String?
+
+  // Metadata
+  metadata      Json?
+
+  @@index([transactionId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transaction_records")
+}
+
+// ============================================================================
+// SUBSCRIPTIONS
+// ============================================================================
+
+model Subscription {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // Subscriber
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+
+  // Template
+  templateId   String
+  template     Template @relation(fields: [templateId], references: [id])
+
+  // Subscription details
+  tier         String   // basic, standard, professional, enterprise
+  status       String   @default("active") // active, canceled, expired, suspended
+
+  // Billing
+  billingCycle String   @default("monthly") // monthly, yearly
+  price        Decimal  @db.Decimal(10, 2)
+  currency     String   @default("USD")
+
+  // Dates
+  startDate    DateTime @default(now())
+  endDate      DateTime?
+  renewalDate  DateTime?
+  canceledAt   DateTime?
+
+  // Payment
+  paymentMethod String?
+  lastPaymentAt DateTime?
+  nextPaymentAt DateTime?
+
+  // Metadata
+  metadata     Json?
+
+  @@index([userId])
+  @@index([templateId])
+  @@index([status])
+  @@index([tier])
+  @@index([endDate])
+  @@map("subscriptions")
+}
+
+// ============================================================================
+// DEPLOYMENTS
+// ============================================================================
+
+model Deployment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Template deployment
+  templateId  String
+  template    Template @relation(fields: [templateId], references: [id])
+
+  // Dashboard
+  dashboardId String?
+  dashboard   Dashboard? @relation(fields: [dashboardId], references: [id])
+
+  // User
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  // Deployment info
+  status      String   @default("pending") // pending, in-progress, completed, failed
+  progress    Int      @default(0) // 0-100
+
+  // L3 Network
+  l3NetworkId String?
+  l3ChainId   Int?
+
+  // Akash deployment
+  akashDeploymentId String?
+  akashLeaseId      String?
+  akashProviderUrl  String?
+
+  // Configuration
+  config      Json?
+
+  // Logs
+  logs        String?
+  error       String?
+
+  // Completion
+  completedAt DateTime?
+  failedAt    DateTime?
+
+  // Metadata
+  metadata    Json?
+
+  @@index([templateId])
+  @@index([dashboardId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("deployments")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  // User
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Notification info
+  type      String   // info, success, warning, error
+  title     String
+  message   String
+
+  // Actions
+  actionUrl String?
+  actionLabel String?
+
+  // Metadata
+  metadata  Json?
+
+  @@index([userId])
+  @@index([readAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================================================
+// CACHE & MONITORING
+// ============================================================================
+
+model CacheEntry {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime?
+
+  // Cache key
+  key       String   @unique
+
+  // Cache value
+  value     Json
+
+  // Metadata
+  tags      String[]
+  metadata  Json?
+
+  @@index([key])
+  @@index([expiresAt])
+  @@map("cache_entries")
+}
+
+model WebhookLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Webhook info
+  event     String
+  payload   Json
+
+  // Response
+  status    Int?
+  response  Json?
+
+  // Error
+  error     String?
+
+  @@index([event])
+  @@index([createdAt])
+  @@map("webhook_logs")
+}

@@ -1,0 +1,89 @@
+# Prometheus Configuration for Varity Monitoring
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    monitor: 'varity-monitoring'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alerts.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Varity Monitoring Metrics
+  - job_name: 'varity-monitoring'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'varity-monitoring'
+          component: 'metrics-server'
+
+    # Scrape interval for this specific job
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+    # Metrics path (default is /metrics)
+    metrics_path: '/metrics'
+
+    # Optional: Honor labels from the target
+    honor_labels: true
+
+    # Optional: Add custom labels to all metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'varity-monitoring-server'
+
+  # Varity Storage Metrics (separate job)
+  - job_name: 'varity-storage'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'varity-storage'
+          component: 'storage-metrics'
+
+    metrics_path: '/metrics/storage'
+    scrape_interval: 60s
+
+  # Varity Performance Metrics (separate job)
+  - job_name: 'varity-performance'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'varity-performance'
+          component: 'performance-metrics'
+
+    metrics_path: '/metrics/performance'
+    scrape_interval: 30s
+
+  # Varity Cost Metrics (separate job)
+  - job_name: 'varity-cost'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'varity-cost'
+          component: 'cost-metrics'
+
+    metrics_path: '/metrics/cost'
+    scrape_interval: 300s  # Every 5 minutes
+
+  # Node.js Default Metrics (separate job)
+  - job_name: 'varity-nodejs'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'varity-nodejs'
+          component: 'default-metrics'
+
+    metrics_path: '/metrics/default'
+    scrape_interval: 15s
