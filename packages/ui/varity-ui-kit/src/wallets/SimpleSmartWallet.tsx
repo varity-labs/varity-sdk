@@ -26,7 +26,7 @@
 import React from 'react';
 import { SmartWalletProvider } from './SmartWalletProvider';
 import { createThirdwebClient } from 'thirdweb';
-import { varityL3Testnet } from '@varity-labs/sdk';
+import { varityL3Testnet } from '@varity-labs/sdk/chains';
 import { VARITY_DEV_CREDENTIALS } from '@varity-labs/sdk';
 
 export interface SimpleSmartWalletProps {

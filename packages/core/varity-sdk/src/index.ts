@@ -27,8 +27,9 @@ export {
   TemplateRegistry,
   templateRegistry,
   validateTemplate,
-  getContractABI,
-  getContractAddress,
+  // Advanced: Available via direct import from submodule
+  // getContractABI,
+  // getContractAddress,
   getEntity,
   getMetric,
   getEvent,
@@ -85,22 +86,23 @@ export type {
   MerchantInsights,
   AnomalyAnalysis,
   UserProfile,
-  ZKProof,
-  AccessCondition,
-  DataProof,
-  // TEE Types
-  TEEProvider,
-  TEEAttestation,
-  TEEQueryOptions,
-  TEEResponse,
-  // ZKML Types
-  ZKMLProofType,
-  ZKMLCircuitType,
-  ZKMLProof,
-  ZKMLVerificationResult,
-  ZKMLCircuitConfig,
-  ZKMLProofInput,
-  ZKMLProofStats
+  // Advanced: Available via direct import from submodule
+  // ZKProof,
+  // AccessCondition,
+  // DataProof,
+  // // TEE Types
+  // TEEProvider,
+  // TEEAttestation,
+  // TEEQueryOptions,
+  // TEEResponse,
+  // // ZKML Types
+  // ZKMLProofType,
+  // ZKMLCircuitType,
+  // ZKMLProof,
+  // ZKMLVerificationResult,
+  // ZKMLCircuitConfig,
+  // ZKMLProofInput,
+  // ZKMLProofStats
 } from './core/types'
 
 // Types - Utilities
@@ -108,14 +110,18 @@ export type {
   Pagination,
   PaginatedResult,
   ErrorResponse,
-  TransactionReceipt,
+  // Advanced: Available via direct import from submodule
+  // TransactionReceipt,
   BackendAPIConfig,
   PinataUploadResponse,
-  CelestiaSubmitResponse
+  // Advanced: Available via direct import from submodule
+  // CelestiaSubmitResponse
 } from './core/types'
 
 // Enums
-export { MerchantStatus, TransactionType, RepStatus, StorageLayer, Role } from './core/types'
+export { MerchantStatus, TransactionType, RepStatus } from './core/types'
+// Advanced: Available via direct import from submodule
+// export { StorageLayer, Role } from './core/types'
 
 // Storage Module (Filecoin/IPFS + Multi-backend Support)
 export { StorageModule, S3Module } from './modules/storage'
@@ -274,171 +280,182 @@ export type {
   TestDeliveryResult
 } from './modules/webhooks'
 
-// Contract ABIs (optional export for advanced users)
-export { default as MerchantRegistryABI } from './contracts/abis/iso/MerchantRegistry.json'
-export { default as TransactionVaultABI } from './contracts/abis/iso/TransactionVault.json'
-export { default as RepPerformanceABI } from './contracts/abis/iso/RepPerformance.json'
-export { default as ResidualCalculatorABI } from './contracts/abis/iso/ResidualCalculator.json'
-export { default as AccessControlRegistryABI } from './contracts/abis/iso/AccessControlRegistry.json'
-export { default as DataProofRegistryABI } from './contracts/abis/iso/DataProofRegistry.json'
-export { default as VarityWalletFactoryABI } from './contracts/abis/iso/VarityWalletFactory.json'
+// ============================================================================
+// Advanced: Contract ABIs
+// Available via direct import: import MerchantRegistryABI from '@varity/sdk/contracts/abis/iso/MerchantRegistry.json'
+// ============================================================================
+// export { default as MerchantRegistryABI } from './contracts/abis/iso/MerchantRegistry.json'
+// export { default as TransactionVaultABI } from './contracts/abis/iso/TransactionVault.json'
+// export { default as RepPerformanceABI } from './contracts/abis/iso/RepPerformance.json'
+// export { default as ResidualCalculatorABI } from './contracts/abis/iso/ResidualCalculator.json'
+// export { default as AccessControlRegistryABI } from './contracts/abis/iso/AccessControlRegistry.json'
+// export { default as DataProofRegistryABI } from './contracts/abis/iso/DataProofRegistry.json'
+// export { default as VarityWalletFactoryABI } from './contracts/abis/iso/VarityWalletFactory.json'
 
-// Thirdweb Integration (NEW in v2.0.0-beta.2, Complete in v2.0.0-alpha.1)
+// ============================================================================
+// Advanced: Thirdweb Integration
+// Available via direct import: import { ThirdwebWrapper } from '@varity/sdk/thirdweb'
+// ============================================================================
+// export {
+//   ThirdwebWrapper,
+//   createThirdwebWrapper,
+//   EngineClient,
+//   createEngineClient,
+//   parseEngineWebhook,
+//   verifyEngineWebhook,
+//   NebulaClient,
+//   createNebulaClient,
+//   StorageClient,
+//   createStorageClient,
+//   BridgeClient,
+//   createBridgeClient,
+//   GatewayClient,
+//   createGatewayClient,
+//   x402Client,
+//   createx402Client,
+//   x402Middleware,
+// } from './thirdweb'
+// export type {
+//   ThirdwebWrapperConfig,
+//   DeployContractParams,
+//   EngineConfig,
+//   EngineTransactionParams,
+//   EngineTransactionStatus,
+//   EngineTransactionResult,
+//   EngineDeployParams,
+//   EngineWebhookPayload,
+//   NebulaConfig,
+//   GenerateContractOptions,
+//   GeneratedContract,
+//   QueryChainOptions,
+//   QueryResult,
+//   ExplainTransactionOptions,
+//   TransactionExplanation,
+//   GenerateCodeOptions,
+//   GeneratedCode,
+//   AnalyzeContractOptions,
+//   ContractAnalysis,
+//   StorageConfig,
+//   ThirdwebUploadResult,
+//   NFTMetadata,
+//   BatchUploadItem,
+//   BatchUploadResult,
+//   ThirdwebDownloadOptions,
+//   ImageOptimizationOptions,
+//   BridgeConfig,
+//   AssetType,
+//   BridgeRoute,
+//   BridgeAssetParams,
+//   BridgeStatus,
+//   BridgeTransactionResult,
+//   BridgeQuote,
+//   BridgeHistoryEntry,
+//   GatewayConfig,
+//   RPCRequestOptions,
+//   RPCResponse,
+//   GatewayStats,
+//   WebSocketOptions,
+//   x402Config,
+//   PaymentEndpointConfig,
+//   PaymentStats,
+//   UsageRecord,
+//   SubscriptionPlan,
+//   Subscription,
+// } from './thirdweb'
+// export { varietyTestnet, getVarityChain, isVarityChain, VARITY_TESTNET_RPC, VARITY_CHAIN_METADATA } from './thirdweb/varity-chain'
+
+// ============================================================================
+// Advanced: Blockchain & Chain Configuration
+// Available via direct import: import { ChainRegistry } from '@varity/sdk/chains'
+// ============================================================================
+// export {
+//   ChainRegistry,
+//   SUPPORTED_CHAINS,
+//   TESTNET_CHAINS,
+//   MAINNET_CHAINS,
+//   DEFAULT_CHAIN,
+//   chains,
+//   varityL3,
+//   varityL3Testnet,
+//   varityL3Wagmi,
+//   USDC_DECIMALS,
+//   VARITY_USDC_ADDRESS,
+//   formatUSDC,
+//   parseUSDC,
+//   formatAddress,
+//   getVarityExplorerUrl,
+//   arbitrum,
+//   arbitrumOne,
+//   arbitrumSepolia,
+//   arbitrumOneWagmi,
+//   arbitrumSepoliaWagmi,
+//   getArbitrumExplorerUrl,
+//   base,
+//   baseSepolia,
+//   baseWagmi,
+//   baseSepoliaWagmi,
+//   getBaseExplorerUrl,
+// } from './chains'
+// export type { ChainSelection, ChainMetadata } from './chains'
+
+// ============================================================================
+// Advanced: Blockchain Module
+// Available via direct import: import { BlockchainService } from '@varity/sdk/blockchain'
+// ============================================================================
+// export {
+//   BlockchainService,
+//   NFTLicensingService,
+//   RevenueSplitService,
+// } from './blockchain'
+// export type {
+//   ContractConfig,
+//   NFTLicenseMetadata,
+//   LicenseInfo,
+//   RevenueSplit,
+//   TransactionResult,
+//   BlockchainServiceOptions,
+// } from './blockchain'
+
+// ============================================================================
+// Advanced: Gas Tracking Module
+// Available via direct import: import { trackGasUsage } from '@varity/sdk/tracking'
+// ============================================================================
+// export {
+//   trackGasUsage,
+//   trackTransactionGasUsage,
+//   waitForTransactionReceipt,
+//   calculateGasInUSDC,
+//   createGasTracker,
+// } from './tracking'
+// export type {
+//   GasUsageEvent,
+//   GasTransactionReceipt,
+//   GasTrackerConfig,
+//   BillingStatus,
+//   AppIdentifier,
+//   GasUsageRecord,
+//   AppUsageSummary,
+//   BillingCycle,
+//   GasTrackingStats,
+//   GasUsageQueryOptions,
+//   GasUsageQueryResult,
+//   BillingAlert,
+//   GasExportFormat,
+//   GasExportOptions,
+// } from './tracking'
+
+// Database Module (NEW - Zero-Config Database API)
 export {
-  // Core
-  ThirdwebWrapper,
-  createThirdwebWrapper,
-  // Engine
-  EngineClient,
-  createEngineClient,
-  parseEngineWebhook,
-  verifyEngineWebhook,
-  // Nebula AI
-  NebulaClient,
-  createNebulaClient,
-  // Storage
-  StorageClient,
-  createStorageClient,
-  // Bridge
-  BridgeClient,
-  createBridgeClient,
-  // Gateway
-  GatewayClient,
-  createGatewayClient,
-  // x402 Payment
-  x402Client,
-  createx402Client,
-  x402Middleware,
-} from './thirdweb'
+  Database,
+  db,
+  Collection,
+} from './database'
 export type {
-  // Core
-  ThirdwebWrapperConfig,
-  DeployContractParams,
-  // Engine
-  EngineConfig,
-  EngineTransactionParams,
-  EngineTransactionStatus,
-  EngineTransactionResult,
-  EngineDeployParams,
-  EngineWebhookPayload,
-  // Nebula AI
-  NebulaConfig,
-  GenerateContractOptions,
-  GeneratedContract,
-  QueryChainOptions,
-  QueryResult,
-  ExplainTransactionOptions,
-  TransactionExplanation,
-  GenerateCodeOptions,
-  GeneratedCode,
-  AnalyzeContractOptions,
-  ContractAnalysis,
-  // Storage
-  StorageConfig,
-  ThirdwebUploadResult,
-  NFTMetadata,
-  BatchUploadItem,
-  BatchUploadResult,
-  ThirdwebDownloadOptions,
-  ImageOptimizationOptions,
-  // Bridge
-  BridgeConfig,
-  AssetType,
-  BridgeRoute,
-  BridgeAssetParams,
-  BridgeStatus,
-  BridgeTransactionResult,
-  BridgeQuote,
-  BridgeHistoryEntry,
-  // Gateway
-  GatewayConfig,
-  RPCRequestOptions,
-  RPCResponse,
-  GatewayStats,
-  WebSocketOptions,
-  // x402 Payment
-  x402Config,
-  PaymentEndpointConfig,
-  PaymentStats,
-  UsageRecord,
-  SubscriptionPlan,
-  Subscription,
-} from './thirdweb'
-export { varietyTestnet, getVarityChain, isVarityChain, VARITY_TESTNET_RPC, VARITY_CHAIN_METADATA } from './thirdweb/varity-chain'
-
-// Multi-Chain Configuration (NEW in v2.0.0-alpha.1)
-export {
-  ChainRegistry,
-  SUPPORTED_CHAINS,
-  TESTNET_CHAINS,
-  MAINNET_CHAINS,
-  DEFAULT_CHAIN,
-  chains,
-  // Varity L3
-  varityL3,
-  varityL3Testnet,
-  varityL3Wagmi,
-  USDC_DECIMALS,
-  VARITY_USDC_ADDRESS,
-  formatUSDC,
-  parseUSDC,
-  formatAddress,
-  getVarityExplorerUrl,
-  // Arbitrum
-  arbitrum,
-  arbitrumOne,
-  arbitrumSepolia,
-  arbitrumOneWagmi,
-  arbitrumSepoliaWagmi,
-  getArbitrumExplorerUrl,
-  // Base
-  base,
-  baseSepolia,
-  baseWagmi,
-  baseSepoliaWagmi,
-  getBaseExplorerUrl,
-} from './chains'
-export type { ChainSelection, ChainMetadata } from './chains'
-
-// Blockchain Module (Production patterns from generic-template-dashboard)
-export {
-  BlockchainService,
-  NFTLicensingService,
-  RevenueSplitService,
-} from './blockchain'
-export type {
-  ContractConfig,
-  NFTLicenseMetadata,
-  LicenseInfo,
-  RevenueSplit,
-  TransactionResult,
-  BlockchainServiceOptions,
-} from './blockchain'
-
-// Gas Tracking Module (NEW - Per-App Gas Usage Billing)
-export {
-  trackGasUsage,
-  trackTransactionGasUsage,
-  waitForTransactionReceipt,
-  calculateGasInUSDC,
-  createGasTracker,
-} from './tracking'
-export type {
-  GasUsageEvent,
-  GasTransactionReceipt,
-  GasTrackerConfig,
-  BillingStatus,
-  AppIdentifier,
-  GasUsageRecord,
-  AppUsageSummary,
-  BillingCycle,
-  GasTrackingStats,
-  GasUsageQueryOptions,
-  GasUsageQueryResult,
-  BillingAlert,
-  GasExportFormat,
-  GasExportOptions,
-} from './tracking'
+  DatabaseConfig,
+  QueryOptions,
+  Document,
+  CollectionResponse,
+} from './database'
 
 // Version
 export const VERSION = '2.0.0-alpha.1'

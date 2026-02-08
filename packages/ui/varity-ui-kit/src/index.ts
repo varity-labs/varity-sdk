@@ -1,8 +1,8 @@
 /**
- * @varity-labs/ui-kit - Web3 React Component Library
+ * @varity-labs/ui-kit - React Component Library for building applications with Varity
  *
- * Comprehensive UI components for building Varity L3 applications
- * with Thirdweb React SDK and USDC gas support
+ * Comprehensive UI components for building applications with Varity
+ * including auth, payments, and dashboard components
  *
  * @packageDocumentation
  */
@@ -46,14 +46,17 @@ export type * from './modules/templates'
 // React Components
 export * from './components'
 
-// In-App Wallet Components (Thirdweb)
-export {
-  InAppWalletProvider,
-  useInAppWallet,
-  EmailLoginButton,
-  SocialLoginButtons,
-  OnboardingFlow,
-} from './components/InAppWallet'
+// ============================================================================
+// Advanced: In-App Wallet Components
+// Available via direct import: import { InAppWalletProvider } from '@varity/ui-kit/components/InAppWallet'
+// ============================================================================
+// export {
+//   InAppWalletProvider,
+//   useInAppWallet,
+//   EmailLoginButton,
+//   SocialLoginButtons,
+//   OnboardingFlow,
+// } from './components/InAppWallet'
 
 // Privy Authentication Components (Recommended for Non-Crypto Users)
 export {
@@ -86,28 +89,52 @@ export {
 // Re-export Privy hooks for convenience
 export { usePrivy, useWallets, useLogin, useLogout } from '@privy-io/react-auth'
 
-// Onramp Components (Thirdweb Pay)
+// ============================================================================
+// Advanced: Onramp Components
+// Available via direct import: import { BuyUSDCButton } from '@varity/ui-kit/components/Onramp'
+// ============================================================================
+// export {
+//   BuyUSDCButton,
+//   OnrampWidget,
+// } from './components/Onramp'
+
+// PaymentWidget Components (MANDATORY for app monetization - 90/10 revenue split)
 export {
-  BuyUSDCButton,
-  OnrampWidget,
-} from './components/Onramp'
+  PaymentWidget,
+  PaymentGate,
+  useVarityPayment,
+  // Advanced: Available via direct import from submodule
+  // VARITY_PAYMENTS_ADDRESS,
+  // VARITY_TREASURY_ADDRESS,
+  // PLATFORM_FEE_BPS,
+  // VARITY_PAYMENTS_ABI,
+  type PaymentWidgetProps,
+  type PaymentGateProps,
+  type UseVarityPaymentReturn,
+  type UseVarityPaymentOptions,
+  type AppPricing,
+  type PaymentType,
+} from './components/PaymentWidget'
 
 // React Hooks
 export * from './hooks'
 
-// Web3 Providers
-export {
-  VarityProvider,
-  WalletProvider,
-  ChainProvider,
-  useWallet,
-  useChain,
-  type VarityProviderProps,
-  type WalletProviderProps,
-  type ChainProviderProps,
-  type WalletContextValue,
-  type ChainContextValue,
-} from './providers'
+// ============================================================================
+// Advanced: Web3 Providers
+// Available via direct import: import { WalletProvider } from '@varity/ui-kit/providers'
+// ============================================================================
+// export {
+//   VarityProvider,
+//   WalletProvider,
+//   ChainProvider,
+//   useWallet,
+//   useChain,
+//   type VarityProviderProps,
+//   type WalletProviderProps,
+//   type ChainProviderProps,
+//   type WalletContextValue,
+//   type ChainContextValue,
+// } from './providers'
 
 // Dashboard Provider (Privy + Thirdweb + WalletSync - RECOMMENDED for dashboards)
 export {
@@ -115,81 +142,92 @@ export {
   type VarityDashboardProviderProps,
 } from './providers/VarityDashboardProvider'
 
-// Wallet Sync (Privy + Thirdweb synchronization)
-export {
-  WalletSyncProvider,
-  WalletSyncContext,
-  useWalletSync,
-  type WalletSyncState,
-  type WalletSyncProviderProps,
-} from './providers/WalletSyncProvider'
+// ============================================================================
+// Advanced: Wallet Sync (Privy + Thirdweb synchronization)
+// Available via direct import: import { WalletSyncProvider } from '@varity/ui-kit/providers/WalletSyncProvider'
+// ============================================================================
+// export {
+//   WalletSyncProvider,
+//   WalletSyncContext,
+//   useWalletSync,
+//   type WalletSyncState,
+//   type WalletSyncProviderProps,
+// } from './providers/WalletSyncProvider'
 
-// Web3 Components
-export {
-  // Wallet Components
-  ConnectWallet,
-  WalletInfo,
-  WalletBalance,
-  WalletDropdown,
-  DisconnectButton,
-  // Display Components
-  AddressDisplay,
-  BalanceDisplay,
-  BlockExplorerLink,
-  // Form Components
-  AmountInput,
-  AddressInput,
-  // Types
-  type ConnectWalletProps,
-  type WalletInfoProps,
-  type WalletBalanceProps,
-  type WalletDropdownProps,
-  type DisconnectButtonProps,
-  type AddressDisplayProps,
-  type BalanceDisplayProps,
-  type BlockExplorerLinkProps,
-  type AmountInputProps,
-  type AddressInputProps,
-} from './web3'
+// ============================================================================
+// Advanced: Web3 Components
+// Available via direct import: import { ConnectWallet } from '@varity/ui-kit/web3'
+// ============================================================================
+// export {
+//   ConnectWallet,
+//   WalletInfo,
+//   WalletBalance,
+//   WalletDropdown,
+//   DisconnectButton,
+//   AddressDisplay,
+//   BalanceDisplay,
+//   BlockExplorerLink,
+//   AmountInput,
+//   AddressInput,
+//   type ConnectWalletProps,
+//   type WalletInfoProps,
+//   type WalletBalanceProps,
+//   type WalletDropdownProps,
+//   type DisconnectButtonProps,
+//   type AddressDisplayProps,
+//   type BalanceDisplayProps,
+//   type BlockExplorerLinkProps,
+//   type AmountInputProps,
+//   type AddressInputProps,
+// } from './web3'
 
-// Web3 Hooks
-export {
-  useVarityWallet,
-  useUSDCFormat,
-  useAddressValidation,
-  useBlockExplorer,
-  type UseVarityWalletReturn,
-  type UseUSDCFormatReturn,
-  type UseAddressValidationReturn,
-  type UseBlockExplorerReturn,
-} from './hooks/web3'
+// ============================================================================
+// Advanced: Web3 Hooks
+// Available via direct import: import { useVarityWallet } from '@varity/ui-kit/hooks/web3'
+// ============================================================================
+// export {
+//   useVarityWallet,
+//   useUSDCFormat,
+//   useAddressValidation,
+//   useBlockExplorer,
+//   type UseVarityWalletReturn,
+//   type UseUSDCFormatReturn,
+//   type UseAddressValidationReturn,
+//   type UseBlockExplorerReturn,
+// } from './hooks/web3'
 
-// Chain Configuration
-export {
-  varityL3,
-  varityL3Testnet,
-  varityL3Wagmi,
-  SUPPORTED_CHAINS,
-  DEFAULT_CHAIN,
-  THIRDWEB_CLIENT_ID,
-  USDC_DECIMALS,
-  VARITY_USDC_ADDRESS,
-  getBlockExplorerUrl,
-  formatAddress,
-  formatUSDC,
-  parseUSDC,
-} from './config/chains'
+// ============================================================================
+// Advanced: Chain Configuration
+// Available via direct import: import { varityL3 } from '@varity/ui-kit/config/chains'
+// ============================================================================
+// export {
+//   varityL3,
+//   varityL3Testnet,
+//   varityL3Wagmi,
+//   SUPPORTED_CHAINS,
+//   DEFAULT_CHAIN,
+//   THIRDWEB_CLIENT_ID,
+//   USDC_DECIMALS,
+//   VARITY_USDC_ADDRESS,
+//   getBlockExplorerUrl,
+//   formatAddress,
+//   formatUSDC,
+//   parseUSDC,
+// } from './config/chains'
 
-// Smart Wallet Components (ERC-4337 Account Abstraction)
-export {
-  SmartWalletProvider,
-  useSmartWallet,
-  SmartWalletConnectButton,
-  GaslessBadge,
-  SimpleSmartWallet,
-  type SmartWalletConfig,
-  type SimpleSmartWalletProps,
-} from './wallets'
+// ============================================================================
+// Advanced: Smart Wallet Components (Account Abstraction)
+// Available via direct import: import { SmartWalletProvider } from '@varity/ui-kit/wallets'
+// ============================================================================
+// export {
+//   SmartWalletProvider,
+//   useSmartWallet,
+//   SmartWalletConnectButton,
+//   GaslessBadge,
+//   SimpleSmartWallet,
+//   type SmartWalletConfig,
+//   type SimpleSmartWalletProps,
+// } from './wallets'
 
 // Styles
 // Note: CSS should be imported by the consuming application

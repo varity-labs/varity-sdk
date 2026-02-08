@@ -159,10 +159,13 @@ async function uploadToIPFS(directory, clientId) {
       files: files
     });
 
-    // 7. Extract CID from URI
-    // thirdweb returns ipfs:// URIs, extract the CID
+    // 7. Extract root CID from URI
+    // thirdweb returns ipfs:// URIs - when uploading multiple files,
+    // each file gets its own URI like ipfs://QmXXX/404/index.html
+    // We need just the root CID (QmXXX), not the full file path
     const uri = Array.isArray(uris) ? uris[0] : uris;
-    const cid = uri.replace('ipfs://', '');
+    const fullPath = uri.replace('ipfs://', '');
+    const cid = fullPath.includes('/') ? fullPath.split('/')[0] : fullPath;
 
     // 8. Calculate total size
     const totalSize = fileMetadata.reduce((sum, file) => sum + file.size, 0);

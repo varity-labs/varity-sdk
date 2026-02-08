@@ -2,7 +2,7 @@
  * VarityKit Smart Contract Deployment Script
  *
  * Deploys:
- * 1. TemplateMarketplace - Marketplace with 30/70 revenue split (30% creator, 70% platform)
+ * 1. TemplateMarketplace - Marketplace with 90/10 revenue split (90% creator, 10% platform)
  * 2. TemplateRegistry - On-chain metadata registry with IPFS hash storage
  *
  * Usage:
@@ -41,7 +41,7 @@ async function main() {
 
   console.log("✅ TemplateMarketplace deployed!");
   console.log("   Address:", marketplaceAddress);
-  console.log("   Revenue Split: 30% creator, 70% platform");
+  console.log("   Revenue Split: 90% creator, 10% platform");
   console.log("   Min Quality Score:", 85);
 
   // ========== 2. Deploy TemplateRegistry ==========
@@ -69,12 +69,12 @@ async function main() {
     console.log("   Platform Share:", platformShare.toString() + "%");
     console.log("   Min Quality Score:", minQuality.toString());
 
-    // Verify split is correct (30/70)
-    if (creatorShare.toString() === "30" && platformShare.toString() === "70") {
-      console.log("   ✅ Revenue split is CORRECT (30% creator, 70% platform)");
+    // Verify split is correct (90/10)
+    if (creatorShare.toString() === "90" && platformShare.toString() === "10") {
+      console.log("   ✅ Revenue split is CORRECT (90% creator, 10% platform)");
     } else {
       console.error("   ❌ ERROR: Revenue split is INCORRECT!");
-      console.error("      Expected: 30% creator, 70% platform");
+      console.error("      Expected: 90% creator, 10% platform");
       console.error("      Actual:", creatorShare.toString() + "% creator,", platformShare.toString() + "% platform");
       process.exit(1);
     }
@@ -93,8 +93,8 @@ async function main() {
     contracts: {
       TemplateMarketplace: {
         address: marketplaceAddress,
-        creatorShare: 30,
-        platformShare: 70,
+        creatorShare: 90,
+        platformShare: 10,
         minQualityScore: 85,
       },
       TemplateRegistry: {

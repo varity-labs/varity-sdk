@@ -3,12 +3,15 @@
  *
  * Re-exports chain configuration from @varity-labs/sdk for use in React components
  * Provides multi-chain support for Varity L3, Arbitrum, Base, and more
+ *
+ * Advanced: These are blockchain-level configs used internally by UI-Kit components.
+ * Most developers don't need to import these directly.
  */
 
-// Import for use in this file
-import { ChainRegistry } from '@varity-labs/sdk';
+// Import from SDK's chains subpath (advanced/internal use)
+import { ChainRegistry } from '@varity-labs/sdk/chains';
 
-// Re-export all chain configuration from @varity-labs/sdk
+// Re-export all chain configuration from SDK chains subpath
 export {
   // Chain Registry
   ChainRegistry,
@@ -43,7 +46,7 @@ export {
   // Types
   type ChainSelection,
   type ChainMetadata,
-} from '@varity-labs/sdk';
+} from '@varity-labs/sdk/chains';
 
 /**
  * Thirdweb Client ID (for UI components)

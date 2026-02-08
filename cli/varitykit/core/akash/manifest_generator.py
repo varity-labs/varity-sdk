@@ -37,11 +37,11 @@ class ManifestGenerator:
         """
         if templates_dir is None:
             # Use built-in templates
-            # From varietykit/core/akash/manifest_generator.py
-            # → parent (akash) → parent (core) → parent (varietykit) → parent (cli) → templates/akash
-            templates_dir = Path(__file__) if __file__ else Path(".").parent.parent.parent.parent / "templates" / "akash"
-
-        self.templates_dir = Path(templates_dir) if templates_dir else Path(".")
+            # From varitykit/core/akash/manifest_generator.py
+            # → parent (akash) → parent (core) → parent (varitykit) → parent (cli) → templates/akash
+            self.templates_dir = Path(__file__).parent.parent.parent.parent / "templates" / "akash"
+        else:
+            self.templates_dir = Path(templates_dir)
 
         if not self.templates_dir.exists():
             raise FileNotFoundError(f"Akash templates directory not found: {self.templates_dir}")

@@ -8,7 +8,7 @@
  * Currently deployed on Arbitrum Sepolia - migration required
  */
 
-import { varityL3Testnet } from '@varity-labs/sdk';
+import { varityL3Testnet } from '@varity-labs/sdk/chains';
 
 /**
  * Contract Addresses for Varity L3

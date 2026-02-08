@@ -189,43 +189,23 @@ Learn more: https://docs.varity.io/credentials
 `;
 }
 
+// Track if the credential warning has already been logged (avoid spam during build)
+let _credentialWarningLogged = false;
+
 /**
- * Log development credential usage warning
+ * Log development credential usage warning (only once per process)
  *
  * @param appId - Privy app ID being used
  * @param clientId - thirdweb client ID being used
- *
- * @example
- * ```typescript
- * logCredentialUsage(appId, clientId);
- * // Logs warning if using shared dev credentials
- * ```
  */
 export function logCredentialUsage(
   appId?: string,
   clientId?: string
 ): void {
-  if (!isUsingDevCredentials(appId, clientId)) {
-    return; // Using custom credentials - no warning needed
-  }
+  if (_credentialWarningLogged) return;
+  if (!isUsingDevCredentials(appId, clientId)) return;
 
-  const environment = process.env.NODE_ENV || 'development';
-
-  if (environment === 'development') {
-    console.log(
-      '🔧 Varity Dev Mode: Using shared development credentials.\n' +
-      '   Perfect for getting started! For production, get your own credentials:\n' +
-      '   - Privy: https://dashboard.privy.io\n' +
-      '   - thirdweb: https://thirdweb.com/dashboard'
-    );
-  } else {
-    const warning = getCredentialWarning(
-      environment as 'development' | 'staging' | 'production'
-    );
-    if (warning) {
-      console.error(warning);
-    }
-  }
+  _credentialWarningLogged = true;
 }
 
 /**

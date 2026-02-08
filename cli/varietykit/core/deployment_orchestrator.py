@@ -108,15 +108,16 @@ class DeploymentOrchestrator:
 
     @property
     def akash(self):
-        """Lazy load AkashDeployer (Agent 5 - Phase 2)"""
+        """Lazy load AkashConsoleDeployer (uses Console API - no CLI required)"""
         if self._akash is None:
             try:
-                from .akash.akash_deployer import AkashDeployer
+                from .akash.console_deployer import AkashConsoleDeployer
 
-                self._akash = AkashDeployer()
+                self._akash = AkashConsoleDeployer()
             except ImportError:
                 raise ImportError(
-                    "AkashDeployer not yet implemented. " "Waiting for Agent 5 to complete."
+                    "AkashConsoleDeployer not available. "
+                    "Ensure AKASH_CONSOLE_API_KEY is set."
                 )
         return self._akash
 
@@ -144,18 +145,21 @@ class DeploymentOrchestrator:
         return self._history
 
     def deploy(
-        self, project_path: str = ".", network: str = "varity", submit_to_store: bool = False
+        self,
+        project_path: str = ".",
+        network: str = "varity",
+        hosting: str = "ipfs",
+        submit_to_store: bool = False,
+        tier: str = "free",
     ) -> DeploymentResult:
         """
         Deploy application to decentralized infrastructure.
 
-        Phase 1 (MVP): Deploys frontend to IPFS only
-        Phase 2: Adds Akash deployment + App Store submission
-
         Args:
             project_path: Path to project directory (default: current directory)
             network: Target network (default: "varity")
-            submit_to_store: Auto-submit to App Store (Phase 2 only)
+            hosting: Hosting type - "ipfs" for static sites, "akash" for dynamic apps
+            submit_to_store: Auto-submit to App Store
 
         Returns:
             DeploymentResult with URLs, CID, and manifest
@@ -176,7 +180,7 @@ class DeploymentOrchestrator:
 
             # Step 2: Build project
             self._log(f"🔨 Building project ({project_info.build_command})...")
-            build_artifacts = self._build_project(project_info)
+            build_artifacts = self._build_project(project_path, project_info)
 
             if not build_artifacts.success:
                 raise BuildError("Build failed")
@@ -185,32 +189,61 @@ class DeploymentOrchestrator:
                 f"   Built {len(build_artifacts.files)} files ({build_artifacts.total_size_mb:.2f} MB)"
             )
 
-            # Step 3: Upload to IPFS
-            self._log("☁️  Uploading to IPFS...")
-            ipfs_result = self._upload_to_ipfs(build_artifacts)
+            # Step 3: Deploy based on hosting type
+            frontend_url = ""
+            thirdweb_url = ""
+            cid = ""
+            akash_result = None
+            ipfs_result = None
 
-            if not ipfs_result["success"]:
-                raise IPFSUploadError(ipfs_result.get("error_message", "IPFS upload failed"))
+            if hosting == "akash":
+                # Deploy to Akash Network
+                self._log("☁️  Deploying to Akash Network...")
+                akash_result = self._deploy_to_akash(project_info, build_artifacts)
 
-            self._log(f"   CID: {ipfs_result['cid']}")
-            self._log(f"   URL: {ipfs_result['gatewayUrl']}")
+                if not akash_result.success:
+                    raise DeploymentError(
+                        akash_result.error_message or "Akash deployment failed"
+                    )
+
+                frontend_url = akash_result.url or ""
+                self._log(f"   URL: {frontend_url}")
+                self._log(f"   Deployment ID: {akash_result.deployment_id}")
+                self._log(f"   Provider: {akash_result.provider}")
+                self._log(f"   Est. Monthly Cost: ${akash_result.estimated_monthly_cost:.2f}")
+            else:
+                # Default: Upload to IPFS
+                self._log("☁️  Uploading to IPFS...")
+                ipfs_result = self._upload_to_ipfs(build_artifacts)
+
+                if not ipfs_result["success"]:
+                    raise IPFSUploadError(ipfs_result.get("error_message", "IPFS upload failed"))
+
+                cid = ipfs_result["cid"]
+                frontend_url = ipfs_result["gatewayUrl"]
+                thirdweb_url = ipfs_result["thirdwebUrl"]
+                self._log(f"   CID: {cid}")
+                self._log(f"   URL: {frontend_url}")
 
             # Step 4: Create deployment manifest
-            manifest = self._create_manifest(project_info, build_artifacts, ipfs_result, network)
+            manifest = self._create_manifest(
+                project_info, build_artifacts, ipfs_result, network, hosting, akash_result
+            )
 
             # Step 5: Save deployment metadata
             deployment_id = self._save_deployment(manifest)
 
-            # Step 6: Submit to App Store (Phase 2)
+            # Step 6: Submit to App Store
             app_store_url = None
             if submit_to_store:
                 self._log("📝 Submitting to App Store...")
                 try:
                     app_store_result = self._submit_to_app_store(
                         project_info,
-                        {"frontend_url": ipfs_result["gatewayUrl"]},
+                        {"frontend_url": frontend_url},
                         project_path,
                         network,
+                        tier=tier,
                     )
 
                     if app_store_result and app_store_result.success:
@@ -239,9 +272,9 @@ class DeploymentOrchestrator:
             # Step 7: Return result
             result = DeploymentResult(
                 deployment_id=deployment_id,
-                frontend_url=ipfs_result["gatewayUrl"],
-                thirdweb_url=ipfs_result["thirdwebUrl"],
-                cid=ipfs_result["cid"],
+                frontend_url=frontend_url,
+                thirdweb_url=thirdweb_url,
+                cid=cid,
                 app_store_url=app_store_url,
                 manifest=manifest,
             )
@@ -284,17 +317,22 @@ class DeploymentOrchestrator:
         """
         return self.detector.detect(project_path)
 
-    def _build_project(self, project_info: ProjectInfo) -> BuildArtifacts:
+    def _build_project(self, project_path: str, project_info: ProjectInfo) -> BuildArtifacts:
         """
         Build project using BuildManager (Agent 1).
 
         Args:
+            project_path: Path to project directory
             project_info: Detected project information
 
         Returns:
             BuildArtifacts with build results
         """
-        return self.builder.build(project_info)
+        return self.builder.build(
+            project_path=project_path,
+            build_command=project_info.build_command,
+            output_dir=project_info.output_dir,
+        )
 
     def _upload_to_ipfs(self, build_artifacts: BuildArtifacts) -> dict:
         """
@@ -320,8 +358,10 @@ class DeploymentOrchestrator:
         self,
         project_info: ProjectInfo,
         build_artifacts: BuildArtifacts,
-        ipfs_result: dict,
+        ipfs_result: Optional[dict],
         network: str,
+        hosting: str = "ipfs",
+        akash_result=None,
     ) -> dict:
         """
         Create deployment manifest.
@@ -329,8 +369,10 @@ class DeploymentOrchestrator:
         Args:
             project_info: Detected project information
             build_artifacts: Build output
-            ipfs_result: IPFS upload result
+            ipfs_result: IPFS upload result (None if using Akash)
             network: Target network
+            hosting: Hosting type ("ipfs" or "akash")
+            akash_result: Akash deployment result (None if using IPFS)
 
         Returns:
             Deployment manifest dictionary
@@ -340,11 +382,12 @@ class DeploymentOrchestrator:
         timestamp_microseconds = int(now.timestamp() * 1_000_000)
         deployment_id = f"deploy-{timestamp_microseconds}"
 
-        return {
+        manifest = {
             "version": "1.0",
             "deployment_id": deployment_id,
             "timestamp": datetime.now().isoformat(),
             "network": network,
+            "hosting": hosting,
             "project": {
                 "type": project_info.project_type,
                 "framework_version": project_info.framework_version,
@@ -358,14 +401,29 @@ class DeploymentOrchestrator:
                 "time_seconds": build_artifacts.build_time_seconds,
                 "output_dir": build_artifacts.output_dir,
             },
-            "ipfs": {
+        }
+
+        # Add hosting-specific metadata
+        if hosting == "akash" and akash_result:
+            manifest["akash"] = {
+                "deployment_id": akash_result.deployment_id,
+                "lease_id": akash_result.lease_id,
+                "provider": akash_result.provider,
+                "url": akash_result.url,
+                "status": akash_result.status.value if akash_result.status else "unknown",
+                "price_per_block": akash_result.price_per_block,
+                "estimated_monthly_cost": akash_result.estimated_monthly_cost,
+            }
+        elif ipfs_result:
+            manifest["ipfs"] = {
                 "cid": ipfs_result["cid"],
                 "gateway_url": ipfs_result["gatewayUrl"],
                 "thirdweb_url": ipfs_result["thirdwebUrl"],
                 "total_size": ipfs_result.get("totalSize", 0),
                 "file_count": ipfs_result.get("fileCount", 0),
-            },
-        }
+            }
+
+        return manifest
 
     def _save_deployment(self, manifest: dict) -> str:
         """
@@ -441,7 +499,7 @@ class DeploymentOrchestrator:
         return deployments
 
     def _submit_to_app_store(
-        self, project_info: ProjectInfo, deployment_result: dict, project_path: str, network: str
+        self, project_info: ProjectInfo, deployment_result: dict, project_path: str, network: str, tier: str = "free"
     ):
         """
         Submit app to Varity App Store (Phase 2 - Agent 6).
@@ -484,6 +542,7 @@ class DeploymentOrchestrator:
                 deployment_result=deployment_result,
                 package_json_path=package_json_path,
                 chain_id=chain_id,
+                tier=tier,
             )
 
             # Submit to App Store contract
@@ -507,7 +566,7 @@ class DeploymentOrchestrator:
         deploy_backend: bool = False,
     ):
         """
-        Deploy to Akash Network (Phase 2).
+        Deploy to Akash Network using Console API.
 
         Args:
             project_info: Detected project information
@@ -521,16 +580,21 @@ class DeploymentOrchestrator:
             DeploymentError: If Akash deployment fails
         """
         from .akash.types import AkashError
+        from .akash.manifest_generator import ManifestGenerator
 
         try:
-            # Deploy frontend to Akash
-            result = self.akash.deploy_frontend(
+            # Generate SDL manifest
+            manifest_gen = ManifestGenerator()
+            manifest = manifest_gen.generate_frontend_manifest(
                 project_info,
                 build_artifacts,
                 cpu_units=0.5,
                 memory_size="512Mi",
                 storage_size="1Gi",
             )
+
+            # Deploy using Console API (simple!)
+            result = self.akash.deploy_from_manifest(manifest)
 
             # TODO: Backend deployment support
             if deploy_backend and project_info.has_backend:

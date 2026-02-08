@@ -338,7 +338,7 @@ export function SmartWalletProvider({ config, children }: SmartWalletProviderPro
   const trackGasUsageInBackground = async (txHash: string) => {
     try {
       // Dynamically import gas tracking to avoid bundle bloat
-      const { trackTransactionGasUsage } = await import('@varity-labs/sdk');
+      const { trackTransactionGasUsage } = await import('@varity-labs/sdk/tracking');
 
       if (!config.appIdentifier || !account) {
         return;

@@ -5,15 +5,16 @@ This module provides integration with Akash Network for deploying applications
 to decentralized compute infrastructure.
 
 Components:
+- AkashConsoleDeployer: Simple API-based deployment (RECOMMENDED)
 - ManifestGenerator: Creates Akash SDL manifests for deployments
-- AkashDeployer: Executes Akash CLI commands for deployment
-- ProviderSelector: Selects optimal Akash provider from bids
+- AkashDeployer: Legacy CLI-based deployment (deprecated)
 - Akash-specific type definitions
 
-Phase 2 Addition: Enables backend deployment to Akash Network
+Uses Akash Console Managed Wallet API - no local CLI or wallet required.
 """
 
-from .akash_deployer import AkashDeployer
+from .console_deployer import AkashConsoleDeployer
+from .akash_deployer import AkashDeployer  # Legacy, deprecated
 from .manifest_generator import ManifestGenerator
 from .provider_selector import ProviderSelector
 from .types import (
@@ -36,7 +37,8 @@ __all__ = [
     "AkashProviderError",
     "AkashTimeoutError",
     # Classes
+    "AkashConsoleDeployer",  # Recommended
     "ManifestGenerator",
-    "AkashDeployer",
-    "ProviderSelector",
+    "AkashDeployer",  # Legacy/deprecated
+    "ProviderSelector",  # Legacy/deprecated
 ]

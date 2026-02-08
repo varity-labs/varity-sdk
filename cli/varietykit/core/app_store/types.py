@@ -22,6 +22,46 @@ class AppCategory(str, Enum):
     OTHER = "Other"
 
 
+class InfrastructureTier(str, Enum):
+    """Infrastructure tier for billing (Revenue Stream #1)."""
+
+    FREE = "free"
+    STARTER = "starter"
+    GROWTH = "growth"
+    ENTERPRISE = "enterprise"
+
+
+class PartnershipService(str, Enum):
+    """Partnership services for billing (Revenue Stream #2).
+
+    These are auto-detected from package.json dependencies.
+    """
+
+    PRIVY = "privy"
+    THIRDWEB = "thirdweb"
+    FILECOIN = "filecoin"
+
+
+# Mapping of npm package patterns to service IDs
+SERVICE_DETECTION_PATTERNS = {
+    "@privy-io/react-auth": PartnershipService.PRIVY,
+    "@privy-io/server-auth": PartnershipService.PRIVY,
+    "thirdweb": PartnershipService.THIRDWEB,
+    "@thirdweb-dev/sdk": PartnershipService.THIRDWEB,
+    "@thirdweb-dev/react": PartnershipService.THIRDWEB,
+    "@web3-storage/w3up-client": PartnershipService.FILECOIN,
+    "@web3-storage/upload-client": PartnershipService.FILECOIN,
+    "web3.storage": PartnershipService.FILECOIN,
+}
+
+# Service display names and monthly prices (for CLI display)
+SERVICE_INFO = {
+    PartnershipService.PRIVY: {"name": "Privy (Authentication)", "price": 85},
+    PartnershipService.THIRDWEB: {"name": "thirdweb (Smart Contracts)", "price": 85},
+    PartnershipService.FILECOIN: {"name": "Filecoin (Storage)", "price": 170},
+}
+
+
 class AppStatusEnum(str, Enum):
     """App approval status in the store."""
 
@@ -48,6 +88,9 @@ class AppMetadata:
         category: App category (from varity field in package.json)
         screenshots: List of IPFS URLs to screenshot images (optional)
         chain_id: Chain ID where app is deployed (e.g., 33529 for Varity L3)
+        tier: Infrastructure tier for billing (free, starter, growth, enterprise)
+        services: Comma-separated list of detected partnership services (e.g., "privy,thirdweb")
+        has_payment_widget: MANDATORY - Whether app uses PaymentWidget from @varity/ui-kit
     """
 
     name: str
@@ -58,6 +101,9 @@ class AppMetadata:
     category: str
     screenshots: List[str]
     chain_id: int
+    tier: str = "free"
+    services: str = ""
+    has_payment_widget: bool = False  # MANDATORY for monetization
 
     def validate(self) -> None:
         """
@@ -91,6 +137,23 @@ class AppMetadata:
         if self.github_url and not self.github_url.startswith("http"):
             raise MetadataValidationError("Invalid GitHub URL")
 
+        # Validate tier
+        if self.tier not in [t.value for t in InfrastructureTier]:
+            raise MetadataValidationError(
+                f"Invalid tier: {self.tier}. "
+                f"Must be one of: {[t.value for t in InfrastructureTier]}"
+            )
+
+        # MANDATORY: PaymentWidget must be detected for monetization
+        # This ensures all payments go through Varity with 90/10 split
+        if not self.has_payment_widget:
+            raise MetadataValidationError(
+                "PaymentWidget not detected. All apps submitted to the Varity App Store "
+                "must use PaymentWidget from @varity/ui-kit for monetization. "
+                "This ensures the 90/10 revenue split (90% to developer, 10% to Varity). "
+                "Add PaymentWidget to your app and redeploy."
+            )
+
     def to_contract_params(self) -> dict:
         """
         Convert metadata to contract function parameters.
@@ -106,6 +169,9 @@ class AppMetadata:
             "githubUrl": self.github_url,
             "category": self.category,
             "screenshots": self.screenshots,
+            "chainId": self.chain_id,
+            "tier": self.tier,
+            "services": self.services,
         }
 
 

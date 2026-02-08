@@ -21,7 +21,7 @@ const ARBITRUM_SEPOLIA_RPC_URL = process.env.ARBITRUM_SEPOLIA_RPC_URL || "https:
 
 module.exports = {
   solidity: {
-    version: "0.8.19",
+    version: "0.8.20",
     settings: {
       optimizer: {
         enabled: true,
@@ -109,7 +109,7 @@ module.exports = {
 
   // Paths configuration
   paths: {
-    sources: "./",
+    sources: "./src",
     tests: "../tests/contracts",
     cache: "./cache",
     artifacts: "./artifacts",

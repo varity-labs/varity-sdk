@@ -1,0 +1,1 @@
+"use strict";exports.id=17780,exports.ids=[17780],exports.modules={17780:(a,b,c)=>{c.r(b),c.d(b,{eth_estimateGas:()=>e});var d=c(67270);async function e(a,b){let c=await a({method:"eth_estimateGas",params:[b]});return(0,d.uU)(c)}}};

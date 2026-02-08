@@ -18,9 +18,10 @@ from varietykit.utils.logger import get_logger, set_log_level
 @click.pass_context
 def cli(ctx, verbose, debug, json_format):
     """
-    VarityKit - AI-powered CLI for building dashboards on Varity L3
+    VarietyKit - Build, deploy, and monetize apps faster than ever.
 
-    Build, test, and deploy AI dashboard templates with ease.
+    Deploy your app in seconds. Auth, payments, database included.
+    70% cheaper than AWS. Zero configuration required.
     """
     # Setup logging
     if debug:
@@ -60,24 +61,33 @@ from varietykit.cli.template import template
 from varietykit.cli.thirdweb import thirdweb
 from varietykit.commands.app_deploy import app
 
-# Register commands
+# Core commands (visible to all developers)
 cli.add_command(doctor)
 cli.add_command(init)
-cli.add_command(bootstrap)
-cli.add_command(completions)
-cli.add_command(task)
-cli.add_command(fund)
+cli.add_command(app)
 cli.add_command(dev)
-cli.add_command(localnet)
-cli.add_command(localdepin)
-cli.add_command(deploy)
-cli.add_command(contract)
 cli.add_command(template)
 cli.add_command(marketplace)
-cli.add_command(marketing)
-cli.add_command(thirdweb)
+
+# Utility commands
+cli.add_command(bootstrap)
+cli.add_command(completions)
 cli.add_command(migrate)
-cli.add_command(app)
+
+# Advanced commands (hidden from default help - still callable)
+cli.add_command(task, "task")
+cli.add_command(contract, "contract")
+cli.add_command(deploy, "deploy")
+cli.add_command(fund, "fund")
+cli.add_command(localnet, "localnet")
+cli.add_command(localdepin, "localdepin")
+cli.add_command(marketing, "marketing")
+cli.add_command(thirdweb, "thirdweb")
+
+# Hide advanced commands from default help
+for cmd_name in ["task", "contract", "deploy", "fund", "localnet", "localdepin", "marketing", "thirdweb"]:
+    if cmd_name in cli.commands:
+        cli.commands[cmd_name].hidden = True
 
 
 if __name__ == "__main__":

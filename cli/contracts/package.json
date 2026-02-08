@@ -1,7 +1,7 @@
 {
   "name": "varietykit-contracts",
   "version": "1.0.0",
-  "description": "VarityKit Smart Contracts - Template Marketplace with 30/70 Revenue Split",
+  "description": "VarityKit Smart Contracts - Template Marketplace with 90/10 Revenue Split (90% creator, 10% platform)",
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",

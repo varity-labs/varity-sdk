@@ -1,7 +1,7 @@
 {
   "name": "@varity-labs/sdk",
   "version": "2.0.0-alpha.1",
-  "description": "Varity SDK - Build any app on Varity L3 with complete thirdweb integration (Engine, Nebula AI, Storage, Bridge, Gateway, x402)",
+  "description": "Varity SDK - Build, deploy, and monetize applications with auth, database, storage, and analytics",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -10,6 +10,26 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./chains": {
+      "types": "./dist/chains/index.d.ts",
+      "default": "./dist/chains/index.js"
+    },
+    "./blockchain": {
+      "types": "./dist/blockchain/index.d.ts",
+      "default": "./dist/blockchain/index.js"
+    },
+    "./thirdweb": {
+      "types": "./dist/thirdweb/index.d.ts",
+      "default": "./dist/thirdweb/index.js"
+    },
+    "./tracking": {
+      "types": "./dist/tracking/index.d.ts",
+      "default": "./dist/tracking/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/index.d.ts",
+      "default": "./dist/contracts/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -34,22 +54,15 @@
   },
   "keywords": [
     "varity",
-    "varity-l3",
-    "thirdweb",
-    "multi-chain",
-    "web3",
-    "blockchain",
-    "erc-4337",
-    "account-abstraction",
-    "gasless-transactions",
-    "depin",
-    "arbitrum",
-    "base",
-    "ipfs",
-    "arweave",
-    "cross-chain",
-    "ai-blockchain",
-    "nebula-ai"
+    "sdk",
+    "deploy",
+    "auth",
+    "database",
+    "storage",
+    "analytics",
+    "payments",
+    "saas",
+    "app-development"
   ],
   "author": "Varity",
   "license": "MIT",

@@ -45,7 +45,19 @@ def app():
     type=click.Choice(["varity", "arbitrum", "base"], case_sensitive=False),
 )
 @click.option(
-    "--submit-to-store", is_flag=True, help="Auto-submit to Varity App Store (Phase 2 feature)"
+    "--hosting",
+    default="ipfs",
+    help="Hosting type: 'ipfs' for static sites, 'akash' for dynamic apps (default: ipfs)",
+    type=click.Choice(["ipfs", "akash"], case_sensitive=False),
+)
+@click.option(
+    "--tier",
+    default="free",
+    help="Infrastructure tier: free, starter ($49/mo), growth ($99/mo), enterprise ($199/mo)",
+    type=click.Choice(["free", "starter", "growth", "enterprise"], case_sensitive=False),
+)
+@click.option(
+    "--submit-to-store", is_flag=True, help="Auto-submit to Varity App Store"
 )
 @click.option(
     "--path",
@@ -54,29 +66,30 @@ def app():
     type=click.Path(exists=True),
 )
 @click.pass_context
-def deploy(ctx, network, submit_to_store, path):
+def deploy(ctx, network, hosting, tier, submit_to_store, path):
     """
     Deploy application to decentralized infrastructure.
 
     This command will:
     1. Detect your project type (Next.js, React, Vue)
     2. Build your application
-    3. Upload to IPFS via thirdweb Storage
+    3. Deploy to IPFS (static sites) or Akash (dynamic apps)
     4. Return deployment URL
 
     \b
-    Phase 1 (Current): IPFS deployment for frontend apps
-    Phase 2 (Coming): Akash deployment + App Store submission
+    Hosting Options:
+      • ipfs: Static sites (default) - Free via thirdweb
+      • akash: Dynamic apps with backend - Uses Akash Console API
 
     \b
     Examples:
-      # Deploy current directory
+      # Deploy static site to IPFS
       varietykit app deploy
 
-      # Deploy specific directory
-      varietykit app deploy --path ./my-app
+      # Deploy dynamic app to Akash
+      varietykit app deploy --hosting akash
 
-      # Deploy and submit to App Store (Phase 2)
+      # Deploy and submit to App Store
       varietykit app deploy --submit-to-store
 
     \b
@@ -86,13 +99,9 @@ def deploy(ctx, network, submit_to_store, path):
       • Vue 3+
 
     \b
-    Before Deploying:
-      1. Make sure THIRDWEB_CLIENT_ID is set:
-         export THIRDWEB_CLIENT_ID=your_client_id
-         Get one at: https://thirdweb.com/dashboard
-
-      2. Ensure your app builds successfully:
-         npm run build
+    Environment Variables:
+      • THIRDWEB_CLIENT_ID - Required for IPFS hosting
+      • AKASH_CONSOLE_API_KEY - Required for Akash hosting
     """
     logger = ctx.obj["logger"]
 
@@ -106,42 +115,84 @@ def deploy(ctx, network, submit_to_store, path):
             )
         )
 
-        # Show Phase 2 warning if --submit-to-store is used
+        # Note about submission flow
         if submit_to_store:
-            console.print("\n[yellow]⚠️  Note: --submit-to-store is a Phase 2 feature[/yellow]")
-            console.print("   Manual submission available at: https://store.varity.so/submit\n")
+            console.print("\n[cyan]📝 App Store submission will open in browser after deployment[/cyan]\n")
 
         # Convert path to absolute
         project_path = Path(path).resolve()
         console.print(f"\n[cyan]Project:[/cyan] {project_path}")
-        console.print(f"[cyan]Network:[/cyan] {network}\n")
+        console.print(f"[cyan]Network:[/cyan] {network}")
+        console.print(f"[cyan]Hosting:[/cyan] {hosting}")
+        console.print(f"[cyan]Tier:[/cyan] {tier}\n")
 
         # Import and use DeploymentOrchestrator
-        from varietykit.core.deployment_orchestrator import DeploymentOrchestrator
+        from varitykit.core.deployment_orchestrator import DeploymentOrchestrator
 
         orchestrator = DeploymentOrchestrator(verbose=False)  # We'll handle output ourselves
 
         # Execute deployment
         result = orchestrator.deploy(
-            project_path=str(project_path), network=network, submit_to_store=submit_to_store
+            project_path=str(project_path),
+            network=network,
+            hosting=hosting,
+            tier=tier,
+            submit_to_store=submit_to_store,
         )
 
         # Display success
         console.print("\n[bold green]✅ Deployment Successful![/bold green]\n")
-        console.print(
-            Panel.fit(
-                f"[bold cyan]Deployment URLs[/bold cyan]\n\n"
-                f"[cyan]Frontend URL:[/cyan] {result.frontend_url}\n"
-                f"[cyan]thirdweb CDN:[/cyan] {result.thirdweb_url}\n"
-                f"[cyan]IPFS CID:[/cyan] {result.cid}\n"
-                f"[cyan]Deployment ID:[/cyan] {result.deployment_id}\n\n"
-                f"[dim]Gateway: https://ipfs.io/ipfs/{result.cid}[/dim]",
-                border_style="green",
-            )
-        )
 
-        if submit_to_store and result.app_store_url:
-            console.print(f"\n[cyan]App Store:[/cyan] {result.app_store_url}\n")
+        if hosting == "akash":
+            # Akash deployment output
+            akash_info = result.manifest.get("akash", {})
+            console.print(
+                Panel.fit(
+                    f"[bold cyan]Akash Deployment[/bold cyan]\n\n"
+                    f"[cyan]App URL:[/cyan] {result.frontend_url}\n"
+                    f"[cyan]Akash Deployment ID:[/cyan] {akash_info.get('deployment_id', 'N/A')}\n"
+                    f"[cyan]Provider:[/cyan] {akash_info.get('provider', 'N/A')}\n"
+                    f"[cyan]Est. Monthly Cost:[/cyan] ${akash_info.get('estimated_monthly_cost', 0):.2f}\n"
+                    f"[cyan]Deployment ID:[/cyan] {result.deployment_id}",
+                    border_style="green",
+                )
+            )
+        else:
+            # IPFS deployment output
+            console.print(
+                Panel.fit(
+                    f"[bold cyan]IPFS Deployment[/bold cyan]\n\n"
+                    f"[cyan]App URL:[/cyan] {result.frontend_url}\n"
+                    f"[cyan]IPFS CID:[/cyan] {result.cid}\n"
+                    f"[cyan]Deployment ID:[/cyan] {result.deployment_id}\n\n"
+                    f"[dim]Alt Gateway: https://ipfs.io/ipfs/{result.cid}[/dim]",
+                    border_style="green",
+                )
+            )
+
+        # Open browser for App Store submission
+        if submit_to_store:
+            import webbrowser
+            import urllib.parse
+
+            # Build submission URL with deployment info
+            params = {
+                'cid': result.cid,
+                'tier': tier,
+                'deployment_id': result.deployment_id,
+            }
+            query_string = urllib.parse.urlencode(params)
+            submission_url = f"https://developer.store.varity.so/submit?{query_string}"
+
+            console.print(f"\n[cyan]📝 Opening App Store submission...[/cyan]")
+            console.print(f"[dim]{submission_url}[/dim]\n")
+
+            # Open browser
+            webbrowser.open(submission_url)
+
+            console.print("[yellow]→ Sign in with Privy[/yellow]")
+            console.print("[yellow]→ Complete payment for tier: {tier}[/yellow]")
+            console.print("[yellow]→ Submit app for review[/yellow]\n")
 
         logger.info(f"Deployment successful: {result.deployment_id}")
 
@@ -182,7 +233,7 @@ def list(ctx, network, limit):
 
     try:
         from rich.table import Table
-        from varietykit.core.deployment_history import DeploymentHistory
+        from varitykit.core.deployment_history import DeploymentHistory
 
         history = DeploymentHistory()
         deployments = history.list_deployments(network=network, limit=limit)
@@ -269,7 +320,7 @@ def info(ctx, deployment_id):
     logger = ctx.obj["logger"]
 
     try:
-        from varietykit.core.deployment_history import DeploymentHistory
+        from varitykit.core.deployment_history import DeploymentHistory
 
         history = DeploymentHistory()
         deployment = history.get_deployment(deployment_id)
@@ -419,7 +470,7 @@ def rollback(ctx, deployment_id, confirm):
     logger = ctx.obj["logger"]
 
     try:
-        from varietykit.core.deployment_history import DeploymentHistory
+        from varitykit.core.deployment_history import DeploymentHistory
 
         history = DeploymentHistory()
         deployment = history.get_deployment(deployment_id)
@@ -522,7 +573,7 @@ def status(ctx, network):
     logger = ctx.obj["logger"]
 
     try:
-        from varietykit.core.deployment_history import DeploymentHistory
+        from varitykit.core.deployment_history import DeploymentHistory
 
         history = DeploymentHistory()
         latest = history.get_latest(network=network)

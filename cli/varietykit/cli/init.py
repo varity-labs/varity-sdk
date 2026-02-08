@@ -2,7 +2,7 @@
 Init command - scaffolds new project from template using AI Configuration Engine
 """
 
-import asyncio
+import shutil
 from pathlib import Path
 
 import click
@@ -10,10 +10,58 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.prompt import Confirm, Prompt
-from varietykit.core.ai_engine import AIConfigurationEngine
-from varietykit.core.config import ConfigManager, Environment, VarityConfig
+from varietykit.core.config import ConfigManager, Environment
 from varietykit.core.templates import TemplateManager
 from varietykit.utils.validators import ConfigValidator
+
+
+def _setup_github_workflow(console: Console) -> bool:
+    """
+    Create GitHub Actions workflow for Akash deployment.
+
+    Copies the varity-deploy.yml template to .github/workflows/
+
+    Returns:
+        True if successful, False otherwise
+    """
+    # Create workflow directory
+    workflow_dir = Path('.github/workflows')
+    workflow_dir.mkdir(parents=True, exist_ok=True)
+
+    workflow_path = workflow_dir / 'varity-deploy.yml'
+
+    # Get template path
+    template_path = Path(__file__).parent.parent / 'templates' / 'github-actions' / 'varity-deploy.yml'
+
+    if not template_path.exists():
+        console.print(f"[red]Template not found: {template_path}[/red]")
+        return False
+
+    # Copy template
+    shutil.copy(template_path, workflow_path)
+
+    console.print("[green]Created .github/workflows/varity-deploy.yml[/green]")
+    console.print("")
+    console.print("[bold]Required GitHub Secrets:[/bold]")
+    console.print("  Add these secrets to your repository (Settings > Secrets > Actions):")
+    console.print("")
+    console.print("  [cyan]AKASH_CONSOLE_API_KEY[/cyan]")
+    console.print("    Get from: console.akash.network > Settings > API Keys")
+    console.print("")
+    console.print("  [cyan]GHCR_TOKEN[/cyan]")
+    console.print("    GitHub PAT with write:packages scope")
+    console.print("    Create at: github.com > Settings > Developer Settings > Personal access tokens")
+    console.print("")
+    console.print("[bold]Next steps:[/bold]")
+    console.print("  1. Add the secrets above to your GitHub repository")
+    console.print("  2. Commit and push the workflow file:")
+    console.print("     [dim]git add .github/workflows/varity-deploy.yml[/dim]")
+    console.print("     [dim]git commit -m 'Add Varity deployment workflow'[/dim]")
+    console.print("     [dim]git push origin main[/dim]")
+    console.print("")
+    console.print("  [green]On push to main, your app will automatically deploy to Akash![/green]")
+
+    return True
 
 
 @click.command()
@@ -22,31 +70,53 @@ from varietykit.utils.validators import ConfigValidator
     "--template",
     "-t",
     type=click.Choice(
-        ["finance", "healthcare", "retail", "iso-merchant", "generic"], case_sensitive=False
+        ["saas-starter"], case_sensitive=False
     ),
-    help="Template to use for project",
+    help="Template to use (default: saas-starter)",
 )
 @click.option("--path", "-p", type=click.Path(), help="Path where project should be created")
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompts")
+@click.option("--github", is_flag=True, help="Add GitHub Actions workflow for Akash deployment")
 @click.pass_context
-def init(ctx, project_name, template, path, yes):
+def init(ctx, project_name, template, path, yes, github):
     """
-    Initialize a new Varity dashboard project
+    Initialize a new Varity project
 
     Creates a new project from a template with AI-powered configuration.
 
     Examples:
-        varietykit init my-finance-dashboard
-        varietykit init --template finance --path ./projects/acme-bank
+        varietykit init my-app
+        varietykit init --template saas-starter --path ./projects/my-app
         varietykit init  (interactive mode)
+        varietykit init --github  (add GitHub Actions deployment workflow)
     """
     console = Console()
     logger = ctx.obj["logger"]
 
+    # Handle --github flag (standalone mode)
+    if github:
+        console.print(
+            Panel.fit(
+                "[bold cyan]VarityKit GitHub Actions Setup[/bold cyan]\n"
+                "Setting up automated Akash deployment...",
+                border_style="cyan",
+            )
+        )
+        console.print("")
+
+        success = _setup_github_workflow(console)
+        if success:
+            logger.info("GitHub Actions workflow created successfully")
+            ctx.exit(0)
+        else:
+            logger.error("Failed to create GitHub Actions workflow")
+            ctx.exit(1)
+        return
+
     console.print(
         Panel.fit(
             "[bold cyan]VarityKit Project Initializer[/bold cyan]\n"
-            "Let's create your new AI dashboard!",
+            "Let's create your new application!",
             border_style="cyan",
         )
     )
@@ -54,7 +124,7 @@ def init(ctx, project_name, template, path, yes):
     # Interactive mode if no project name provided
     if not project_name:
         console.print("\n[bold]Project Configuration[/bold]\n")
-        project_name = Prompt.ask("Project name", default="my-varity-dashboard")
+        project_name = Prompt.ask("Project name", default="my-varity-app")
 
     # Validate project name
     validation = ConfigValidator.validate_project_name(project_name)

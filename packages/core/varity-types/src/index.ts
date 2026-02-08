@@ -2,7 +2,7 @@
  * Varity Types - Main Export File
  *
  * This package provides comprehensive type definitions for the Varity SDK,
- * including storage backends, blockchain interactions, AI/ML, and more.
+ * including storage backends, API integration, and AI/ML.
  *
  * @packageDocumentation
  */
@@ -235,8 +235,9 @@ export type {
   GCSServiceAccountToken,
   VarityAPIKey,
   RateLimit,
-  Web3AuthRequest,
-  Web3AuthResult,
+  // Advanced: Available via direct import from submodule
+  // Web3AuthRequest,
+  // Web3AuthResult,
   AuthorizationPolicy,
   PolicyStatement,
   PolicyCondition,
@@ -262,67 +263,56 @@ export {
 } from './auth'
 
 // ============================================================================
-// Thirdweb Integration Types (NEW - Varity L3 Blockchain)
+// Advanced: Thirdweb Integration Types
+// Available via direct import: import type { ThirdwebClient } from '@varity/types/thirdweb'
 // ============================================================================
+// export type {
+//   ThirdwebClient,
+//   Chain,
+//   PreparedTransaction,
+//   ThirdwebContract,
+//   PrepareContractCallOptions,
+//   ReadContractOptions,
+//   Hex,
+//   Address,
+//   VarityChain,
+//   VarityChainConstants,
+//   VarityWalletConfig,
+//   VaritySmartWalletOptions,
+//   VarityWalletConnectionResult,
+//   VarityContractConfig,
+//   VarityDeploymentParams,
+//   VarityDeploymentResult,
+//   VarityContractReadOptions,
+//   VarityContractWriteOptions,
+//   SIWEMessage,
+//   SIWEVerifyResult,
+//   SIWEAuthPayload,
+//   VarityGasEstimation,
+//   VarityTransactionFeeOptions,
+//   VarityEventFilter,
+//   VarityContractEvent,
+//   USDCAmount,
+//   ThirdwebEthersHybrid,
+//   ThirdwebWrapperConfig,
+//   ContractDeployResponse,
+//   ContractCallResponse,
+//   SIWEAuthResponse,
+//   ChainInfoResponse,
+//   WalletBalanceResponse,
+//   ThirdwebClientConfig,
+//   ThirdwebAuthConfig,
+//   ThirdwebStorageConfig
+// } from './thirdweb'
 
-// Re-export Thirdweb SDK core types
-export type {
-  // Core Thirdweb types (available in v5)
-  ThirdwebClient,
-  Chain,
-  PreparedTransaction,
-  ThirdwebContract,
-  PrepareContractCallOptions,
-  ReadContractOptions,
-  Hex,
-  Address,
-
-  // Varity-specific Thirdweb types
-  VarityChain,
-  VarityChainConstants,
-  VarityWalletConfig,
-  VaritySmartWalletOptions,
-  VarityWalletConnectionResult,
-  VarityContractConfig,
-  VarityDeploymentParams,
-  VarityDeploymentResult,
-  VarityContractReadOptions,
-  VarityContractWriteOptions,
-  SIWEMessage,
-  SIWEVerifyResult,
-  SIWEAuthPayload,
-  VarityGasEstimation,
-  VarityTransactionFeeOptions,
-  VarityEventFilter,
-  VarityContractEvent,
-  USDCAmount,
-
-  // Wrapper Pattern Types (NEW)
-  ThirdwebEthersHybrid,
-  ThirdwebWrapperConfig,
-
-  // API Response Types (NEW)
-  ContractDeployResponse,
-  ContractCallResponse,
-  SIWEAuthResponse,
-  ChainInfoResponse,
-  WalletBalanceResponse,
-
-  // Configuration Types (NEW)
-  ThirdwebClientConfig,
-  ThirdwebAuthConfig,
-  ThirdwebStorageConfig
-} from './thirdweb'
-
-// Export Thirdweb utility functions
-export {
-  isVarityChain,
-  isSIWEMessage,
-  formatUSDC,
-  parseUSDC,
-  VARITY_L3_TESTNET,
-  USDC_DECIMALS
-} from './thirdweb'
+// export {
+//   isVarityChain,
+//   isSIWEMessage,
+//   formatUSDC,
+//   parseUSDC,
+//   VARITY_L3_TESTNET,
+//   USDC_DECIMALS
+// } from './thirdweb'
 
 // ============================================================================
 // Re-export SDK Types (for backward compatibility)

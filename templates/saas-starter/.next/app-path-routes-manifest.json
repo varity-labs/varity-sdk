@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/login/page": "/login",
+  "/page": "/",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/settings/page": "/dashboard/settings",
+  "/dashboard/team/page": "/dashboard/team",
+  "/dashboard/tasks/page": "/dashboard/tasks",
+  "/dashboard/projects/page": "/dashboard/projects"
+}

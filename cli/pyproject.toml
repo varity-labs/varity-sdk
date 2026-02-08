@@ -33,27 +33,11 @@ dependencies = [
     "jinja2>=3.1.0",
     "python-dotenv>=1.0.0",
 
-    # Security: CRITICAL severity fixes
-    "aiohttp>=3.13.3",  # CVE fix: 14 vulnerabilities (CRITICAL)
-    "authlib>=1.6.6",  # CVE fix: 5 vulnerabilities (CRITICAL)
-    "ecdsa>=0.19.2",  # CVE fix: Signature malleability (CRITICAL)
-    "python-jose>=3.4.0",  # CVE fix: JWT bypass (CRITICAL)
-
-    # Security: HIGH severity fixes
-    "black>=24.3.0",  # CVE fix: ReDoS (HIGH) - moved from dev deps
-    "copier>=9.11.2",  # CVE fix: 4 vulnerabilities (HIGH)
-    "pillow>=10.3.0",  # CVE fix: 2 vulnerabilities (HIGH)
-    "pynacl>=1.6.2",  # CVE fix: 1 vulnerability (HIGH)
-
-    # Security: MEDIUM severity fixes
-    "configobj>=5.0.9",  # CVE fix: 1 vulnerability
-    "fastapi>=0.109.1",  # CVE fix: 1 vulnerability
-    "filelock>=3.20.3",  # CVE fix: 2 vulnerabilities
-    "h2>=4.3.0",  # CVE fix: HTTP/2 vulnerability
-    "idna>=3.7",  # CVE fix: 1 vulnerability
-    "marshmallow>=3.26.2",  # CVE fix: 1 vulnerability
-    "python-multipart>=0.0.7",  # CVE fix: 1 vulnerability
-    "fonttools>=4.60.2",  # CVE fix: 1 vulnerability (LOW)
+    # Security: Reasonable version constraints
+    "aiohttp>=3.9.0",
+    "authlib>=1.3.0",
+    "ecdsa>=0.18.0",
+    "python-jose>=3.3.0"
 ]
 
 [project.optional-dependencies]

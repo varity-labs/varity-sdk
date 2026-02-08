@@ -1,0 +1,252 @@
+name: Varity Deploy to Akash
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: false
+        default: 'production'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: varity-labs/${{ github.event.repository.name }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Nixpacks
+        run: |
+          curl -sSL https://nixpacks.com/install.sh | bash
+
+      - name: Build Docker image with Nixpacks
+        run: |
+          nixpacks build . --name ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image to GHCR
+        run: |
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy to Akash
+        id: deploy
+        env:
+          AKASH_CONSOLE_API_KEY: ${{ secrets.AKASH_CONSOLE_API_KEY }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: |
+          # Generate SDL manifest
+          cat > deploy.yaml << 'SDLEOF'
+          version: "2.0"
+
+          services:
+            web:
+              image: ghcr.io/varity-labs/${{ github.event.repository.name }}:${{ github.sha }}
+              credentials:
+                host: https://ghcr.io
+                username: ${{ github.actor }}
+                password: ${GHCR_TOKEN}
+              expose:
+                - port: 3000
+                  as: 80
+                  to:
+                    - global: true
+
+          profiles:
+            compute:
+              web:
+                resources:
+                  cpu:
+                    units: 0.5
+                  memory:
+                    size: 512Mi
+                  storage:
+                    size: 1Gi
+
+            placement:
+              akash:
+                pricing:
+                  web:
+                    denom: uakt
+                    amount: 1000
+
+          deployment:
+            web:
+              akash:
+                profile: web
+                count: 1
+          SDLEOF
+
+          # Substitute environment variables in SDL
+          envsubst < deploy.yaml > deploy-final.yaml
+
+          # Read SDL content and escape for JSON
+          SDL_CONTENT=$(cat deploy-final.yaml | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+
+          # Create deployment via Akash Console API
+          RESPONSE=$(curl -s -X POST "https://console-api.akash.network/v1/deployments" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $AKASH_CONSOLE_API_KEY" \
+            -d "{\"data\": {\"sdl\": $SDL_CONTENT, \"deposit\": 5}}")
+
+          echo "Deployment response: $RESPONSE"
+
+          # Extract deployment sequence
+          DSEQ=$(echo $RESPONSE | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data',{}).get('dseq',''))")
+
+          if [ -z "$DSEQ" ]; then
+            echo "::error::Failed to create deployment"
+            exit 1
+          fi
+
+          echo "Deployment ID: $DSEQ"
+          echo "DSEQ=$DSEQ" >> $GITHUB_OUTPUT
+
+      - name: Wait for bids and create lease
+        id: lease
+        env:
+          AKASH_CONSOLE_API_KEY: ${{ secrets.AKASH_CONSOLE_API_KEY }}
+        run: |
+          DSEQ="${{ steps.deploy.outputs.DSEQ }}"
+          echo "Waiting for bids on deployment $DSEQ..."
+
+          # Wait for bids (up to 2 minutes)
+          for i in {1..24}; do
+            BIDS=$(curl -s "https://console-api.akash.network/v1/bids?dseq=$DSEQ" \
+              -H "x-api-key: $AKASH_CONSOLE_API_KEY")
+
+            BID_COUNT=$(echo $BIDS | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('data',[])))")
+
+            if [ "$BID_COUNT" -gt "0" ]; then
+              echo "Received $BID_COUNT bids"
+
+              # Get the cheapest bid
+              BEST_BID=$(echo $BIDS | python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          bids=d.get('data',[])
+          if bids:
+              bids.sort(key=lambda b: float(b.get('bid',{}).get('price',{}).get('amount','999999')))
+              best=bids[0]
+              bid_id=best.get('bid',{}).get('id',{})
+              print(json.dumps({
+                  'provider': bid_id.get('provider',''),
+                  'gseq': bid_id.get('gseq',1),
+                  'oseq': bid_id.get('oseq',1)
+              }))
+          ")
+
+              PROVIDER=$(echo $BEST_BID | python3 -c "import sys,json; print(json.load(sys.stdin)['provider'])")
+              GSEQ=$(echo $BEST_BID | python3 -c "import sys,json; print(json.load(sys.stdin)['gseq'])")
+              OSEQ=$(echo $BEST_BID | python3 -c "import sys,json; print(json.load(sys.stdin)['oseq'])")
+
+              echo "Selected provider: $PROVIDER"
+              echo "PROVIDER=$PROVIDER" >> $GITHUB_OUTPUT
+              echo "GSEQ=$GSEQ" >> $GITHUB_OUTPUT
+              echo "OSEQ=$OSEQ" >> $GITHUB_OUTPUT
+              break
+            fi
+
+            echo "Waiting for bids... (attempt $i/24)"
+            sleep 5
+          done
+
+          if [ -z "$PROVIDER" ]; then
+            echo "::error::No bids received within timeout"
+            exit 1
+          fi
+
+      - name: Create lease
+        id: create_lease
+        env:
+          AKASH_CONSOLE_API_KEY: ${{ secrets.AKASH_CONSOLE_API_KEY }}
+        run: |
+          DSEQ="${{ steps.deploy.outputs.DSEQ }}"
+          PROVIDER="${{ steps.lease.outputs.PROVIDER }}"
+          GSEQ="${{ steps.lease.outputs.GSEQ }}"
+          OSEQ="${{ steps.lease.outputs.OSEQ }}"
+
+          # Get manifest from deployment
+          DEPLOYMENT=$(curl -s "https://console-api.akash.network/v1/deployments/$DSEQ" \
+            -H "x-api-key: $AKASH_CONSOLE_API_KEY")
+
+          MANIFEST=$(echo $DEPLOYMENT | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d.get('data',{}).get('manifest','')))")
+
+          # Create lease
+          LEASE_RESPONSE=$(curl -s -X POST "https://console-api.akash.network/v1/leases" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $AKASH_CONSOLE_API_KEY" \
+            -d "{
+              \"manifest\": $MANIFEST,
+              \"leases\": [{
+                \"dseq\": \"$DSEQ\",
+                \"gseq\": $GSEQ,
+                \"oseq\": $OSEQ,
+                \"provider\": \"$PROVIDER\"
+              }]
+            }")
+
+          echo "Lease response: $LEASE_RESPONSE"
+
+      - name: Wait for deployment URL
+        env:
+          AKASH_CONSOLE_API_KEY: ${{ secrets.AKASH_CONSOLE_API_KEY }}
+        run: |
+          DSEQ="${{ steps.deploy.outputs.DSEQ }}"
+          echo "Waiting for deployment URL..."
+
+          # Poll for deployment URL (up to 5 minutes)
+          for i in {1..30}; do
+            DEPLOYMENT=$(curl -s "https://console-api.akash.network/v1/deployments/$DSEQ" \
+              -H "x-api-key: $AKASH_CONSOLE_API_KEY")
+
+            URL=$(echo $DEPLOYMENT | python3 -c "
+          import sys,json
+          try:
+              d=json.load(sys.stdin)
+              leases=d.get('data',{}).get('leases',[])
+              if leases:
+                  services=leases[0].get('status',{}).get('services',{})
+                  web=services.get('web',{})
+                  uris=web.get('uris',[])
+                  if uris:
+                      print(uris[0])
+          except:
+              pass
+          ")
+
+            if [ -n "$URL" ]; then
+              echo "::notice::Deployment URL: https://$URL"
+              echo "DEPLOYMENT_URL=https://$URL" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            echo "Waiting for URL... (attempt $i/30)"
+            sleep 10
+          done
+
+          echo "::warning::Deployment created but URL not available yet. Check Akash Console for status."
+          echo "Deployment DSEQ: $DSEQ"

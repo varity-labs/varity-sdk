@@ -15,6 +15,7 @@ class ProjectInfo:
     Information about a detected project.
 
     Attributes:
+        name: Project name (from package.json or directory name)
         project_type: Type of project ('nextjs', 'react', 'vue', 'nodejs', 'python')
         framework_version: Version of the framework (e.g., '14.0.0')
         build_command: Command to build the project (e.g., 'npm run build')
@@ -23,6 +24,7 @@ class ProjectInfo:
         has_backend: Whether the project includes a backend (server/ directory)
     """
 
+    name: str
     project_type: str
     framework_version: Optional[str]
     build_command: str

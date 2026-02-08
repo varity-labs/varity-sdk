@@ -30,9 +30,9 @@ from varietykit.utils.validators import ConfigValidator
 @click.pass_context
 def template(ctx):
     """
-    Create, test, and manage dashboard templates
+    Create, test, and manage application templates
 
-    Build company-specific AI Dashboard templates with AI assistance.
+    Build application templates with AI assistance.
     Create production-ready templates in minutes, not weeks.
 
     \b
@@ -61,8 +61,8 @@ def template(ctx):
     \b
     Revenue Sharing:
       • Publish templates to Varity marketplace
-      • 70/30 split (you get 70%)
-      • Automatic payments via Varity L3
+      • 90/10 split (you get 90%)
+      • Automatic revenue sharing
       • Track downloads and revenue
     """
     pass
@@ -78,7 +78,7 @@ def create(ctx, industry, name, output, interactive):
     """
     Create a new template with AI assistance
 
-    Guides you through creating a production-ready dashboard template
+    Guides you through creating a production-ready application template
     with AI-generated components, tests, and documentation.
 
     \b
@@ -97,7 +97,7 @@ def create(ctx, industry, name, output, interactive):
     \b
     What AI Generates:
       • 5-12 React components (TypeScript)
-      • Dashboard pages with routing
+      • Application pages with routing
       • API integration code
       • TypeScript types and interfaces
       • Tailwind CSS styling
@@ -116,7 +116,7 @@ def create(ctx, industry, name, output, interactive):
     console.print(
         Panel.fit(
             "[bold cyan]VarityKit Template Creator[/bold cyan]\n"
-            "AI-powered template generation for company-specific dashboards\n\n"
+            "AI-powered template generation for applications\n\n"
             "[dim]Create production-ready templates in minutes[/dim]",
             border_style="cyan",
         )
