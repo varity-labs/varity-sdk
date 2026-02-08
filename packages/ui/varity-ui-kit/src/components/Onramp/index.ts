@@ -1,11 +1,10 @@
 /**
  * Onramp Components Export
  *
- * Thirdweb Pay for buying crypto with fiat currency
+ * Fiat onramp via Privy (useFundWallet) on Arbitrum One
  * - Credit/Debit card payments
  * - Apple Pay & Google Pay
- * - KYC verification handling
- * - Transaction status tracking
+ * - Powered by MoonPay / Coinbase providers
  */
 
 export { BuyUSDCButton } from './BuyUSDCButton';

@@ -1,24 +1,23 @@
 /**
- * OnrampWidget - Full embedded Thirdweb Pay widget
+ * OnrampWidget - Full embedded fiat onramp widget
  *
- * Complete payment widget with KYC, payment processing, and status tracking
- * Automatically handles payment providers, KYC verification, and transaction receipts
+ * Complete payment widget with purchase tracking and status display
+ * Uses Privy's useFundWallet for credit card purchases on Arbitrum One
+ * Supports credit card, debit card, Apple Pay, Google Pay
  *
  * @example
  * ```tsx
  * <OnrampWidget
  *   walletAddress="0x..."
- *   clientId="your-client-id"
  *   defaultAmount={100}
  *   onComplete={(status) => console.log('Purchase:', status)}
  * />
  * ```
  */
 
-import React, { useState } from 'react';
-import { PayEmbed } from 'thirdweb/react';
-import { createThirdwebClient } from 'thirdweb';
-import { varityL3Testnet, VARITY_USDC_ADDRESS } from '../../config/chains';
+import React, { useState, useCallback } from 'react';
+import { useFundWallet } from '@privy-io/react-auth';
+import { arbitrum } from 'viem/chains';
 
 export interface Purchase {
   id: string;
@@ -31,7 +30,8 @@ export interface Purchase {
 
 export interface OnrampWidgetProps {
   walletAddress: string;
-  clientId: string;
+  /** @deprecated clientId is no longer needed — Privy uses the app-level config */
+  clientId?: string;
   defaultAmount?: number;
   minAmount?: number;
   maxAmount?: number;
@@ -42,23 +42,16 @@ export interface OnrampWidgetProps {
 }
 
 export function OnrampWidget({
-  walletAddress: _walletAddress,
-  clientId,
+  walletAddress,
   defaultAmount = 100,
-  minAmount = 10,
-  maxAmount = 10000,
   onComplete,
   onError,
   showHistory = true,
   theme = 'light'
 }: OnrampWidgetProps) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [currentPurchase, setCurrentPurchase] = useState<Purchase | null>(null);
-
-  const client = React.useMemo(
-    () => createThirdwebClient({ clientId }),
-    [clientId]
-  );
+  const [isLoading, setIsLoading] = useState(false);
+  const { fundWallet } = useFundWallet();
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -84,6 +77,40 @@ export function OnrampWidget({
     }
   };
 
+  const handleBuy = useCallback(async () => {
+    if (!walletAddress) return;
+
+    const purchase: Purchase = {
+      id: crypto.randomUUID(),
+      amount: defaultAmount,
+      currency: 'USDC',
+      status: 'pending',
+      timestamp: new Date(),
+    };
+
+    setIsLoading(true);
+    setPurchases(prev => [purchase, ...prev]);
+
+    try {
+      await fundWallet(walletAddress, {
+        chain: arbitrum,
+        asset: 'USDC',
+        amount: defaultAmount.toString(),
+      });
+
+      const completedPurchase = { ...purchase, status: 'completed' as const };
+      setPurchases(prev => prev.map(p => p.id === purchase.id ? completedPurchase : p));
+      onComplete?.(completedPurchase);
+    } catch (err) {
+      const failedPurchase = { ...purchase, status: 'failed' as const };
+      setPurchases(prev => prev.map(p => p.id === purchase.id ? failedPurchase : p));
+      const error = err instanceof Error ? err : new Error('Funding failed');
+      onError?.(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [walletAddress, defaultAmount, fundWallet, onComplete, onError]);
+
   return (
     <div className="space-y-6">
       {/* Payment Widget */}
@@ -94,7 +121,7 @@ export function OnrampWidget({
               Buy USDC
             </h3>
             <div className={`px-3 py-1 rounded-full text-xs font-medium ${theme === 'dark' ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-              Varity L3
+              Arbitrum One
             </div>
           </div>
 
@@ -108,37 +135,38 @@ export function OnrampWidget({
                   Supported Payment Methods
                 </p>
                 <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Credit/Debit Card • Apple Pay • Google Pay
+                  Credit/Debit Card &bull; Apple Pay &bull; Google Pay
                 </p>
               </div>
             </div>
           </div>
 
-          <PayEmbed
-            client={client}
-            theme={theme}
-            payOptions={{
-              mode: 'fund_wallet',
-              prefillBuy: {
-                chain: varityL3Testnet,
-                amount: defaultAmount.toString(),
-                token: {
-                  // Use actual USDC contract address on Varity L3
-                  address: VARITY_USDC_ADDRESS,
-                  name: 'USDC',
-                  symbol: 'USDC',
-                },
-                allowEdits: {
-                  amount: true,
-                  token: false,
-                  chain: false,
-                },
-              },
-              metadata: {
-                name: 'Buy USDC on Varity L3',
-              },
-            }}
-          />
+          <button
+            onClick={handleBuy}
+            disabled={!walletAddress || isLoading}
+            className={`w-full px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              theme === 'dark'
+                ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-700 disabled:text-gray-500'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white disabled:opacity-50'
+            } disabled:cursor-not-allowed`}
+          >
+            {isLoading ? (
+              <>
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Opening...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Buy ${defaultAmount} USDC
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -172,7 +200,7 @@ export function OnrampWidget({
 
                   {purchase.txHash && (
                     <a
-                      href={`https://explorer.varity.io/tx/${purchase.txHash}`}
+                      href={`https://arbiscan.io/tx/${purchase.txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-700"
@@ -197,7 +225,7 @@ export function OnrampWidget({
           </svg>
           <div>
             <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-              Secure & Regulated
+              Secure &amp; Regulated
             </p>
             <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
               Payments are processed by licensed providers. KYC may be required for larger amounts.
