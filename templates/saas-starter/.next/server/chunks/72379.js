@@ -1,1 +1,0 @@
-"use strict";exports.id=72379,exports.ids=[72379],exports.modules={72379:(a,b,c)=>{c.r(b),c.d(b,{default:()=>d});let d={connecting:"Conectando \xe0 Conta Inteligente",failedToConnect:"Falha ao conectar \xe0 Conta Inteligente",wrongNetworkScreen:{failedToSwitch:"Falha ao mudar de rede",subtitle:"Sua carteira n\xe3o est\xe1 conectada \xe0 rede requerida",title:"Rede Incorreta"}}}};

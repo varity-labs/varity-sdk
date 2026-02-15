@@ -1,17 +1,159 @@
 """
 Application deployment commands for VarityKit
 
-Deploy Web3 applications to decentralized infrastructure with one command.
+Deploy applications with one command.
 """
 
+import os
 from pathlib import Path
 
 import click
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 
 console = Console()
+
+
+# Advanced: On-chain pricing (available post-beta)
+# VARITY_PAYMENTS_ADDRESS = "0x0568cf3b5b9c94542aa8d32eb51ffa38912fc48c"
+# VARITY_L3_RPC = "https://rpc-varity-testnet-rroe52pwjp.t.conduit.xyz"
+#
+# # ABI for setAppPrice function (camelCase - Stylus SDK conversion)
+# VARITY_PAYMENTS_ABI = [
+#     {
+#         "name": "setAppPrice",
+#         "type": "function",
+#         "stateMutability": "nonpayable",
+#         "inputs": [
+#             {"name": "appId", "type": "uint64"},
+#             {"name": "priceUsdc", "type": "uint64"},
+#             {"name": "isSubscription", "type": "bool"},
+#             {"name": "intervalDays", "type": "uint64"},
+#         ],
+#         "outputs": [],
+#     },
+#     {
+#         "name": "getAppPricing",
+#         "type": "function",
+#         "stateMutability": "view",
+#         "inputs": [{"name": "appId", "type": "uint64"}],
+#         "outputs": [
+#             {"name": "priceUsdc", "type": "uint64"},
+#             {"name": "developer", "type": "address"},
+#             {"name": "isSubscription", "type": "bool"},
+#             {"name": "intervalDays", "type": "uint64"},
+#             {"name": "isActive", "type": "bool"},
+#         ],
+#     },
+# ]
+#
+#
+# def set_app_price_on_chain(
+#     app_id: int,
+#     price_cents: int,
+#     is_subscription: bool = False,
+#     interval_days: int = 30,
+#     private_key: Optional[str] = None,
+# ) -> Tuple[bool, str]:
+#     """
+#     Set app pricing on VarityPayments contract.
+#
+#     Args:
+#         app_id: The app ID from deployment
+#         price_cents: Price in cents (e.g., 9900 = $99.00)
+#         is_subscription: Whether this is a subscription price
+#         interval_days: Billing interval in days (for subscriptions)
+#         private_key: Developer's private key (from env if not provided)
+#
+#     Returns:
+#         Tuple of (success, message/tx_hash)
+#     """
+#     try:
+#         from web3 import Web3
+#
+#         # Connect to Varity L3
+#         w3 = Web3(Web3.HTTPProvider(VARITY_L3_RPC))
+#
+#         if not w3.is_connected():
+#             return False, "Failed to connect to Varity L3 network"
+#
+#         # Get private key from environment if not provided
+#         if not private_key:
+#             private_key = os.environ.get("VARITY_PRIVATE_KEY") or os.environ.get(
+#                 "WALLET_PRIVATE_KEY"
+#             )
+#
+#             # Try .env file
+#             if not private_key:
+#                 env_file = Path(".env")
+#                 if env_file.exists():
+#                     for line in env_file.read_text().split("\n"):
+#                         if line.startswith("VARITY_PRIVATE_KEY="):
+#                             private_key = line.split("=", 1)[1].strip()
+#                             break
+#                         elif line.startswith("WALLET_PRIVATE_KEY="):
+#                             private_key = line.split("=", 1)[1].strip()
+#                             break
+#
+#         if not private_key:
+#             return False, "No private key found. Set VARITY_PRIVATE_KEY or WALLET_PRIVATE_KEY"
+#
+#         # Get account from private key
+#         account = w3.eth.account.from_key(private_key)
+#
+#         # Convert price from cents to USDC (6 decimals)
+#         # $99.00 = 9900 cents = 99_000000 USDC (6 decimals)
+#         price_usdc = price_cents * 10000  # cents * 10000 = USDC 6 decimals
+#
+#         # Create contract instance
+#         contract = w3.eth.contract(
+#             address=Web3.to_checksum_address(VARITY_PAYMENTS_ADDRESS),
+#             abi=VARITY_PAYMENTS_ABI,
+#         )
+#
+#         # Build transaction
+#         tx_params = {
+#             "from": account.address,
+#             "nonce": w3.eth.get_transaction_count(account.address),
+#             "chainId": 33529,  # Varity L3 Chain ID
+#         }
+#
+#         # Estimate gas
+#         try:
+#             func = contract.functions.setAppPrice(
+#                 app_id, price_usdc, is_subscription, interval_days
+#             )
+#             estimated_gas = func.estimate_gas(tx_params)
+#             tx_params["gas"] = int(estimated_gas * 1.2)
+#         except Exception as e:
+#             # Use default gas if estimation fails
+#             tx_params["gas"] = 200000
+#
+#         # Get gas price
+#         tx_params["gasPrice"] = w3.eth.gas_price
+#
+#         # Build and sign transaction
+#         transaction = contract.functions.setAppPrice(
+#             app_id, price_usdc, is_subscription, interval_days
+#         ).build_transaction(tx_params)
+#
+#         signed_tx = w3.eth.account.sign_transaction(transaction, private_key)
+#
+#         # Send transaction
+#         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+#
+#         # Wait for confirmation
+#         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+#
+#         if receipt["status"] == 1:
+#             return True, tx_hash.hex()
+#         else:
+#             return False, f"Transaction failed: {tx_hash.hex()}"
+#
+#     except ImportError:
+#         return False, "web3.py not installed. Run: pip install web3"
+#     except Exception as e:
+#         return False, str(e)
 
 
 @click.group()
@@ -19,45 +161,38 @@ def app():
     """
     Deploy and manage applications
 
-    Deploy Web3 applications to decentralized infrastructure with one command.
+    Deploy applications with one command.
 
     \b
     Features:
-    • Frontend deployment to IPFS
-    • Backend deployment to Akash (Phase 2)
-    • Smart contract deployment
-    • Auto-submission to Varity App Store (Phase 2)
+    • Deploy static sites and dynamic apps
+    • Auto-submission to Varity App Store
+    • Built-in database and auth
 
     \b
     Quick Start:
-      varietykit app deploy               # Deploy current directory
-      varietykit app deploy --path ./my-app
-      varietykit app list                 # List deployments
+      varitykit app deploy               # Deploy current directory
+      varitykit app deploy --path ./my-app
+      varitykit app list                 # List deployments
     """
     pass
 
 
 @app.command()
 @click.option(
-    "--network",
-    default="varity",
-    help="Network to deploy to (default: varity)",
-    type=click.Choice(["varity", "arbitrum", "base"], case_sensitive=False),
-)
-@click.option(
     "--hosting",
-    default="ipfs",
-    help="Hosting type: 'ipfs' for static sites, 'akash' for dynamic apps (default: ipfs)",
-    type=click.Choice(["ipfs", "akash"], case_sensitive=False),
-)
-@click.option(
-    "--tier",
-    default="free",
-    help="Infrastructure tier: free, starter ($49/mo), growth ($99/mo), enterprise ($199/mo)",
-    type=click.Choice(["free", "starter", "growth", "enterprise"], case_sensitive=False),
+    default="static",
+    help="Hosting type: 'static' for static sites (default), 'dynamic' for apps with backend (coming soon)",
+    type=click.Choice(["static", "dynamic"], case_sensitive=False),
 )
 @click.option(
     "--submit-to-store", is_flag=True, help="Auto-submit to Varity App Store"
+)
+@click.option(
+    "--tier",
+    default=None,
+    help="Infrastructure tier: free, starter ($49/mo), growth ($99/mo), enterprise ($199/mo)",
+    type=click.Choice(["free", "starter", "growth", "enterprise"], case_sensitive=False),
 )
 @click.option(
     "--path",
@@ -66,133 +201,372 @@ def app():
     type=click.Path(exists=True),
 )
 @click.pass_context
-def deploy(ctx, network, hosting, tier, submit_to_store, path):
+def deploy(ctx, hosting, submit_to_store, tier, path):
     """
-    Deploy application to decentralized infrastructure.
+    Deploy your application.
 
     This command will:
     1. Detect your project type (Next.js, React, Vue)
-    2. Build your application
-    3. Deploy to IPFS (static sites) or Akash (dynamic apps)
-    4. Return deployment URL
+    2. Detect and configure Varity features (database, auth, etc.)
+    3. Build your application with auto-injected credentials
+    4. Deploy and return your app URL
+    5. Optionally submit to the Varity App Store
 
     \b
     Hosting Options:
-      • ipfs: Static sites (default) - Free via thirdweb
-      • akash: Dynamic apps with backend - Uses Akash Console API
+      • static: Static sites (default)
+      • dynamic: Apps with backend (coming soon)
 
     \b
     Examples:
-      # Deploy static site to IPFS
-      varietykit app deploy
-
-      # Deploy dynamic app to Akash
-      varietykit app deploy --hosting akash
+      # Deploy your app
+      varitykit app deploy
 
       # Deploy and submit to App Store
-      varietykit app deploy --submit-to-store
+      varitykit app deploy --submit-to-store
+
+      # Deploy with a specific tier
+      varitykit app deploy --tier starter --submit-to-store
 
     \b
     Supported Frameworks:
       • Next.js 13+ (App Router with static export)
       • React 18+ (Create React App, Vite)
       • Vue 3+
-
-    \b
-    Environment Variables:
-      • THIRDWEB_CLIENT_ID - Required for IPFS hosting
-      • AKASH_CONSOLE_API_KEY - Required for Akash hosting
     """
     logger = ctx.obj["logger"]
+    network = "varity"
 
     try:
         # Show banner
         console.print(
             Panel.fit(
                 "[bold blue]Varity App Deployment[/bold blue]\n"
-                "Deploy to decentralized infrastructure (IPFS + Akash)",
+                "Deploy your app in seconds",
                 border_style="blue",
             )
         )
 
-        # Note about submission flow
         if submit_to_store:
-            console.print("\n[cyan]📝 App Store submission will open in browser after deployment[/cyan]\n")
+            # Prompt for tier selection if not provided via CLI flag
+            if tier is None:
+                from rich.prompt import IntPrompt
+
+                console.print("[bold]Select Infrastructure Tier:[/bold]")
+                console.print("  1. [green]Free[/green]       - $0/mo   (Testnet, unlimited transactions)")
+                console.print("  2. [cyan]Starter[/cyan]    - $49/mo  (50k transactions/mo)")
+                console.print("  3. [blue]Growth[/blue]     - $99/mo  (250k transactions/mo)")
+                console.print("  4. [magenta]Enterprise[/magenta] - $199/mo (1M transactions/mo)")
+                tier_choice = IntPrompt.ask(
+                    "\nTier",
+                    choices=["1", "2", "3", "4"],
+                    default=1,
+                )
+                tier_map = {1: "free", 2: "starter", 3: "growth", 4: "enterprise"}
+                tier = tier_map[tier_choice]
+                console.print(f"  Selected: [bold]{tier}[/bold]\n")
 
         # Convert path to absolute
         project_path = Path(path).resolve()
-        console.print(f"\n[cyan]Project:[/cyan] {project_path}")
-        console.print(f"[cyan]Network:[/cyan] {network}")
-        console.print(f"[cyan]Hosting:[/cyan] {hosting}")
-        console.print(f"[cyan]Tier:[/cyan] {tier}\n")
+
+        # Auto-detect partnership services from package.json
+        detected_services = []
+        if submit_to_store:
+            package_json_path = project_path / "package.json"
+            if package_json_path.exists():
+                import json as _json
+                from varitykit.core.app_store.types import SERVICE_DETECTION_PATTERNS, SERVICE_INFO
+
+                with open(package_json_path, "r", encoding="utf-8") as f:
+                    pkg_data = _json.load(f)
+
+                all_deps = {}
+                all_deps.update(pkg_data.get("dependencies", {}))
+                all_deps.update(pkg_data.get("devDependencies", {}))
+
+                detected_set = set()
+                for dep_name in all_deps:
+                    for pattern, svc in SERVICE_DETECTION_PATTERNS.items():
+                        if dep_name == pattern or dep_name.startswith(pattern.rstrip("*")):
+                            detected_set.add(svc)
+
+                detected_services = sorted(detected_set, key=lambda s: s.value)
+
+                if detected_services:
+                    console.print("[bold]Detected Partnership Services:[/bold]")
+                    total_service_cost = 0
+                    for svc in detected_services:
+                        info = SERVICE_INFO[svc]
+                        console.print(f"  [cyan]{info['name']}[/cyan] - ${info['price']}/mo")
+                        total_service_cost += info['price']
+                    console.print(f"  [bold]Total service costs: ${total_service_cost}/mo[/bold]\n")
+
+        console.print(f"[cyan]Project:[/cyan] {project_path}")
+        if tier:
+            console.print(f"[cyan]Tier:[/cyan] {tier}")
+        console.print()
+
+        # Step 1: Analyze project for feature usage
+        console.print("[bold]Analyzing project...[/bold]")
+        from varitykit.utils.code_analyzer import detect_features
+
+        features = detect_features(str(project_path))
+
+        # Display detected features
+        if features.get('database'):
+            console.print("  ✓ [cyan]Database:[/cyan] Enabled")
+        if features.get('auth'):
+            console.print("  ✓ [cyan]Auth:[/cyan] Enabled")
+        if features.get('payment_widget'):
+            console.print("  ✓ [green]Payments:[/green] Enabled")
+        else:
+            if submit_to_store:
+                console.print("  ⚠️ [yellow]Payments:[/yellow] Not detected (required for App Store)")
+
+        # Inform developer about payment integration (optional — not a blocker)
+        if submit_to_store and not features.get('payment_widget'):
+            console.print("\n  [yellow]ℹ️  No payment integration detected.[/yellow]")
+            console.print("  [dim]You can add payment support later via your developer dashboard.[/dim]")
+            console.print("  [dim]Docs: https://docs.varity.so/build/payments[/dim]\n")
+
+        # Step 2: Generate and inject database credentials if needed
+        credentials = None
+        env_file_path = None
+
+        if features.get('database'):
+            console.print("\n[bold]Setting up database...[/bold]")
+
+            from varitykit.services.credentials import generate_app_credentials
+
+            try:
+                credentials = generate_app_credentials()
+                console.print(f"  ✓ App ID: [cyan]{credentials['app_id']}[/cyan]")
+                console.print(f"  ✓ Database credentials ready")
+
+                # Create .env.local file with credentials for build
+                env_file_path = project_path / '.env.local'
+                env_content = f"""# Varity App Credentials (Auto-generated)
+# DO NOT COMMIT TO GIT
+
+VITE_VARITY_APP_ID={credentials['app_id']}
+VITE_VARITY_APP_TOKEN={credentials['jwt_token']}
+VITE_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
+
+# Also support REACT_APP_ prefix for Create React App
+REACT_APP_VARITY_APP_ID={credentials['app_id']}
+REACT_APP_VARITY_APP_TOKEN={credentials['jwt_token']}
+REACT_APP_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
+
+# Also support NEXT_PUBLIC_ prefix for Next.js
+NEXT_PUBLIC_VARITY_APP_ID={credentials['app_id']}
+NEXT_PUBLIC_VARITY_APP_TOKEN={credentials['jwt_token']}
+NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
+"""
+
+                with open(env_file_path, 'w') as f:
+                    f.write(env_content)
+
+                console.print("  ✓ Injected database credentials into build")
+
+            except ImportError as e:
+                console.print(f"  [yellow]⚠️  Could not generate credentials: {e}[/yellow]")
+                console.print("  [yellow]   Install PyJWT: pip install PyJWT[/yellow]")
+
+        # Auto-fetch hosting credentials (zero-config)
+        if not os.environ.get("THIRDWEB_CLIENT_ID"):
+            try:
+                from varitykit.services.credential_fetcher import fetch_thirdweb_credentials
+                creds = fetch_thirdweb_credentials()
+                os.environ["THIRDWEB_CLIENT_ID"] = creds.thirdweb_client_id
+                console.print("  ✓ Hosting credentials ready")
+            except Exception as e:
+                console.print(f"  [yellow]⚠️  Could not connect to Varity servers: {e}[/yellow]")
+                console.print("  [yellow]   Please try again or check https://status.varity.so[/yellow]")
 
         # Import and use DeploymentOrchestrator
         from varitykit.core.deployment_orchestrator import DeploymentOrchestrator
 
         orchestrator = DeploymentOrchestrator(verbose=False)  # We'll handle output ourselves
 
-        # Execute deployment
-        result = orchestrator.deploy(
-            project_path=str(project_path),
-            network=network,
-            hosting=hosting,
-            tier=tier,
-            submit_to_store=submit_to_store,
-        )
+        # Execute deployment (app store submission handled separately via browser)
+        try:
+            result = orchestrator.deploy(
+                project_path=str(project_path),
+                network=network,
+                hosting=hosting,
+                submit_to_store=False,
+                tier=tier or "free",
+            )
+        finally:
+            # Clean up credentials file
+            if env_file_path and env_file_path.exists():
+                env_file_path.unlink()
+                logger.debug("Cleaned up temporary credentials file")
 
         # Display success
-        console.print("\n[bold green]✅ Deployment Successful![/bold green]\n")
+        console.print("\n" + "="*60)
+        console.print("[bold green]✅ Deployment Successful![/bold green]")
+        console.print("="*60)
 
-        if hosting == "akash":
-            # Akash deployment output
-            akash_info = result.manifest.get("akash", {})
-            console.print(
-                Panel.fit(
-                    f"[bold cyan]Akash Deployment[/bold cyan]\n\n"
-                    f"[cyan]App URL:[/cyan] {result.frontend_url}\n"
-                    f"[cyan]Akash Deployment ID:[/cyan] {akash_info.get('deployment_id', 'N/A')}\n"
-                    f"[cyan]Provider:[/cyan] {akash_info.get('provider', 'N/A')}\n"
-                    f"[cyan]Est. Monthly Cost:[/cyan] ${akash_info.get('estimated_monthly_cost', 0):.2f}\n"
-                    f"[cyan]Deployment ID:[/cyan] {result.deployment_id}",
-                    border_style="green",
-                )
-            )
+        if hosting == "dynamic":
+            deployment_text = f"""[bold cyan]Your App[/bold cyan]
+
+[cyan]App URL:[/cyan] {result.frontend_url}
+[cyan]Deployment ID:[/cyan] {result.deployment_id}"""
+
+            if features.get('database') and credentials:
+                deployment_text += f"\n\n[bold cyan]Database[/bold cyan]\n[cyan]Status:[/cyan] ✅ Ready\n[cyan]App ID:[/cyan] {credentials['app_id']}"
+
+            console.print(Panel.fit(deployment_text, border_style="green"))
         else:
-            # IPFS deployment output
-            console.print(
-                Panel.fit(
-                    f"[bold cyan]IPFS Deployment[/bold cyan]\n\n"
-                    f"[cyan]App URL:[/cyan] {result.frontend_url}\n"
-                    f"[cyan]IPFS CID:[/cyan] {result.cid}\n"
-                    f"[cyan]Deployment ID:[/cyan] {result.deployment_id}\n\n"
-                    f"[dim]Alt Gateway: https://ipfs.io/ipfs/{result.cid}[/dim]",
-                    border_style="green",
-                )
-            )
+            deployment_text = f"""[bold cyan]Your App[/bold cyan]
 
-        # Open browser for App Store submission
+[cyan]App URL:[/cyan] {result.frontend_url}
+[cyan]Deployment ID:[/cyan] {result.deployment_id}"""
+
+            if features.get('database') and credentials:
+                deployment_text += f"\n\n[bold cyan]Database[/bold cyan]\n[cyan]Status:[/cyan] ✅ Ready\n[cyan]App ID:[/cyan] {credentials['app_id']}"
+
+            console.print(Panel.fit(deployment_text, border_style="green"))
+
+        console.print("="*60)
+
+        # Next steps
+        next_steps = "[cyan]What's next?[/cyan]\n"
+        next_steps += "  Submit to App Store:  varitykit app deploy --submit-to-store\n"
+        next_steps += "  Read the docs:        https://docs.varity.so\n"
+        next_steps += "  Get help:             https://discord.gg/varity\n"
+        next_steps += "  Report a bug:         https://github.com/varity-labs/varity-sdk/issues"
+        console.print(Panel.fit(next_steps, border_style="cyan"))
+        console.print()
+
+        # Get project metadata for share templates
+        app_name = project_path.name
+        try:
+            import json as _json_share
+            pkg_path = project_path / "package.json"
+            if pkg_path.exists():
+                with open(pkg_path, "r", encoding="utf-8") as f:
+                    pkg = _json_share.load(f)
+                    app_name = pkg.get("name", app_name)
+        except Exception:
+            pass
+
+        framework = result.manifest.get("project", {}).get("type", "unknown")
+        build_time = result.manifest.get("build", {}).get("time_seconds", 0)
+        build_size = result.manifest.get("build", {}).get("size_mb", 0)
+
+        # Share your deployment
+        share_text = "[bold magenta]Share Your Deployment![/bold magenta]\n\n"
+        share_text += "[bold]Twitter/X:[/bold]\n"
+        share_text += f'  Just deployed {app_name} on @VarityLabs in under 60 seconds!\n'
+        share_text += f'  70% cheaper than AWS, zero config required.\n'
+        share_text += f'  Check it out: {result.frontend_url}\n'
+        share_text += f'  #BuildWithVarity #ShippingFast\n\n'
+        share_text += "[bold]LinkedIn:[/bold]\n"
+        share_text += f'  Excited to share — I just deployed {app_name} using Varity,\n'
+        share_text += f'  a zero-config platform that\'s 70% cheaper than AWS.\n'
+        share_text += f'  - 60-second deploy from CLI\n'
+        share_text += f'  - Auth, database, storage included\n'
+        share_text += f'  - No Docker, no config files\n'
+        share_text += f'  Live: {result.frontend_url}\n'
+        share_text += f'  #WebDevelopment #CloudComputing\n\n'
+        share_text += "[bold]Discord/Slack:[/bold]\n"
+        share_text += f'  Shipped {app_name} on Varity!\n'
+        share_text += f'  {result.frontend_url}\n'
+        share_text += f'  Build: {build_time:.1f}s | Framework: {framework} | Size: {build_size:.1f}MB'
+        console.print(Panel.fit(share_text, border_style="magenta"))
+        console.print()
+
+        # Generate deployment badge
+        try:
+            from varitykit.utils.badge_generator import save_badge
+            badge_path = save_badge(result.deployment_id, app_name)
+            badge_text = "[bold]README Badge[/bold]\n\n"
+            badge_text += f"  Add this to your README.md:\n\n"
+            badge_text += f"  [![Deployed on Varity]({badge_path})]({result.frontend_url})\n\n"
+            badge_text += f"  [dim]Badge saved to: {badge_path}[/dim]"
+            console.print(Panel.fit(badge_text, border_style="blue"))
+            console.print()
+        except Exception as e:
+            logger.debug(f"Badge generation failed: {e}")
+
+        # Open developer portal for app store submission
         if submit_to_store:
             import webbrowser
-            import urllib.parse
+            from urllib.parse import urlencode
 
-            # Build submission URL with deployment info
-            params = {
+            portal_params = urlencode({
                 'cid': result.cid,
-                'tier': tier,
+                'tier': tier or 'free',
+                'url': result.frontend_url,
                 'deployment_id': result.deployment_id,
-            }
-            query_string = urllib.parse.urlencode(params)
-            submission_url = f"https://developer.store.varity.so/submit?{query_string}"
+            })
+            portal_url = f"https://developer.store.varity.so/submit?{portal_params}"
+            console.print(f"[bold]Opening Varity Developer Portal...[/bold]")
+            console.print(f"[cyan]Portal:[/cyan] {portal_url}\n")
+            if tier == "free":
+                console.print("[dim]Sign in and fill in your app details to submit.[/dim]\n")
+            else:
+                console.print("[dim]Sign in, complete payment, and fill in your app details.[/dim]\n")
+            browser_opened = False
+            try:
+                import subprocess as _sp
+                _sp.Popen(['explorer.exe', portal_url], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+                browser_opened = True
+            except (FileNotFoundError, OSError):
+                pass
+            if not browser_opened:
+                try:
+                    import subprocess as _sp
+                    _sp.run(["wslview", portal_url], capture_output=True, timeout=5)
+                    browser_opened = True
+                except (FileNotFoundError, OSError, Exception):
+                    pass
+            if not browser_opened:
+                try:
+                    webbrowser.open(portal_url)
+                except Exception:
+                    pass
+            console.print(f"\n[bold cyan]  Developer Portal:[/bold cyan] {portal_url}")
+            console.print("  [dim]Copy the URL above if your browser didn't open automatically.[/dim]\n")
 
-            console.print(f"\n[cyan]📝 Opening App Store submission...[/cyan]")
-            console.print(f"[dim]{submission_url}[/dim]\n")
-
-            # Open browser
-            webbrowser.open(submission_url)
-
-            console.print("[yellow]→ Sign in with Privy[/yellow]")
-            console.print("[yellow]→ Complete payment for tier: {tier}[/yellow]")
-            console.print("[yellow]→ Submit app for review[/yellow]\n")
+        # Advanced: On-chain pricing (available post-beta)
+        # if price is not None:
+        #     # Validate pricing options
+        #     if subscription and interval < 1:
+        #         console.print("[yellow]Warning: Invalid interval. Using default 30 days.[/yellow]")
+        #         interval = 30
+        #
+        #     console.print("\n[bold]Setting app pricing on-chain...[/bold]")
+        #     console.print(f"  [cyan]Price:[/cyan] ${price / 100:.2f}")
+        #     console.print(f"  [cyan]Type:[/cyan] {'Subscription' if subscription else 'One-time'}")
+        #     if subscription:
+        #         console.print(f"  [cyan]Interval:[/cyan] {interval} days")
+        #
+        #     app_id = getattr(result, 'app_id', None)
+        #     if app_id is None:
+        #         import hashlib
+        #         app_id = int(hashlib.sha256(result.deployment_id.encode()).hexdigest()[:8], 16)
+        #         console.print(f"  [dim]Generated App ID: {app_id}[/dim]")
+        #
+        #     success, result_msg = set_app_price_on_chain(
+        #         app_id=app_id,
+        #         price_cents=price,
+        #         is_subscription=subscription,
+        #         interval_days=interval,
+        #     )
+        #
+        #     if success:
+        #         console.print(f"\n[bold green]Pricing set![/bold green]")
+        #         console.print(f"  [cyan]Transaction:[/cyan] {result_msg}")
+        #         console.print(f"  [cyan]App ID:[/cyan] {app_id}")
+        #         console.print(f"  [cyan]Price:[/cyan] ${price / 100:.2f} ({'subscription' if subscription else 'one-time'})")
+        #     else:
+        #         console.print(f"\n[yellow]Warning: Failed to set pricing[/yellow]")
+        #         console.print(f"  [yellow]Reason: {result_msg}[/yellow]")
+        #         console.print("  [dim]You can set pricing later via the Developer Portal or CLI:[/dim]")
+        #         console.print(f"  [dim]  varitykit pricing set --app-id {app_id} --price {price}[/dim]")
 
         logger.info(f"Deployment successful: {result.deployment_id}")
 
@@ -203,11 +577,8 @@ def deploy(ctx, network, hosting, tier, submit_to_store, path):
         # Show helpful error messages
         error_str = str(e).lower()
         if "build" in error_str:
-            console.print("[yellow]💡 Tip: Try running your build command manually first[/yellow]")
+            console.print("[yellow]Tip: Try running your build command manually first[/yellow]")
             console.print("   Example: npm run build\n")
-        elif "ipfs" in error_str or "thirdweb" in error_str:
-            console.print("[yellow]💡 Tip: Check THIRDWEB_CLIENT_ID is set[/yellow]")
-            console.print("   Get one at: https://thirdweb.com/dashboard\n")
 
         logger.error(f"Deployment failed: {e}")
         raise click.Abort()
@@ -225,9 +596,9 @@ def list(ctx, network, limit):
 
     \b
     Examples:
-      varietykit app list
-      varietykit app list --network varity
-      varietykit app list --limit 20
+      varitykit app list
+      varitykit app list --network varity
+      varitykit app list --limit 20
     """
     logger = ctx.obj["logger"]
 
@@ -315,7 +686,7 @@ def info(ctx, deployment_id):
 
     \b
     Example:
-      varietykit app info deploy-1737492000
+      varitykit app info deploy-1737492000
     """
     logger = ctx.obj["logger"]
 
@@ -421,13 +792,9 @@ def info(ctx, deployment_id):
 [cyan]Build Time:[/cyan] {build_time:.2f}s
 
 [bold]URLs[/bold]
-[cyan]Frontend:[/cyan] {frontend_url}
+[cyan]App URL:[/cyan] {frontend_url}
 [cyan]Backend:[/cyan] {backend_url}
-[cyan]thirdweb CDN:[/cyan] {thirdweb_url}
-[cyan]IPFS Gateway:[/cyan] {ipfs_gateway}
-
-[bold]IPFS[/bold]
-[cyan]CID:[/cyan] {ipfs_cid}
+[cyan]CDN:[/cyan] {thirdweb_url}
 
 [bold]App Store[/bold]
 [cyan]Submitted:[/cyan] {'✅ Yes' if app_store_submitted else '❌ No'}
@@ -464,8 +831,8 @@ def rollback(ctx, deployment_id, confirm):
 
     \b
     Examples:
-      varietykit app rollback deploy-1737492000
-      varietykit app rollback deploy-1737492000 --confirm
+      varitykit app rollback deploy-1737492000
+      varitykit app rollback deploy-1737492000 --confirm
     """
     logger = ctx.obj["logger"]
 
@@ -539,7 +906,7 @@ def rollback(ctx, deployment_id, confirm):
                 f"[bold cyan]New Deployment[/bold cyan]\n\n"
                 f"[cyan]Deployment ID:[/cyan] {new_deployment.deployment_id}\n"
                 f"[cyan]Frontend URL:[/cyan] {new_deployment.frontend_url}\n"
-                f"[cyan]IPFS CID:[/cyan] {new_deployment.cid}\n\n"
+                f"[cyan]Deployment Hash:[/cyan] {new_deployment.cid}\n\n"
                 f"[dim]Previous deployment restored successfully[/dim]",
                 border_style="green",
             )
@@ -567,8 +934,8 @@ def status(ctx, network):
 
     \b
     Examples:
-      varietykit app status
-      varietykit app status --network varity
+      varitykit app status
+      varitykit app status --network varity
     """
     logger = ctx.obj["logger"]
 
@@ -660,7 +1027,7 @@ def status(ctx, network):
         console.print(
             f"\n[dim]Total deployments{' for ' + network if network else ''}: {total_deployments}[/dim]"
         )
-        console.print(f"[dim]Use 'varietykit app list' to see all deployments[/dim]\n")
+        console.print(f"[dim]Use 'varitykit app list' to see all deployments[/dim]\n")
 
         logger.info(f"Retrieved deployment status: {deployment_id}")
 
