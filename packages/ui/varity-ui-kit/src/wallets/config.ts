@@ -14,24 +14,24 @@ import { varityL3Testnet } from '@varity-labs/sdk/chains';
  * Contract Addresses for Varity L3
  *
  * ✅ DEPLOYED (January 13, 2026) - Ready for use!
- * Deployed by: 0x20B7d1426649D9a573ba7Fd10592456264220cbF
+ * Deployed by: 0x08133625B80ECcCb07d154572afA3043CD515247
  * Explorer: https://explorer-varity-testnet-rroe52pwjp.t.conduit.xyz
  */
 export const VARITY_SMART_WALLET_CONTRACTS = {
   /**
    * VarityWalletFactory - Creates smart wallets for users
    * ✅ Deployed: Varity L3 (Chain ID 33529)
-   * Verified: https://explorer-varity-testnet-rroe52pwjp.t.conduit.xyz/address/0x85AB92708CB4d921f5c2BdCCd7f2D0813a380f71
+   * Verified: https://explorer-varity-testnet-rroe52pwjp.t.conduit.xyz/address/0x23dcca8E063CB0Eea8Ec6e56657c07E11fFa4E78
    */
-  factoryAddress: '0x85AB92708CB4d921f5c2BdCCd7f2D0813a380f71' as const,
+  factoryAddress: '0x23dcca8E063CB0Eea8Ec6e56657c07E11fFa4E78' as const,
 
   /**
    * SimplifiedPaymaster - Sponsors gas for transactions
    * ✅ Deployed: Varity L3 (Chain ID 33529)
    * ✅ Funded: $5 USDC in Conduit paymaster balance
-   * Verified: https://explorer-varity-testnet-rroe52pwjp.t.conduit.xyz/address/0xeF467aef91d4e626C7e56967779069bEF22c4453
+   * Verified: https://explorer-varity-testnet-rroe52pwjp.t.conduit.xyz/address/0x579772Bfa5Ec1e8f33B81F304ffDbC55135db154
    */
-  paymasterAddress: '0xeF467aef91d4e626C7e56967779069bEF22c4453' as const,
+  paymasterAddress: '0x579772Bfa5Ec1e8f33B81F304ffDbC55135db154' as const,
 
   /**
    * ERC-4337 EntryPoint (standard address across all chains)
@@ -139,12 +139,12 @@ export function getDefaultSmartWalletConfig(client: any) {
  * ✅ = Complete | ⏳ = In Progress | ⬜ = Not Started
  *
  * ✅ 1. Deploy SimplifiedPaymaster.sol to Varity L3
- *    - Deployed: 0xeF467aef91d4e626C7e56967779069bEF22c4453
+ *    - Deployed: 0x579772Bfa5Ec1e8f33B81F304ffDbC55135db154
  *    - Date: January 13, 2026
  *    - Verified on Varity L3 Explorer
  *
  * ✅ 2. Deploy VarityWalletFactory.sol to Varity L3
- *    - Deployed: 0x85AB92708CB4d921f5c2BdCCd7f2D0813a380f71
+ *    - Deployed: 0x23dcca8E063CB0Eea8Ec6e56657c07E11fFa4E78
  *    - Date: January 13, 2026
  *    - Verified on Varity L3 Explorer
  *
@@ -193,7 +193,7 @@ export function getBundlerUrl(): string {
  */
 export function areContractsDeployed(): boolean {
   // Contracts deployed on January 13, 2026
-  // Factory: 0x85AB92708CB4d921f5c2BdCCd7f2D0813a380f71
-  // Paymaster: 0xeF467aef91d4e626C7e56967779069bEF22c4453
+  // Factory: 0x23dcca8E063CB0Eea8Ec6e56657c07E11fFa4E78
+  // Paymaster: 0x579772Bfa5Ec1e8f33B81F304ffDbC55135db154
   return true;
 }

@@ -501,6 +501,7 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
                 'tier': tier or 'free',
                 'url': result.frontend_url,
                 'deployment_id': result.deployment_id,
+                'services': ','.join(s.value for s in detected_services) if detected_services else '',
             })
             portal_url = f"https://developer.store.varity.so/submit?{portal_params}"
             console.print(f"[bold]Opening Varity Developer Portal...[/bold]")

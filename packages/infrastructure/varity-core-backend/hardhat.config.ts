@@ -58,6 +58,15 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       gasPrice: "auto",
     },
+
+    // Varity L3 (Arbitrum Orbit rollup)
+    varityL3: {
+      url: "https://rpc-varity-testnet-rroe52pwjp.t.conduit.xyz",
+      chainId: 33529,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gasPrice: "auto",
+      timeout: 120000,
+    },
   },
 
   etherscan: {
