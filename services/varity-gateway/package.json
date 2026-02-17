@@ -1,7 +1,9 @@
 {
   "name": "varity-gateway",
   "version": "1.0.0",
-  "description": "Custom domain gateway for Varity apps — maps {app}.varity.app to IPFS content",
+  "private": true,
+  "license": "MIT",
+  "description": "Custom domain gateway for Varity apps — maps app.varity.app/{name} to IPFS content",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

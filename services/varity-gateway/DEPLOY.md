@@ -30,7 +30,7 @@ print('DB_PROXY_TOKEN=' + token)
 
 Save the output `DB_PROXY_TOKEN=eyJ...` — you'll need it in Step 3.
 
-**Don't have your production JWT secret?** Check the Akash Console deployment for DSEQ 25483708 — it's the `JWT_SECRET` env var.
+**Don't have your production JWT secret?** Check the DB Proxy deployment in Akash Console — it's the `JWT_SECRET` env var.
 
 ---
 
@@ -95,14 +95,16 @@ At your domain registrar for `varity.app`:
 
 1. Add a CNAME record:
    ```
-   *.varity.app  →  <akash-provider-hostname>
+   app.varity.app  →  <akash-provider-hostname>
    ```
 
-2. Verify:
+2. In Akash Console, add `accept: ["app.varity.app"]` to the SDL expose section.
+
+3. Verify:
    ```bash
-   dig test.varity.app
+   dig app.varity.app
+   curl https://app.varity.app/health
    ```
-   Should resolve to the Akash provider IP.
 
 ---
 
@@ -122,17 +124,17 @@ After all steps:
 
 ```bash
 # Health check
-curl https://test.varity.app/health
+curl https://app.varity.app/health
 
 # Register a test domain
 curl -X POST \
   -H "Authorization: Bearer <GATEWAY_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"subdomain":"hello-world","cid":"bafybeibj6lixxzqtsb45ysdjnupvqkufgdvzqbnvmhw2kf7cfkesy7r7d4"}' \
-  https://gateway.varity.app/api/domains/register
+  https://app.varity.app/api/domains/register
 
-# Visit in browser
-open https://hello-world.varity.app
+# Visit in browser — path-based routing
+open https://app.varity.app/hello-world
 ```
 
 ---
@@ -142,6 +144,6 @@ open https://hello-world.varity.app
 | Service | Cost |
 |---------|------|
 | Gateway on Akash | ~$1.50/mo |
-| DNS (wildcard CNAME) | $0 (included) |
+| DNS (CNAME record) | $0 (included) |
 | TLS (Let's Encrypt) | $0 (free) |
 | **Total** | **~$1.50/mo** |

@@ -2,12 +2,26 @@ import express from 'express';
 import cors from 'cors';
 import { config } from './config';
 import { resolveDomain, getCacheStats } from './domain-resolver';
-import { registrationRouter } from './registration-api';
+import { registrationRouter, verifyApiKey } from './registration-api';
 import { notFoundHtml } from './not-found';
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
+const ALLOWED_ORIGINS = [
+  /^https?:\/\/(.+\.)?varity\.so$/,
+  /^https?:\/\/(.+\.)?varity\.app$/,
+  /^https?:\/\/localhost(:\d+)?$/,
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.some((re) => re.test(origin))) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+}));
 app.use(express.json());
 
 // Health check
@@ -26,7 +40,7 @@ app.get('/health', (_req, res) => {
   }
 });
 
-// TLS check — Caddy calls GET /tls-check?domain=foo.varity.app before issuing a cert
+// TLS check — reverse proxy calls GET /tls-check?domain=foo.varity.app before issuing a cert
 app.get('/tls-check', async (req, res) => {
   const domain = req.query.domain as string;
   if (!domain) {
@@ -48,8 +62,8 @@ app.get('/tls-check', async (req, res) => {
   }
 });
 
-// Domain resolution endpoint (for internal/debug use)
-app.get('/resolve/:subdomain', async (req, res) => {
+// Domain resolution endpoint (authenticated — internal/debug use)
+app.get('/resolve/:subdomain', verifyApiKey, async (req, res) => {
   const subdomain = req.params.subdomain.toLowerCase();
   const cid = await resolveDomain(subdomain);
 
@@ -63,6 +77,9 @@ app.get('/resolve/:subdomain', async (req, res) => {
 // Registration API routes
 app.use(registrationRouter);
 
+// Safe content types that can be served inline; everything else forces download
+const SAFE_CONTENT_TYPES = /^(text\/(html|css|plain|javascript)|application\/(javascript|json|pdf)|image\/|audio\/|video\/|font\/)/;
+
 // Shared IPFS proxy logic
 async function proxyIpfs(appName: string, assetPath: string, res: express.Response): Promise<void> {
   const cid = await resolveDomain(appName);
@@ -71,14 +88,16 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
     return;
   }
 
-  const ipfsUrl = `https://${cid}.${config.gateway.ipfsBackend}/${assetPath}`;
+  // Sanitize path — strip traversal attempts and leading slashes
+  const safePath = assetPath.replace(/\.\.\//g, '').replace(/^\/+/, '');
+  const ipfsUrl = `https://${cid}.${config.gateway.ipfsBackend}/${safePath}`;
 
   try {
     const ipfsRes = await fetch(ipfsUrl, { signal: AbortSignal.timeout(15000) });
 
     if (!ipfsRes.ok) {
       // SPA fallback: if a non-file path returns 404, serve /index.html
-      if (ipfsRes.status === 404 && assetPath && !assetPath.includes('.')) {
+      if (ipfsRes.status === 404 && safePath && !safePath.includes('.')) {
         const fallbackUrl = `https://${cid}.${config.gateway.ipfsBackend}/index.html`;
         const fallbackRes = await fetch(fallbackUrl, { signal: AbortSignal.timeout(10000) });
 
@@ -95,12 +114,16 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
       return;
     }
 
-    // Forward content type
-    const contentType = ipfsRes.headers.get('content-type');
-    if (contentType) res.type(contentType);
+    // Forward content type — only allow safe types inline, force download for others
+    const contentType = ipfsRes.headers.get('content-type') || 'application/octet-stream';
+    if (SAFE_CONTENT_TYPES.test(contentType)) {
+      res.type(contentType);
+    } else {
+      res.type('application/octet-stream');
+    }
 
     // Cache static assets longer, HTML shorter
-    const isAsset = /\.(js|css|png|jpg|jpeg|gif|svg|woff2?|ttf|ico)$/i.test(assetPath);
+    const isAsset = /\.(js|css|png|jpg|jpeg|gif|svg|woff2?|ttf|ico)$/i.test(safePath);
     res.set('Cache-Control', isAsset ? 'public, max-age=31536000, immutable' : 'public, max-age=60');
 
     const body = await ipfsRes.arrayBuffer();
@@ -152,12 +175,11 @@ function extractSubdomain(host: string): string | null {
 const server = app.listen(config.server.port, '0.0.0.0', () => {
   console.log('');
   console.log('  Varity Gateway v1.0.0');
-  console.log(`  Environment: ${config.server.env}`);
-  console.log(`  Listening:   http://0.0.0.0:${config.server.port}`);
-  console.log(`  Base domain: ${config.gateway.baseDomain}`);
+  console.log(`  Environment:  ${config.server.env}`);
+  console.log(`  Listening:    http://0.0.0.0:${config.server.port}`);
+  console.log(`  Base domain:  ${config.gateway.baseDomain}`);
   console.log(`  IPFS backend: ${config.gateway.ipfsBackend}`);
-  console.log(`  DB Proxy:    ${config.dbProxy.url}`);
-  console.log(`  Cache TTL:   ${config.cache.ttlSeconds}s`);
+  console.log(`  Cache TTL:    ${config.cache.ttlSeconds}s`);
   console.log('');
 });
 

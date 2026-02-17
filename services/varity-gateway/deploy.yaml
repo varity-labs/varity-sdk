@@ -3,7 +3,7 @@ version: "2.0"
 
 services:
   gateway:
-    image: ghcr.io/varity-labs/varity-gateway:1.0.2
+    image: ghcr.io/varity-labs/varity-gateway:latest
     expose:
       - port: 8080
         as: 80

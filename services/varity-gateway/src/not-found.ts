@@ -43,7 +43,7 @@ export const notFoundHtml = `<!DOCTYPE html>
   <div class="container">
     <div class="code">404</div>
     <h1>This app doesn't exist yet on Varity</h1>
-    <p>The subdomain you requested hasn't been registered. If you're a developer, deploy your app with the Varity CLI to claim it.</p>
+    <p>The app you requested hasn't been deployed. If you're a developer, deploy your app with the Varity CLI to claim it.</p>
     <p><a href="https://docs.varity.so">Read the docs</a> &middot; <a href="https://varity.so">Learn about Varity</a></p>
   </div>
 </body>

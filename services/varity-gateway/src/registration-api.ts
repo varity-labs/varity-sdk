@@ -5,10 +5,10 @@ import crypto from 'crypto';
 
 export const registrationRouter = Router();
 
-function verifyApiKey(req: Request, res: Response, next: () => void): void {
+export function verifyApiKey(req: Request, res: Response, next: () => void): void {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'Missing or invalid authorization header' });
+    res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
@@ -17,7 +17,7 @@ function verifyApiKey(req: Request, res: Response, next: () => void): void {
 
   // timingSafeEqual requires equal-length buffers
   if (token.length !== expected.length) {
-    res.status(401).json({ error: 'Invalid API key' });
+    res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
@@ -27,7 +27,7 @@ function verifyApiKey(req: Request, res: Response, next: () => void): void {
   );
 
   if (!valid) {
-    res.status(401).json({ error: 'Invalid API key' });
+    res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
@@ -36,6 +36,11 @@ function verifyApiKey(req: Request, res: Response, next: () => void): void {
 
 function isValidSubdomain(name: string): boolean {
   return /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(name) && !name.includes('--');
+}
+
+/** Validate IPFS CID format (CIDv0 or CIDv1) */
+function isValidCid(cid: string): boolean {
+  return /^Qm[A-Za-z0-9]{44}$/.test(cid) || /^bafy[a-z2-7]{55,}$/.test(cid);
 }
 
 /** Fetch all domain records from DB Proxy */
@@ -86,6 +91,11 @@ registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Reque
     return;
   }
 
+  if (!isValidCid(cid)) {
+    res.status(400).json({ error: 'Invalid CID format. Must be a valid IPFS CIDv0 (Qm...) or CIDv1 (bafy...).' });
+    return;
+  }
+
   const name = subdomain.toLowerCase();
 
   if (RESERVED_SUBDOMAINS.has(name)) {
@@ -129,8 +139,7 @@ registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Reque
     });
 
     if (!addRes.ok) {
-      const errBody = await addRes.text();
-      console.error('[registration] DB Proxy add failed:', errBody);
+      console.error(`[registration] DB Proxy add failed: ${addRes.status}`);
       res.status(502).json({ error: 'Failed to register domain' });
       return;
     }
@@ -138,7 +147,7 @@ registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Reque
     const result = await addRes.json() as { success?: boolean; data?: { id: string } };
     invalidateCache(name);
 
-    console.log(`[registration] Registered: ${name}.${config.gateway.baseDomain} → ${cid}`);
+    console.log(`[registration] Registered: app.${config.gateway.baseDomain}/${name}`);
     res.status(201).json({
       subdomain: name,
       url: `https://app.${config.gateway.baseDomain}/${name}`,
@@ -160,6 +169,11 @@ registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request,
     return;
   }
 
+  if (!isValidCid(cid)) {
+    res.status(400).json({ error: 'Invalid CID format. Must be a valid IPFS CIDv0 (Qm...) or CIDv1 (bafy...).' });
+    return;
+  }
+
   const name = subdomain.toLowerCase();
 
   try {
@@ -177,7 +191,7 @@ registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request,
     const updatedRecord = {
       subdomain: name,
       cid,
-      appName: existing.subdomain,
+      appName: (existing as any).appName || name,
       registeredBy: 'cli',
       createdAt: (existing as any).createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -201,7 +215,7 @@ registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request,
 
     invalidateCache(name);
 
-    console.log(`[registration] Updated: ${name}.${config.gateway.baseDomain} → ${cid}`);
+    console.log(`[registration] Updated: app.${config.gateway.baseDomain}/${name}`);
     res.json({
       subdomain: name,
       url: `https://app.${config.gateway.baseDomain}/${name}`,

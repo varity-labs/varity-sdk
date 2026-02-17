@@ -12,7 +12,7 @@ function requireEnv(key: string): string {
 
 export const config = {
   server: {
-    port: parseInt(process.env.PORT || '3000', 10),
+    port: parseInt(process.env.PORT || '8080', 10),
     env: process.env.NODE_ENV || 'development',
   },
   dbProxy: {
@@ -33,6 +33,7 @@ export const RESERVED_SUBDOMAINS = new Set([
   'www', 'api', 'admin', 'store', 'docs', 'developer',
   'status', 'blog', 'help', 'support', 'mail', 'app',
   'dashboard', 'console', 'gateway', 'cdn', 'static',
+  'health', 'resolve', 'tls-check', 'mx', 'ftp', 'ssh',
 ]);
 
 export const DB_COLLECTION = 'domains';
