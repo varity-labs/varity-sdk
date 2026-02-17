@@ -63,32 +63,22 @@ app.get('/resolve/:subdomain', async (req, res) => {
 // Registration API routes
 app.use(registrationRouter);
 
-// Catch-all: extract subdomain from Host header, proxy IPFS content
-app.use(async (req, res) => {
-  const host = req.hostname || req.headers.host?.split(':')[0] || '';
-  const subdomain = extractSubdomain(host);
-
-  if (!subdomain) {
-    res.status(404).type('html').send(notFoundHtml);
-    return;
-  }
-
-  const cid = await resolveDomain(subdomain);
+// Shared IPFS proxy logic
+async function proxyIpfs(appName: string, assetPath: string, res: express.Response): Promise<void> {
+  const cid = await resolveDomain(appName);
   if (!cid) {
     res.status(404).type('html').send(notFoundHtml);
     return;
   }
 
-  // Strip leading slash, default to empty (root)
-  const path = req.path.replace(/^\//, '');
-  const ipfsUrl = `https://${cid}.${config.gateway.ipfsBackend}/${path}`;
+  const ipfsUrl = `https://${cid}.${config.gateway.ipfsBackend}/${assetPath}`;
 
   try {
     const ipfsRes = await fetch(ipfsUrl, { signal: AbortSignal.timeout(15000) });
 
     if (!ipfsRes.ok) {
       // SPA fallback: if a non-file path returns 404, serve /index.html
-      if (ipfsRes.status === 404 && path && !path.includes('.')) {
+      if (ipfsRes.status === 404 && assetPath && !assetPath.includes('.')) {
         const fallbackUrl = `https://${cid}.${config.gateway.ipfsBackend}/index.html`;
         const fallbackRes = await fetch(fallbackUrl, { signal: AbortSignal.timeout(10000) });
 
@@ -110,7 +100,7 @@ app.use(async (req, res) => {
     if (contentType) res.type(contentType);
 
     // Cache static assets longer, HTML shorter
-    const isAsset = /\.(js|css|png|jpg|jpeg|gif|svg|woff2?|ttf|ico)$/i.test(path);
+    const isAsset = /\.(js|css|png|jpg|jpeg|gif|svg|woff2?|ttf|ico)$/i.test(assetPath);
     res.set('Cache-Control', isAsset ? 'public, max-age=31536000, immutable' : 'public, max-age=60');
 
     const body = await ipfsRes.arrayBuffer();
@@ -119,6 +109,35 @@ app.use(async (req, res) => {
     console.error(`[proxy] Failed to fetch ${ipfsUrl}:`, err);
     res.status(502).send('Failed to fetch content');
   }
+}
+
+// Path-based routing: app.varity.app/{app-name} and app.varity.app/{app-name}/path/to/file
+app.get('/:appName', async (req, res, next) => {
+  // Skip API/system routes
+  if (['health', 'resolve', 'tls-check', 'api'].includes(req.params.appName)) {
+    next();
+    return;
+  }
+  await proxyIpfs(req.params.appName.toLowerCase(), '', res);
+});
+
+app.get('/:appName/*', async (req, res) => {
+  const appName = req.params.appName.toLowerCase();
+  const assetPath = req.url.split('/').slice(2).join('/');
+  await proxyIpfs(appName, assetPath, res);
+});
+
+// Catch-all: extract subdomain from Host header, proxy IPFS content (for future IP-leased deployments)
+app.use(async (req, res) => {
+  const host = req.hostname || req.headers.host?.split(':')[0] || '';
+  const subdomain = extractSubdomain(host);
+
+  if (!subdomain) {
+    res.status(404).type('html').send(notFoundHtml);
+    return;
+  }
+
+  await proxyIpfs(subdomain, req.path.replace(/^\//, ''), res);
 });
 
 function extractSubdomain(host: string): string | null {
