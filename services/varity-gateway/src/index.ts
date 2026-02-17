@@ -68,7 +68,10 @@ app.get('/resolve/:subdomain', verifyApiKey, async (req, res) => {
   const cid = await resolveDomain(subdomain);
 
   if (cid) {
-    res.json({ cid, backend: `https://${cid}.${config.gateway.ipfsBackend}` });
+    const backend = cid.startsWith('Qm')
+      ? `https://ipfs.io/ipfs/${cid}`
+      : `https://${cid}.${config.gateway.ipfsBackend}`;
+    res.json({ cid, backend });
   } else {
     res.status(404).json({ error: 'not_found' });
   }
@@ -90,7 +93,12 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
 
   // Sanitize path — strip traversal attempts and leading slashes
   const safePath = assetPath.replace(/\.\.\//g, '').replace(/^\/+/, '');
-  const ipfsUrl = `https://${cid}.${config.gateway.ipfsBackend}/${safePath}`;
+
+  // CIDv0 (Qm...) can't be used as subdomain — use path-based IPFS gateway
+  const isCidV0 = cid.startsWith('Qm');
+  const ipfsUrl = isCidV0
+    ? `https://ipfs.io/ipfs/${cid}/${safePath}`
+    : `https://${cid}.${config.gateway.ipfsBackend}/${safePath}`;
 
   try {
     const ipfsRes = await fetch(ipfsUrl, { signal: AbortSignal.timeout(15000) });
@@ -98,7 +106,9 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
     if (!ipfsRes.ok) {
       // SPA fallback: if a non-file path returns 404, serve /index.html
       if (ipfsRes.status === 404 && safePath && !safePath.includes('.')) {
-        const fallbackUrl = `https://${cid}.${config.gateway.ipfsBackend}/index.html`;
+        const fallbackUrl = isCidV0
+          ? `https://ipfs.io/ipfs/${cid}/index.html`
+          : `https://${cid}.${config.gateway.ipfsBackend}/index.html`;
         const fallbackRes = await fetch(fallbackUrl, { signal: AbortSignal.timeout(10000) });
 
         if (fallbackRes.ok) {
