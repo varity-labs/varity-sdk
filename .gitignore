@@ -5,6 +5,8 @@ node_modules/
 # Build outputs
 dist/
 build/
+.next/
+out/
 *.tsbuildinfo
 .turbo/
 
@@ -63,7 +65,8 @@ packages/**/yarn.lock
 apps/
 
 # Services (deployed separately)
-services/
+services/*
+!services/varity-gateway/
 
 # Tools (separate repos)
 tools/

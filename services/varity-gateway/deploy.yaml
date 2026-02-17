@@ -1,0 +1,43 @@
+---
+version: "2.0"
+
+services:
+  gateway:
+    image: ghcr.io/varity-labs/varity-gateway:1.0.2
+    expose:
+      - port: 8080
+        as: 80
+        to:
+          - global: true
+    env:
+      - NODE_ENV=production
+      - PORT=8080
+      - DB_PROXY_URL=${DB_PROXY_URL}
+      - DB_PROXY_TOKEN=${DB_PROXY_TOKEN}
+      - GATEWAY_API_KEY=${GATEWAY_API_KEY}
+      - BASE_DOMAIN=varity.app
+      - IPFS_BACKEND=ipfscdn.io
+      - CACHE_TTL=300
+
+profiles:
+  compute:
+    gateway:
+      resources:
+        cpu:
+          units: 0.5
+        memory:
+          size: 512Mi
+        storage:
+          size: 1Gi
+  placement:
+    akash:
+      pricing:
+        gateway:
+          denom: uakt
+          amount: 1000
+
+deployment:
+  gateway:
+    akash:
+      profile: gateway
+      count: 1
