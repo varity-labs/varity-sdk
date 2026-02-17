@@ -76,7 +76,7 @@ class VarityClient:
         self,
         chain_id: int = 33529,
         private_key: Optional[str] = None,
-        thirdweb_client_id: str = "acb17e07e34ab2b8317aa40cbb1b5e1d"
+        thirdweb_client_id: str = "a35636133eb5ec6f30eb9f4c15fce2f3"
     ):
         # Initialize Web3, account, and managers
         pass
@@ -450,7 +450,7 @@ async def main():
     client = VarityClient(
         chain_id=33529,
         private_key="0x...",
-        thirdweb_client_id="acb17e07e34ab2b8317aa40cbb1b5e1d"
+        thirdweb_client_id="a35636133eb5ec6f30eb9f4c15fce2f3"
     )
 
     # Get balance
@@ -502,8 +502,8 @@ tx_hash = await client.contracts.write_contract(
 ```python
 # Complete authentication
 session = await client.auth.authenticate(
-    domain="app.varity.io",
-    uri="https://app.varity.io"
+    domain="app.varity.so",
+    uri="https://app.varity.so"
 )
 
 print(f"Authenticated: {session.address}")
@@ -823,7 +823,7 @@ pip install -e ".[dev]"
 
 ### Contact
 
-- **Email**: support@varity.io
+- **Email**: support@varity.so
 - **Discord**: https://discord.gg/varity
 - **GitHub**: https://github.com/varity/client-python
 

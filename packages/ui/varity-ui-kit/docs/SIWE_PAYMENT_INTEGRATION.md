@@ -83,15 +83,15 @@ This integration provides:
 
 ```bash
 # Frontend (.env)
-REACT_APP_THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
-REACT_APP_API_URL=https://api.varity.io
+REACT_APP_THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
+REACT_APP_API_URL=https://api.varity.so
 REACT_APP_CHAIN_ID=33529
 REACT_APP_USDC_CONTRACT=0x... # USDC address on Varity L3
 REACT_APP_PAYMENT_RECIPIENT=0x... # Varity treasury address
 
 # Backend (.env)
-SIWE_DOMAIN=varity.io
-SIWE_URI=https://varity.io
+SIWE_DOMAIN=varity.so
+SIWE_URI=https://varity.so
 SIWE_STATEMENT=Sign in to Varity with your Ethereum account
 JWT_SECRET=your-secret-key-here
 JWT_EXPIRATION=1h
@@ -576,9 +576,9 @@ process.env.LOG_LEVEL = 'debug';
 ### Support
 
 For additional help:
-- Documentation: https://docs.varity.io
+- Documentation: https://docs.varity.so
 - Discord: https://discord.gg/varity
-- Email: support@varity.io
+- Email: support@varity.so
 
 ---
 

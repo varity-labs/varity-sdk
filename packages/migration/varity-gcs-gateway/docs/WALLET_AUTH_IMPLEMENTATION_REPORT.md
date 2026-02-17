@@ -3,7 +3,7 @@
 
 **Implementation Date**: 2025-11-14
 **Varity L3 Chain ID**: 33529
-**Thirdweb Client ID**: acb17e07e34ab2b8317aa40cbb1b5e1d
+**Thirdweb Client ID**: a35636133eb5ec6f30eb9f4c15fce2f3
 
 ---
 
@@ -375,7 +375,7 @@ AUTH_MODE=hybrid
 WALLET_AUTH_ENABLED=true
 
 # Thirdweb configuration
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 
 # JWT configuration (generate secure secret!)
 JWT_SECRET=your-secure-random-secret-key-here
@@ -521,7 +521,7 @@ WALLET_AUTH_ENABLED=false
 # Support both OAuth2 and wallet auth
 AUTH_MODE=hybrid
 WALLET_AUTH_ENABLED=true
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 JWT_SECRET=your-secure-secret
 ```
 
@@ -530,7 +530,7 @@ JWT_SECRET=your-secure-secret
 # Fully decentralized authentication
 AUTH_MODE=wallet
 WALLET_AUTH_ENABLED=true
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 JWT_SECRET=your-secure-secret
 GCS_WALLET_BUCKET_MAPPING='[...]' # Configure permissions
 ```

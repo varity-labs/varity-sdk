@@ -48,7 +48,7 @@ async def main():
     client = VarityClient(
         chain_id=33529,  # Varity L3 Testnet
         private_key="0x...",  # Optional, for write operations
-        thirdweb_client_id="acb17e07e34ab2b8317aa40cbb1b5e1d"
+        thirdweb_client_id="a35636133eb5ec6f30eb9f4c15fce2f3"
     )
 
     # Get balance (returns Decimal with 6 decimal places for USDC)
@@ -66,8 +66,8 @@ async def main():
 
     # Authenticate with SIWE
     session = await client.auth.authenticate(
-        domain="app.varity.io",
-        uri="https://app.varity.io"
+        domain="app.varity.so",
+        uri="https://app.varity.so"
     )
     print(f"Authenticated: {session.address}")
     print(f"Token: {session.token}")
@@ -118,7 +118,7 @@ client = VarityClient(
     chain_id=33529,                                    # Network chain ID
     chain=None,                                         # Custom chain config
     private_key="0x...",                               # Private key (optional)
-    thirdweb_client_id="acb17e07e34ab2b8317aa40cbb1b5e1d",  # Thirdweb client ID
+    thirdweb_client_id="a35636133eb5ec6f30eb9f4c15fce2f3",  # Thirdweb client ID
     rpc_url=None,                                      # Custom RPC URL
     ipfs_gateway="https://gateway.ipfscdn.io/ipfs/"   # IPFS gateway
 )
@@ -260,8 +260,8 @@ for event in events:
 ```python
 # Authenticate with one call
 session = await client.auth.authenticate(
-    domain="app.varity.io",
-    uri="https://app.varity.io",
+    domain="app.varity.so",
+    uri="https://app.varity.so",
     statement="Sign in to Varity Dashboard",
     session_duration_minutes=1440  # 24 hours
 )
@@ -276,8 +276,8 @@ print(f"Expires: {session.expires_at}")
 ```python
 # 1. Generate SIWE message
 message = await client.auth.generate_siwe_message(
-    domain="app.varity.io",
-    uri="https://app.varity.io",
+    domain="app.varity.so",
+    uri="https://app.varity.so",
     statement="Sign in to Varity",
     expiration_minutes=60
 )
@@ -595,10 +595,10 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- **Documentation**: [https://docs.varity.io](https://docs.varity.io)
+- **Documentation**: [https://docs.varity.so](https://docs.varity.so)
 - **Discord**: [https://discord.gg/varity](https://discord.gg/varity)
 - **GitHub Issues**: [https://github.com/varity/client-python/issues](https://github.com/varity/client-python/issues)
-- **Email**: support@varity.io
+- **Email**: support@varity.so
 
 ---
 
@@ -607,7 +607,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - Built on [Web3.py](https://web3py.readthedocs.io/)
 - IPFS storage via [Thirdweb](https://thirdweb.com/)
 - SIWE implementation using [siwe-py](https://github.com/spruceid/siwe-py)
-- Deployed on [Varity L3](https://varity.io) - Arbitrum Orbit L3
+- Deployed on [Varity L3](https://varity.so) - Arbitrum Orbit L3
 
 ---
 

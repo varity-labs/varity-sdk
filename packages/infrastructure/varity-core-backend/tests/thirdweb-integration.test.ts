@@ -10,7 +10,7 @@ import { privateKeyToAccount } from 'thirdweb/wallets';
 describe('Thirdweb Integration Tests', () => {
   const TEST_PRIVATE_KEY =
     '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
-  const TEST_CLIENT_ID = process.env.THIRDWEB_CLIENT_ID || 'acb17e07e34ab2b8317aa40cbb1b5e1d';
+  const TEST_CLIENT_ID = process.env.THIRDWEB_CLIENT_ID || 'a35636133eb5ec6f30eb9f4c15fce2f3';
 
   describe('Varity L3 Chain Definition', () => {
     test('should have correct chain ID', () => {

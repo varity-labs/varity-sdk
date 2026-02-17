@@ -216,7 +216,7 @@ AKASH_RPC_ENDPOINT=...
 CELESTIA_RPC_ENDPOINT=...
 
 # Optional (Thirdweb)
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 VARITY_L3_RPC_URL=https://rpc.varity.network
 ```
 

@@ -24,7 +24,7 @@ export interface ThirdwebWrapperConfig {
     rpcUrl?: string;
     /**
      * Thirdweb Client ID (from .env.testnet)
-     * Default: acb17e07e34ab2b8317aa40cbb1b5e1d
+     * Default: a35636133eb5ec6f30eb9f4c15fce2f3
      */
     clientId?: string;
     /**

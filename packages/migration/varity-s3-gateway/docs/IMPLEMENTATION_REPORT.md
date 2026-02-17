@@ -271,7 +271,7 @@ JWT_SECRET=<secure-random-string>
 JWT_EXPIRY=24h
 
 # Thirdweb
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 
 # Chain Configuration
 VARITY_CHAIN_ID=33529

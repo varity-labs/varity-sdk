@@ -43,7 +43,7 @@ class VarityClient:
         >>> client = VarityClient(
         ...     chain_id=33529,
         ...     private_key="0x...",
-        ...     thirdweb_client_id="acb17e07e34ab2b8317aa40cbb1b5e1d"
+        ...     thirdweb_client_id="a35636133eb5ec6f30eb9f4c15fce2f3"
         ... )
         >>>
         >>> # Get balance
@@ -65,7 +65,7 @@ class VarityClient:
         chain_id: int = 33529,
         chain: Optional[Chain] = None,
         private_key: Optional[str] = None,
-        thirdweb_client_id: str = "acb17e07e34ab2b8317aa40cbb1b5e1d",
+        thirdweb_client_id: str = "a35636133eb5ec6f30eb9f4c15fce2f3",
         rpc_url: Optional[str] = None,
         ipfs_gateway: str = "https://gateway.ipfscdn.io/ipfs/",
     ):

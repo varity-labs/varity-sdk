@@ -90,7 +90,7 @@ JWT_SECRET=your-secure-random-secret-key-minimum-32-characters
 JWT_EXPIRY=24h
 
 # Thirdweb Configuration
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 
 # Varity L3 Chain
 VARITY_CHAIN_ID=33529
@@ -608,7 +608,7 @@ def upload_file(token: str):
 For issues and questions:
 
 - GitHub Issues: [varity/packages/varity-s3-gateway/issues](https://github.com/varity/packages/varity-s3-gateway/issues)
-- Documentation: [Varity SDK Documentation](https://docs.varity.io)
+- Documentation: [Varity SDK Documentation](https://docs.varity.so)
 - Discord: [Varity Community](https://discord.gg/varity)
 
 ## License

@@ -261,13 +261,13 @@ Add these to `.env.testnet`:
 
 ```bash
 # Thirdweb Client ID (REQUIRED)
-NEXT_PUBLIC_THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 
 # Thirdweb Secret Key (Optional - for server-side operations)
 NEXT_PUBLIC_THIRDWEB_SECRET_KEY=
 
 # In-App Wallet Configuration
-NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN=iso-dashboard.varity.io
+NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN=iso-dashboard.varity.so
 NEXT_PUBLIC_THIRDWEB_WALLET_ID=inAppWallet
 
 # Onramp Configuration
@@ -283,7 +283,7 @@ The components are pre-configured for Varity L3:
 ```typescript
 const VARITY_L3_CHAIN = {
   chainId: 33529,
-  rpc: ['https://varity-l3-rpc.varity.io'],
+  rpc: ['https://varity-l3-rpc.varity.so'],
   nativeCurrency: {
     decimals: 6,
     name: 'USDC',
@@ -640,13 +640,13 @@ nativeCurrency: { symbol: 'USDC', decimals: 6 }
 
 - **Thirdweb Docs**: https://portal.thirdweb.com
 - **Thirdweb Discord**: https://discord.gg/thirdweb
-- **Varity Docs**: https://docs.varity.io
+- **Varity Docs**: https://docs.varity.so
 - **GitHub Issues**: https://github.com/varity/varity-ui-kit/issues
 
 ### Contact
 
 For integration support, contact:
-- Email: support@varity.io
+- Email: support@varity.so
 - Discord: https://discord.gg/varity
 
 ---

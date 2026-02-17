@@ -22,7 +22,7 @@ Dependencies are already installed. Just import and use:
 3. Add to `.env.testnet`:
 
 ```bash
-NEXT_PUBLIC_THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 ```
 
 ### 2. Wrap Your App
@@ -208,10 +208,10 @@ All environment variables in `.env.testnet`:
 
 ```bash
 # Required
-NEXT_PUBLIC_THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 
 # Optional
-NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN=iso-dashboard.varity.io
+NEXT_PUBLIC_THIRDWEB_AUTH_DOMAIN=iso-dashboard.varity.so
 NEXT_PUBLIC_THIRDWEB_PAY_ENABLED=true
 NEXT_PUBLIC_THIRDWEB_PAY_MIN_AMOUNT=10
 NEXT_PUBLIC_THIRDWEB_PAY_MAX_AMOUNT=10000
@@ -257,7 +257,7 @@ For complete documentation, see:
 
 Need help?
 
-- **Email**: support@varity.io
+- **Email**: support@varity.so
 - **Discord**: https://discord.gg/varity
 - **Thirdweb Support**: https://discord.gg/thirdweb
 

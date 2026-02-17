@@ -9,7 +9,7 @@ Example usage:
 	client, err := thirdweb.NewVarityClient(thirdweb.Config{
 		ChainID:          33529,
 		PrivateKey:       "0x...",
-		ThirdwebClientID: "acb17e07e34ab2b8317aa40cbb1b5e1d",
+		ThirdwebClientID: "a35636133eb5ec6f30eb9f4c15fce2f3",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -60,7 +60,7 @@ func NewVarityClient(config Config) (*VarityClient, error) {
 		config.RPCURL = "https://rpc-varity-l3-testnet-33529-czcj67dz6a.t.conduit.xyz"
 	}
 	if config.ThirdwebClientID == "" {
-		config.ThirdwebClientID = "acb17e07e34ab2b8317aa40cbb1b5e1d"
+		config.ThirdwebClientID = "a35636133eb5ec6f30eb9f4c15fce2f3"
 	}
 	if config.IPFSGatewayURL == "" {
 		config.IPFSGatewayURL = "https://gateway.pinata.cloud"

@@ -20,7 +20,7 @@ import "github.com/varity/client-go/thirdweb"
 client, err := thirdweb.NewVarityClient(thirdweb.Config{
     ChainID:          33529, // Varity L3 Testnet
     PrivateKey:       "0x...", // Your private key
-    ThirdwebClientID: "acb17e07e34ab2b8317aa40cbb1b5e1d",
+    ThirdwebClientID: "a35636133eb5ec6f30eb9f4c15fce2f3",
 })
 if err != nil {
     log.Fatal(err)
@@ -109,7 +109,7 @@ func main() {
     client, err := thirdweb.NewVarityClient(thirdweb.Config{
         ChainID:          33529,
         PrivateKey:       "0x...",
-        ThirdwebClientID: "acb17e07e34ab2b8317aa40cbb1b5e1d",
+        ThirdwebClientID: "a35636133eb5ec6f30eb9f4c15fce2f3",
     })
     if err != nil {
         log.Fatal(err)
@@ -149,7 +149,7 @@ func main() {
 ```bash
 export VARITY_PRIVATE_KEY="0x..."
 export VARITY_CHAIN_ID="33529"
-export THIRDWEB_CLIENT_ID="acb17e07e34ab2b8317aa40cbb1b5e1d"
+export THIRDWEB_CLIENT_ID="a35636133eb5ec6f30eb9f4c15fce2f3"
 ```
 
 ```go

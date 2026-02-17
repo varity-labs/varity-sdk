@@ -14,7 +14,7 @@ import { StorageManager } from './storage/StorageManager';
 import type { VarityClientConfig, ChainConfig } from './types';
 
 // Default Thirdweb Client ID for Varity
-const DEFAULT_CLIENT_ID = 'acb17e07e34ab2b8317aa40cbb1b5e1d';
+const DEFAULT_CLIENT_ID = 'a35636133eb5ec6f30eb9f4c15fce2f3';
 
 // Varity L3 Chain Configuration
 export const VARITY_L3_CHAIN: ChainConfig = {

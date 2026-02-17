@@ -269,7 +269,7 @@ import {
 // Initialize collectors
 const blockchainMetrics = new BlockchainMetrics(
   'https://varity-l3-rpc.example.com',
-  'acb17e07e34ab2b8317aa40cbb1b5e1d' // Thirdweb Client ID
+  'a35636133eb5ec6f30eb9f4c15fce2f3' // Thirdweb Client ID
 );
 
 const contractMetrics = new ContractMetrics('https://varity-l3-rpc.example.com');
@@ -459,7 +459,7 @@ console.log(`Warning: ${summary.warning}`);
 - **Chain ID**: 33529
 - **Native Gas Token**: USDC (6 decimals)
 - **RPC Endpoints**: Configure via NodeHealthMetrics
-- **Thirdweb Client ID**: acb17e07e34ab2b8317aa40cbb1b5e1d
+- **Thirdweb Client ID**: a35636133eb5ec6f30eb9f4c15fce2f3
 
 ### USDC Decimal Handling
 

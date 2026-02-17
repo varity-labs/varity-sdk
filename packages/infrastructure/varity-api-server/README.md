@@ -315,7 +315,7 @@ See `.env.example` for all available configuration options.
 - `AKASH_NODE_URL` - Akash network RPC
 - `ARBITRUM_L3_RPC_URL` - Arbitrum L3 RPC (default: http://localhost:8545)
 - `ARBITRUM_L3_CHAIN_ID` - Varity L3 Chain ID (default: 33529)
-- `THIRDWEB_CLIENT_ID` - Thirdweb Client ID (default: acb17e07e34ab2b8317aa40cbb1b5e1d)
+- `THIRDWEB_CLIENT_ID` - Thirdweb Client ID (default: a35636133eb5ec6f30eb9f4c15fce2f3)
 - `THIRDWEB_SECRET_KEY` - Thirdweb Secret Key (optional)
 - `CELESTIA_NODE_URL` - Celestia DA node
 

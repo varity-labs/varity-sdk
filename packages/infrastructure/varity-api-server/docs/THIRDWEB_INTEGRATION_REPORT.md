@@ -18,7 +18,7 @@ Successfully created comprehensive Thirdweb REST API endpoints in the @varity/ap
 **Configuration:**
 - Varity L3 Chain ID: 33529
 - Native Token: USDC (6 decimals - CRITICAL!)
-- Thirdweb Client ID: acb17e07e34ab2b8317aa40cbb1b5e1d
+- Thirdweb Client ID: a35636133eb5ec6f30eb9f4c15fce2f3
 - RPC URL: Configurable via `ARBITRUM_L3_RPC_URL`
 
 ### 2. Service Layer Enhancements ✅
@@ -387,7 +387,7 @@ ARBITRUM_L3_RPC_URL=http://localhost:8545
 ARBITRUM_L3_CHAIN_ID=33529
 
 # Thirdweb Configuration
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 THIRDWEB_SECRET_KEY=<optional>
 
 # Server Configuration

@@ -486,7 +486,7 @@ Store credentials in `.env.testnet`, never commit:
 
 ```bash
 # .env.testnet
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 THIRDWEB_SECRET_KEY=  # KEEP EMPTY - DO NOT COMMIT!
 DEPLOYER_PRIVATE_KEY=  # KEEP EMPTY - DO NOT COMMIT!
 ```
@@ -663,7 +663,7 @@ curl https://rpc-varity-testnet-rroe52pwjp.t.conduit.xyz \
 - **Thirdweb Docs**: [https://portal.thirdweb.com](https://portal.thirdweb.com)
 - **API Keys Guide**: [API-KEYS-GUIDE.md](../../deployments/testnet/API-KEYS-GUIDE.md)
 - **Discord**: https://discord.gg/varity
-- **Email**: support@varity.com
+- **Email**: support@varity.so
 
 ---
 

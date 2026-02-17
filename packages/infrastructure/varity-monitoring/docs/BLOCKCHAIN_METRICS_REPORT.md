@@ -8,7 +8,7 @@ Comprehensive blockchain metrics system successfully implemented for @varity/mon
 **Package Version**: 1.0.0
 **Chain ID**: 33529 (Varity L3)
 **Gas Token**: USDC (6 decimals)
-**Thirdweb Client ID**: acb17e07e34ab2b8317aa40cbb1b5e1d
+**Thirdweb Client ID**: a35636133eb5ec6f30eb9f4c15fce2f3
 
 ---
 

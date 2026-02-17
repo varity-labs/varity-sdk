@@ -20,7 +20,7 @@ async def main():
     client = VarityClient(
         chain_id=33529,
         private_key=private_key,
-        thirdweb_client_id="acb17e07e34ab2b8317aa40cbb1b5e1d",
+        thirdweb_client_id="a35636133eb5ec6f30eb9f4c15fce2f3",
     )
 
     print(f"Connected address: {client.address}\n")

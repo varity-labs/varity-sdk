@@ -348,7 +348,7 @@ Add your Thirdweb Client ID to your environment:
 
 ```bash
 # .env
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 
 # Varity L3 RPC (optional, uses default if not set)
 VARITY_L3_RPC_URL=https://rpc.varity.network
@@ -908,7 +908,7 @@ VARITY_L3_RPC_URL=https://rpc.varity.network
 DEPLOYER_PRIVATE_KEY=0x...
 
 # Thirdweb Integration (Optional)
-THIRDWEB_CLIENT_ID=acb17e07e34ab2b8317aa40cbb1b5e1d
+THIRDWEB_CLIENT_ID=a35636133eb5ec6f30eb9f4c15fce2f3
 
 # Filecoin/IPFS
 PINATA_API_KEY=...

@@ -37,7 +37,7 @@ func main() {
     client, err := thirdweb.NewVarityClient(thirdweb.Config{
         ChainID:          33529,
         PrivateKey:       "0x...",
-        ThirdwebClientID: "acb17e07e34ab2b8317aa40cbb1b5e1d",
+        ThirdwebClientID: "a35636133eb5ec6f30eb9f4c15fce2f3",
     })
     if err != nil {
         log.Fatal(err)
@@ -309,7 +309,7 @@ arbSepolia := thirdweb.ArbitrumSepolia
 ```go
 client, err := thirdweb.NewVarityClient(thirdweb.Config{
     ChainID:          33529,
-    ThirdwebClientID: "acb17e07e34ab2b8317aa40cbb1b5e1d",
+    ThirdwebClientID: "a35636133eb5ec6f30eb9f4c15fce2f3",
 })
 if err != nil {
     log.Fatal(err)
