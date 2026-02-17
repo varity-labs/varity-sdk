@@ -7,6 +7,7 @@ COPY src/ ./src/
 RUN npm run build
 
 FROM node:20-slim
+LABEL org.opencontainers.image.source="https://github.com/varity-labs/varity-sdk"
 WORKDIR /app
 
 COPY package*.json ./
