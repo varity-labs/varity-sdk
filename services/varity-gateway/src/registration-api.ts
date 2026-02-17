@@ -147,10 +147,10 @@ registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Reque
     const result = await addRes.json() as { success?: boolean; data?: { id: string } };
     invalidateCache(name);
 
-    console.log(`[registration] Registered: app.${config.gateway.baseDomain}/${name}`);
+    console.log(`[registration] Registered: ${config.gateway.baseDomain}/${name}`);
     res.status(201).json({
       subdomain: name,
-      url: `https://app.${config.gateway.baseDomain}/${name}`,
+      url: `https://${config.gateway.baseDomain}/${name}`,
       cid,
       id: result.data?.id,
     });
@@ -215,10 +215,10 @@ registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request,
 
     invalidateCache(name);
 
-    console.log(`[registration] Updated: app.${config.gateway.baseDomain}/${name}`);
+    console.log(`[registration] Updated: ${config.gateway.baseDomain}/${name}`);
     res.json({
       subdomain: name,
-      url: `https://app.${config.gateway.baseDomain}/${name}`,
+      url: `https://${config.gateway.baseDomain}/${name}`,
       cid,
     });
   } catch (err) {

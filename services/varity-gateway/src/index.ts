@@ -144,7 +144,7 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
   }
 }
 
-// Path-based routing: app.varity.app/{app-name} and app.varity.app/{app-name}/path/to/file
+// Path-based routing: varity.app/{app-name} and varity.app/{app-name}/path/to/file
 app.get('/:appName', async (req, res, next) => {
   // Skip API/system routes
   if (['health', 'resolve', 'tls-check', 'api'].includes(req.params.appName)) {

@@ -239,7 +239,7 @@ class DeploymentOrchestrator:
                     from varitykit.services.gateway_client import register_domain, sanitize_subdomain
                     subdomain = sanitize_subdomain(custom_name or project_info.name)
                     register_domain(subdomain, cid)
-                    custom_domain_url = f"https://app.varity.app/{subdomain}"
+                    custom_domain_url = f"https://varity.app/{subdomain}"
                     frontend_url = custom_domain_url
                     self._log(f"   🌐 {custom_domain_url}")
                 except Exception as e:
