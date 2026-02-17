@@ -149,8 +149,9 @@ class DeploymentOrchestrator:
         project_path: str = ".",
         network: str = "varity",
         hosting: str = "ipfs",
-        tier: str = "free",
         submit_to_store: bool = False,
+        tier: str = "free",
+        custom_name: Optional[str] = None,
     ) -> DeploymentResult:
         """
         Deploy application to decentralized infrastructure.
@@ -159,7 +160,6 @@ class DeploymentOrchestrator:
             project_path: Path to project directory (default: current directory)
             network: Target network (default: "varity")
             hosting: Hosting type - "ipfs" for static sites, "akash" for dynamic apps
-            tier: Infrastructure tier - "free", "starter", "growth", "enterprise"
             submit_to_store: Auto-submit to App Store
 
         Returns:
@@ -190,6 +190,13 @@ class DeploymentOrchestrator:
                 f"   Built {len(build_artifacts.files)} files ({build_artifacts.total_size_mb:.2f} MB)"
             )
 
+            # Step 2.5: Rewrite paths for static hosting (IPFS compatibility)
+            if hosting != "akash":
+                from .path_rewriter import rewrite_paths_for_static_hosting
+                self._log("   Optimizing for static hosting...")
+                modified = rewrite_paths_for_static_hosting(build_artifacts.output_dir)
+                self._log(f"   Rewrote {modified} files for portable paths")
+
             # Step 3: Deploy based on hosting type
             frontend_url = ""
             thirdweb_url = ""
@@ -198,31 +205,49 @@ class DeploymentOrchestrator:
             ipfs_result = None
 
             if hosting == "akash":
-                self._log("☁️  Deploying...")
+                # Deploy to Akash Network
+                self._log("☁️  Deploying to Akash Network...")
                 akash_result = self._deploy_to_akash(project_info, build_artifacts)
 
                 if not akash_result.success:
                     raise DeploymentError(
-                        akash_result.error_message or "Deployment failed"
+                        akash_result.error_message or "Akash deployment failed"
                     )
 
                 frontend_url = akash_result.url or ""
                 self._log(f"   URL: {frontend_url}")
+                self._log(f"   Deployment ID: {akash_result.deployment_id}")
+                self._log(f"   Provider: {akash_result.provider}")
+                self._log(f"   Est. Monthly Cost: ${akash_result.estimated_monthly_cost:.2f}")
             else:
-                self._log("☁️  Deploying...")
+                # Default: Upload to IPFS
+                self._log("☁️  Deploying your app...")
                 ipfs_result = self._upload_to_ipfs(build_artifacts)
 
-                if not ipfs_result["success"]:
-                    raise IPFSUploadError(ipfs_result.get("error_message", "Deployment failed"))
+                if not ipfs_result.success:
+                    raise IPFSUploadError("IPFS upload failed")
 
-                cid = ipfs_result["cid"]
-                frontend_url = ipfs_result["gatewayUrl"]
-                thirdweb_url = ipfs_result["thirdwebUrl"]
+                cid = ipfs_result.cid
+                frontend_url = ipfs_result.gateway_url
+                thirdweb_url = ipfs_result.thirdweb_url
                 self._log(f"   URL: {frontend_url}")
+
+            # Step 3.5: Register custom domain
+            custom_domain_url = None
+            if cid and hosting != "akash":
+                try:
+                    from varitykit.services.gateway_client import register_domain, sanitize_subdomain
+                    subdomain = sanitize_subdomain(custom_name or project_info.name)
+                    register_domain(subdomain, cid)
+                    custom_domain_url = f"https://app.varity.app/{subdomain}"
+                    frontend_url = custom_domain_url
+                    self._log(f"   🌐 {custom_domain_url}")
+                except Exception as e:
+                    self._log(f"   ⚠️ Custom domain unavailable: {e}")
 
             # Step 4: Create deployment manifest
             manifest = self._create_manifest(
-                project_info, build_artifacts, ipfs_result, network, hosting, tier, akash_result
+                project_info, build_artifacts, ipfs_result, network, hosting, akash_result
             )
 
             # Step 5: Save deployment metadata
@@ -238,6 +263,7 @@ class DeploymentOrchestrator:
                         {"frontend_url": frontend_url},
                         project_path,
                         network,
+                        tier=tier,
                     )
 
                     if app_store_result and app_store_result.success:
@@ -271,9 +297,12 @@ class DeploymentOrchestrator:
                 cid=cid,
                 app_store_url=app_store_url,
                 manifest=manifest,
+                custom_domain=custom_domain_url,
             )
 
             self._log("✅ Deployment complete!")
+            self._log(f"\n   🌐 Your app: {result.frontend_url}")
+            self._log(f"   📋 Deployment ID: {result.deployment_id}\n")
 
             return result
 
@@ -290,6 +319,7 @@ class DeploymentOrchestrator:
 
         except IPFSUploadError as e:
             self._log(f"❌ Deployment failed: {e}")
+            self._log("   Please try again or contact support: https://discord.gg/varity")
             raise
 
         except Exception as e:
@@ -322,10 +352,10 @@ class DeploymentOrchestrator:
         return self.builder.build(
             project_path=project_path,
             build_command=project_info.build_command,
-            output_dir=project_info.output_dir
+            output_dir=project_info.output_dir,
         )
 
-    def _upload_to_ipfs(self, build_artifacts: BuildArtifacts) -> dict:
+    def _upload_to_ipfs(self, build_artifacts: BuildArtifacts):
         """
         Upload build artifacts to IPFS using IPFSUploader (Agent 2).
 
@@ -333,36 +363,17 @@ class DeploymentOrchestrator:
             build_artifacts: Build output to upload
 
         Returns:
-            Dictionary with IPFS upload result:
-            {
-                'success': bool,
-                'cid': str,
-                'gatewayUrl': str,
-                'thirdwebUrl': str,
-                'totalSize': int,
-                'fileCount': int
-            }
+            IPFSUploadResult with CID, URLs, and metadata
         """
-        result = self.ipfs.upload(build_artifacts.output_dir)
-
-        # Convert IPFSUploadResult to dictionary
-        return {
-            'success': result.success,
-            'cid': result.cid,
-            'gatewayUrl': result.gateway_url,
-            'thirdwebUrl': result.thirdweb_url,
-            'totalSize': result.total_size,
-            'fileCount': result.file_count,
-        }
+        return self.ipfs.upload(build_artifacts.output_dir)
 
     def _create_manifest(
         self,
         project_info: ProjectInfo,
         build_artifacts: BuildArtifacts,
-        ipfs_result: Optional[dict],
-        network: str,
+        ipfs_result=None,
+        network: str = "varity",
         hosting: str = "ipfs",
-        tier: str = "free",
         akash_result=None,
     ) -> dict:
         """
@@ -390,7 +401,6 @@ class DeploymentOrchestrator:
             "timestamp": datetime.now().isoformat(),
             "network": network,
             "hosting": hosting,
-            "tier": tier,
             "project": {
                 "type": project_info.project_type,
                 "framework_version": project_info.framework_version,
@@ -419,11 +429,11 @@ class DeploymentOrchestrator:
             }
         elif ipfs_result:
             manifest["ipfs"] = {
-                "cid": ipfs_result["cid"],
-                "gateway_url": ipfs_result["gatewayUrl"],
-                "thirdweb_url": ipfs_result["thirdwebUrl"],
-                "total_size": ipfs_result.get("totalSize", 0),
-                "file_count": ipfs_result.get("fileCount", 0),
+                "cid": ipfs_result.cid,
+                "gateway_url": ipfs_result.gateway_url,
+                "thirdweb_url": ipfs_result.thirdweb_url,
+                "total_size": ipfs_result.total_size,
+                "file_count": ipfs_result.file_count,
             }
 
         return manifest
@@ -439,7 +449,7 @@ class DeploymentOrchestrator:
             Deployment ID
         """
         # Create deployments directory
-        deployments_dir = Path.home() / ".varietykit" / "deployments"
+        deployments_dir = Path.home() / ".varitykit" / "deployments"
         deployments_dir.mkdir(parents=True, exist_ok=True)
 
         deployment_id = manifest["deployment_id"]
@@ -463,7 +473,7 @@ class DeploymentOrchestrator:
         Returns:
             Deployment manifest dictionary or None if not found
         """
-        deployments_dir = Path.home() / ".varietykit" / "deployments"
+        deployments_dir = Path.home() / ".varitykit" / "deployments"
         filepath = deployments_dir / f"{deployment_id}.json"
 
         if not filepath.exists():
@@ -482,7 +492,7 @@ class DeploymentOrchestrator:
         Returns:
             List of deployment manifest dictionaries
         """
-        deployments_dir = Path.home() / ".varietykit" / "deployments"
+        deployments_dir = Path.home() / ".varitykit" / "deployments"
 
         if not deployments_dir.exists():
             return []
@@ -502,7 +512,7 @@ class DeploymentOrchestrator:
         return deployments
 
     def _submit_to_app_store(
-        self, project_info: ProjectInfo, deployment_result: dict, project_path: str, network: str
+        self, project_info: ProjectInfo, deployment_result: dict, project_path: str, network: str, tier: str = "free"
     ):
         """
         Submit app to Varity App Store (Phase 2 - Agent 6).
@@ -545,6 +555,7 @@ class DeploymentOrchestrator:
                 deployment_result=deployment_result,
                 package_json_path=package_json_path,
                 chain_id=chain_id,
+                tier=tier,
             )
 
             # Submit to App Store contract
