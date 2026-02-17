@@ -37,6 +37,12 @@ export interface ThirdwebWrapperConfig {
   clientId?: string;
 
   /**
+   * Thirdweb Secret Key for server-side operations (IPFS uploads, contract deploys).
+   * Never use in browser environments. Falls back to THIRDWEB_SECRET_KEY env var.
+   */
+  secretKey?: string;
+
+  /**
    * Optional private key for wallet operations
    */
   privateKey?: string;
@@ -93,10 +99,15 @@ export class ThirdwebWrapper {
       this.chainId = varityL3Testnet.id;
     }
 
-    // Initialize Thirdweb Client
-    this.client = createThirdwebClient({
+    // Initialize Thirdweb Client (with optional secret key for server-side operations)
+    const clientConfig: Record<string, string> = {
       clientId: config.clientId || process.env.THIRDWEB_CLIENT_ID || 'a35636133eb5ec6f30eb9f4c15fce2f3',
-    });
+    };
+    const secretKey = config.secretKey || process.env.THIRDWEB_SECRET_KEY;
+    if (secretKey) {
+      clientConfig.secretKey = secretKey;
+    }
+    this.client = createThirdwebClient(clientConfig);
 
     // Initialize account if private key provided
     if (config.privateKey) {

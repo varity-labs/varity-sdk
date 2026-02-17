@@ -195,13 +195,18 @@ def app():
     type=click.Choice(["free", "starter", "growth", "enterprise"], case_sensitive=False),
 )
 @click.option(
+    "--name",
+    default=None,
+    help="Custom subdomain for {name}.varity.app",
+)
+@click.option(
     "--path",
     default=".",
     help="Project directory (default: current directory)",
     type=click.Path(exists=True),
 )
 @click.pass_context
-def deploy(ctx, hosting, submit_to_store, tier, path):
+def deploy(ctx, hosting, submit_to_store, tier, name, path):
     """
     Deploy your application.
 
@@ -319,12 +324,8 @@ def deploy(ctx, hosting, submit_to_store, tier, path):
             console.print("  ✓ [cyan]Auth:[/cyan] Enabled")
         if features.get('payment_widget'):
             console.print("  ✓ [green]Payments:[/green] Enabled")
-        else:
-            if submit_to_store:
-                console.print("  ⚠️ [yellow]Payments:[/yellow] Not detected (required for App Store)")
-
-        # Inform developer about payment integration (optional — not a blocker)
-        if submit_to_store and not features.get('payment_widget'):
+        elif submit_to_store and tier and tier != 'free':
+            console.print("  ⚠️ [yellow]Payments:[/yellow] Not detected (required for paid tiers)")
             console.print("\n  [yellow]ℹ️  No payment integration detected.[/yellow]")
             console.print("  [dim]You can add payment support later via your developer dashboard.[/dim]")
             console.print("  [dim]Docs: https://docs.varity.so/build/payments[/dim]\n")
@@ -378,6 +379,8 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
                 from varitykit.services.credential_fetcher import fetch_thirdweb_credentials
                 creds = fetch_thirdweb_credentials()
                 os.environ["THIRDWEB_CLIENT_ID"] = creds.thirdweb_client_id
+                if creds.thirdweb_secret_key:
+                    os.environ["THIRDWEB_SECRET_KEY"] = creds.thirdweb_secret_key
                 console.print("  ✓ Hosting credentials ready")
             except Exception as e:
                 console.print(f"  [yellow]⚠️  Could not connect to Varity servers: {e}[/yellow]")
@@ -396,6 +399,7 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
                 hosting=hosting,
                 submit_to_store=False,
                 tier=tier or "free",
+                custom_name=name,
             )
         finally:
             # Clean up credentials file
@@ -408,26 +412,18 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
         console.print("[bold green]✅ Deployment Successful![/bold green]")
         console.print("="*60)
 
-        if hosting == "dynamic":
-            deployment_text = f"""[bold cyan]Your App[/bold cyan]
+        deployment_text = f"""[bold cyan]Your App[/bold cyan]
 
 [cyan]App URL:[/cyan] {result.frontend_url}
 [cyan]Deployment ID:[/cyan] {result.deployment_id}"""
 
-            if features.get('database') and credentials:
-                deployment_text += f"\n\n[bold cyan]Database[/bold cyan]\n[cyan]Status:[/cyan] ✅ Ready\n[cyan]App ID:[/cyan] {credentials['app_id']}"
+        if result.custom_domain and result.thirdweb_url:
+            deployment_text += f"\n[dim]IPFS:[/dim]  {result.thirdweb_url}"
 
-            console.print(Panel.fit(deployment_text, border_style="green"))
-        else:
-            deployment_text = f"""[bold cyan]Your App[/bold cyan]
+        if features.get('database') and credentials:
+            deployment_text += f"\n\n[bold cyan]Database[/bold cyan]\n[cyan]Status:[/cyan] ✅ Ready\n[cyan]App ID:[/cyan] {credentials['app_id']}"
 
-[cyan]App URL:[/cyan] {result.frontend_url}
-[cyan]Deployment ID:[/cyan] {result.deployment_id}"""
-
-            if features.get('database') and credentials:
-                deployment_text += f"\n\n[bold cyan]Database[/bold cyan]\n[cyan]Status:[/cyan] ✅ Ready\n[cyan]App ID:[/cyan] {credentials['app_id']}"
-
-            console.print(Panel.fit(deployment_text, border_style="green"))
+        console.print(Panel.fit(deployment_text, border_style="green"))
 
         console.print("="*60)
 

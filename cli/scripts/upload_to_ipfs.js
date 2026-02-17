@@ -127,10 +127,13 @@ async function uploadToIPFS(directory, clientId) {
       );
     }
 
-    // 3. Create thirdweb client
-    const client = createThirdwebClient({
-      clientId: thirdwebClientId
-    });
+    // 3. Create thirdweb client (with optional secret key for server-side uploads)
+    const thirdwebSecretKey = process.env.THIRDWEB_SECRET_KEY;
+    const clientConfig = { clientId: thirdwebClientId };
+    if (thirdwebSecretKey) {
+      clientConfig.secretKey = thirdwebSecretKey;
+    }
+    const client = createThirdwebClient(clientConfig);
 
     // 4. Collect all files from directory
     const fileMetadata = getAllFiles(directory);

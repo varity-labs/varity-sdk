@@ -28,6 +28,11 @@ export interface ThirdwebWrapperConfig {
      */
     clientId?: string;
     /**
+     * Thirdweb Secret Key for server-side operations (IPFS uploads, contract deploys).
+     * Never use in browser environments. Falls back to THIRDWEB_SECRET_KEY env var.
+     */
+    secretKey?: string;
+    /**
      * Optional private key for wallet operations
      */
     privateKey?: string;
