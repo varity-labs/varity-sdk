@@ -1,14 +1,24 @@
 ---
 version: "2.0"
 
+endpoints:
+  gateway-ip:
+    kind: ip
+
 services:
   gateway:
     image: ghcr.io/varity-labs/varity-gateway:latest
     expose:
-      - port: 8080
+      - port: 80
         as: 80
         to:
           - global: true
+            ip: gateway-ip
+      - port: 443
+        as: 443
+        to:
+          - global: true
+            ip: gateway-ip
     env:
       - NODE_ENV=production
       - PORT=8080
