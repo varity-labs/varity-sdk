@@ -9,12 +9,12 @@ services:
   gateway:
     image: ghcr.io/varity-labs/varity-gateway:latest
     expose:
-      - port: 80
+      - port: 8081
         as: 80
         to:
           - global: true
             ip: gateway-ip
-      - port: 443
+      - port: 8443
         as: 443
         to:
           - global: true

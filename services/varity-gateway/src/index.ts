@@ -1,9 +1,13 @@
 import express from 'express';
 import cors from 'cors';
-import { config } from './config';
+import { config, RESERVED_SUBDOMAINS } from './config';
 import { resolveDomain, getCacheStats } from './domain-resolver';
 import { registrationRouter, verifyApiKey } from './registration-api';
 import { notFoundHtml } from './not-found';
+import { buildIpfsUrl, buildIpfsIndexUrl, buildIpfsBaseUrl, sanitizePath } from './ipfs';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version } = require('../package.json');
 
 const app = express();
 
@@ -27,14 +31,20 @@ app.use(express.json());
 // Health check
 app.get('/health', (_req, res) => {
   try {
-    const cacheStats = getCacheStats();
-    res.json({
+    const response: Record<string, unknown> = {
       status: 'healthy',
       service: 'varity-gateway',
-      version: '1.0.0',
-      environment: config.server.env,
-      cache: { hits: cacheStats.hits, misses: cacheStats.misses, keys: cacheStats.keys },
-    });
+      version,
+    };
+
+    // Only expose diagnostics outside production
+    if (config.server.env !== 'production') {
+      const cacheStats = getCacheStats();
+      response.environment = config.server.env;
+      response.cache = { hits: cacheStats.hits, misses: cacheStats.misses, keys: cacheStats.keys };
+    }
+
+    res.json(response);
   } catch {
     res.status(503).json({ status: 'unhealthy' });
   }
@@ -68,9 +78,7 @@ app.get('/resolve/:subdomain', verifyApiKey, async (req, res) => {
   const cid = await resolveDomain(subdomain);
 
   if (cid) {
-    const backend = cid.startsWith('Qm')
-      ? `https://ipfs.io/ipfs/${cid}`
-      : `https://${cid}.${config.gateway.ipfsBackend}`;
+    const backend = buildIpfsBaseUrl(cid, config.gateway.ipfsBackend);
     res.json({ cid, backend });
   } else {
     res.status(404).json({ error: 'not_found' });
@@ -91,14 +99,8 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
     return;
   }
 
-  // Sanitize path — strip traversal attempts and leading slashes
-  const safePath = assetPath.replace(/\.\.\//g, '').replace(/^\/+/, '');
-
-  // CIDv0 (Qm...) can't be used as subdomain — use path-based IPFS gateway
-  const isCidV0 = cid.startsWith('Qm');
-  const ipfsUrl = isCidV0
-    ? `https://ipfs.io/ipfs/${cid}/${safePath}`
-    : `https://${cid}.${config.gateway.ipfsBackend}/${safePath}`;
+  const safePath = sanitizePath(assetPath);
+  const ipfsUrl = buildIpfsUrl(cid, safePath, config.gateway.ipfsBackend);
 
   try {
     const ipfsRes = await fetch(ipfsUrl, { signal: AbortSignal.timeout(15000) });
@@ -106,9 +108,7 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
     if (!ipfsRes.ok) {
       // SPA fallback: if a non-file path returns 404, serve /index.html
       if (ipfsRes.status === 404 && safePath && !safePath.includes('.')) {
-        const fallbackUrl = isCidV0
-          ? `https://ipfs.io/ipfs/${cid}/index.html`
-          : `https://${cid}.${config.gateway.ipfsBackend}/index.html`;
+        const fallbackUrl = buildIpfsIndexUrl(cid, config.gateway.ipfsBackend);
         const fallbackRes = await fetch(fallbackUrl, { signal: AbortSignal.timeout(10000) });
 
         if (fallbackRes.ok) {
@@ -146,8 +146,8 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
 
 // Path-based routing: varity.app/{app-name} and varity.app/{app-name}/path/to/file
 app.get('/:appName', async (req, res, next) => {
-  // Skip API/system routes
-  if (['health', 'resolve', 'tls-check', 'api'].includes(req.params.appName)) {
+  // Skip API/system routes — use the canonical RESERVED_SUBDOMAINS set
+  if (RESERVED_SUBDOMAINS.has(req.params.appName.toLowerCase())) {
     next();
     return;
   }
@@ -184,7 +184,7 @@ function extractSubdomain(host: string): string | null {
 // Start server
 const server = app.listen(config.server.port, '0.0.0.0', () => {
   console.log('');
-  console.log('  Varity Gateway v1.0.0');
+  console.log(`  Varity Gateway v${version}`);
   console.log(`  Environment:  ${config.server.env}`);
   console.log(`  Listening:    http://0.0.0.0:${config.server.port}`);
   console.log(`  Base domain:  ${config.gateway.baseDomain}`);

@@ -1,3 +1,15 @@
+{
+	http_port 8081
+	https_port 8443
+}
+
 {$BASE_DOMAIN:varity.app} {
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
 	reverse_proxy localhost:8080
 }

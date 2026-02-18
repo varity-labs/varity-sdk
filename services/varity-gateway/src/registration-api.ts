@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { config, RESERVED_SUBDOMAINS, DB_COLLECTION } from './config';
-import { invalidateCache } from './domain-resolver';
+import { invalidateCache, fetchAllDomains } from './domain-resolver';
 import crypto from 'crypto';
 
 export const registrationRouter = Router();
@@ -41,21 +41,6 @@ function isValidSubdomain(name: string): boolean {
 /** Validate IPFS CID format (CIDv0 or CIDv1) */
 function isValidCid(cid: string): boolean {
   return /^Qm[A-Za-z0-9]{44}$/.test(cid) || /^bafy[a-z2-7]{55,}$/.test(cid);
-}
-
-/** Fetch all domain records from DB Proxy */
-async function fetchAllDomains(): Promise<Array<{ id: string; subdomain: string; cid: string }>> {
-  const url = `${config.dbProxy.url}/db/${DB_COLLECTION}/get`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${config.dbProxy.token}` },
-    signal: AbortSignal.timeout(5000),
-  });
-
-  if (!res.ok) throw new Error(`DB Proxy returned ${res.status}`);
-
-  const data = await res.json() as { success?: boolean; data?: Array<{ id: string; subdomain: string; cid: string }> };
-  if (!data.success || !data.data) return [];
-  return data.data;
 }
 
 // Check subdomain availability
@@ -191,9 +176,9 @@ registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request,
     const updatedRecord = {
       subdomain: name,
       cid,
-      appName: (existing as any).appName || name,
+      appName: existing.appName || name,
       registeredBy: 'cli',
-      createdAt: (existing as any).createdAt || new Date().toISOString(),
+      createdAt: existing.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 

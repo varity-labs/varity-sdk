@@ -59,11 +59,13 @@ docker push ghcr.io/varity-labs/varity-gateway:1.0.0
 
 ---
 
-## Step 3: Deploy to Akash (5 min)
+## Step 3: Deploy to Akash with IP Lease (5 min)
+
+The gateway uses an **IP lease** (dedicated IP) so Caddy can auto-issue Let's Encrypt certs. Only providers that support IP leases will bid.
 
 1. Go to [console.akash.network](https://console.akash.network)
-2. Create new deployment
-3. Use the SDL from `deploy.yaml` with these env values filled in:
+2. Close the old shared-ingress deployment if one exists
+3. Create new deployment using `deploy.yaml` with these env values filled in:
 
 ```yaml
 env:
@@ -84,8 +86,9 @@ openssl rand -hex 32
 
 **Save both `GATEWAY_API_KEY` and `DB_PROXY_TOKEN` — they're needed to update the CLI.**
 
-4. Deploy. Note the Akash provider hostname (e.g., `{hash}.ingress.{provider}`)
-5. Verify: `curl http://<akash-hostname>/health`
+4. Accept a bid from a provider that supports IP leases
+5. Note the **leased IP address** shown in Akash Console
+6. Verify: `curl http://<leased-ip>/health`
 
 ---
 
@@ -93,17 +96,17 @@ openssl rand -hex 32
 
 At your domain registrar for `varity.app`:
 
-1. Add a CNAME record:
+1. Add an **A record** pointing to the leased IP:
    ```
-   app.varity.app  →  <akash-provider-hostname>
+   varity.app  →  <leased-ip-address>
    ```
 
-2. In Akash Console, add `accept: ["app.varity.app"]` to the SDL expose section.
+2. Wait ~2 minutes for Caddy to auto-issue the Let's Encrypt certificate.
 
 3. Verify:
    ```bash
-   dig app.varity.app
-   curl https://app.varity.app/health
+   dig varity.app
+   curl https://varity.app/health
    ```
 
 ---
@@ -124,17 +127,17 @@ After all steps:
 
 ```bash
 # Health check
-curl https://app.varity.app/health
+curl https://varity.app/health
 
 # Register a test domain
 curl -X POST \
   -H "Authorization: Bearer <GATEWAY_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"subdomain":"hello-world","cid":"bafybeibj6lixxzqtsb45ysdjnupvqkufgdvzqbnvmhw2kf7cfkesy7r7d4"}' \
-  https://app.varity.app/api/domains/register
+  https://varity.app/api/domains/register
 
 # Visit in browser — path-based routing
-open https://app.varity.app/hello-world
+open https://varity.app/hello-world
 ```
 
 ---
@@ -144,6 +147,7 @@ open https://app.varity.app/hello-world
 | Service | Cost |
 |---------|------|
 | Gateway on Akash | ~$1.50/mo |
-| DNS (CNAME record) | $0 (included) |
-| TLS (Let's Encrypt) | $0 (free) |
-| **Total** | **~$1.50/mo** |
+| IP lease | ~$4.00/mo |
+| DNS (A record) | $0 (included) |
+| TLS (Let's Encrypt via Caddy) | $0 (free) |
+| **Total** | **~$5.50/mo** |
