@@ -25,7 +25,7 @@ class GatewayError(Exception):
 # Gateway URL (Akash deployment)
 GATEWAY_URL = os.getenv(
     "VARITY_GATEWAY_URL",
-    "http://bdfjhtfcq1afp52pn39c9oumko.ingress.akash.tagus.host"
+    "https://varity.app"
 )
 
 # CLI API key for gateway authentication
