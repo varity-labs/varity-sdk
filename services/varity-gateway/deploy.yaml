@@ -26,7 +26,7 @@ services:
       - DB_PROXY_TOKEN=${DB_PROXY_TOKEN}
       - GATEWAY_API_KEY=${GATEWAY_API_KEY}
       - BASE_DOMAIN=varity.app
-      - IPFS_BACKEND=ipfscdn.io
+      - IPFS_BACKEND=ipfs.dweb.link
       - CACHE_TTL=300
 
 profiles:

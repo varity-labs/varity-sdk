@@ -22,7 +22,7 @@ export const config = {
   gateway: {
     baseDomain: process.env.BASE_DOMAIN || 'varity.app',
     apiKey: requireEnv('GATEWAY_API_KEY'),
-    ipfsBackend: process.env.IPFS_BACKEND || 'ipfscdn.io',
+    ipfsBackend: process.env.IPFS_BACKEND || 'ipfs.dweb.link',
   },
   cache: {
     ttlSeconds: parseInt(process.env.CACHE_TTL || '300', 10), // 5 minutes

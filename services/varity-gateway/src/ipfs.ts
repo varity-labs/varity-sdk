@@ -7,8 +7,7 @@ const IPFS_IO_GATEWAY = 'https://ipfs.io/ipfs';
  * CIDv0 (Qm...) can't be used as a subdomain, so we use path-based gateway.
  * CIDv1 (bafy...) uses the subdomain-based backend (e.g. ipfscdn.io).
  */
-export function buildIpfsUrl(cid: string, assetPath: string, ipfsBackend: string): string {
-  const safePath = sanitizePath(assetPath);
+export function buildIpfsUrl(cid: string, safePath: string, ipfsBackend: string): string {
   if (cid.startsWith('Qm')) {
     return `${IPFS_IO_GATEWAY}/${cid}/${safePath}`;
   }
