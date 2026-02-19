@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { db } from '@varity/sdk';
+ * import { db } from '@varity-labs/sdk';
  *
  * // Insert
  * await db.collection('products').add({ name: 'Widget', price: 29.99 });
@@ -23,6 +23,7 @@
  */
 
 import { Collection } from './collection';
+import { VARITY_DEV_DB_CREDENTIALS } from '../core/credentials';
 import type { DatabaseConfig } from './types';
 
 /**
@@ -42,10 +43,10 @@ export class Database {
    * @example
    * ```typescript
    * // Default instance (recommended)
-   * import { db } from '@varity/sdk';
+   * import { db } from '@varity-labs/sdk';
    *
    * // Custom instance (advanced)
-   * import { Database } from '@varity/sdk';
+   * import { Database } from '@varity-labs/sdk';
    * const customDb = new Database({
    *   proxyUrl: 'https://custom-proxy.example.com',
    *   appToken: 'custom-jwt-token'
@@ -61,20 +62,21 @@ export class Database {
         process.env.NEXT_PUBLIC_VARITY_DB_PROXY_URL ||
         process.env.VITE_VARITY_DB_PROXY_URL ||
         process.env.REACT_APP_VARITY_DB_PROXY_URL ||
-        'https://db-proxy.varity.so',
+        'http://provider.akashprovid.com:31782',
       appToken:
         config?.appToken ||
         process.env.NEXT_PUBLIC_VARITY_APP_TOKEN ||
         process.env.VITE_VARITY_APP_TOKEN ||
         process.env.REACT_APP_VARITY_APP_TOKEN ||
-        '',
+        VARITY_DEV_DB_CREDENTIALS.token,
     };
 
-    // Warn if no app token is configured
-    if (!this.config.appToken && typeof console !== 'undefined') {
-      console.warn(
-        '[Varity Database] No app token found. Database operations will fail.\n' +
-        'Make sure you deploy your app with `varietykit app deploy` to inject credentials automatically.'
+    // Log when using shared development database
+    if (this.config.appToken === VARITY_DEV_DB_CREDENTIALS.token && typeof console !== 'undefined') {
+      console.info(
+        '[Varity Database] Using shared development database. ' +
+        'Data is stored in an isolated dev schema.\n' +
+        'Deploy with `varitykit app deploy` to get your own private database.'
       );
     }
   }
@@ -114,7 +116,7 @@ export class Database {
  *
  * @example
  * ```typescript
- * import { db } from '@varity/sdk';
+ * import { db } from '@varity-labs/sdk';
  *
  * await db.collection('products').add({ name: 'Widget', price: 29.99 });
  * const products = await db.collection('products').get();

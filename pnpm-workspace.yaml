@@ -2,5 +2,6 @@ packages:
   - 'packages/**/*'
   - 'apps/*'
   - 'tools/*'
+  - 'templates/*'
   - '!**/node_modules/**'
   - '!**/examples/**'

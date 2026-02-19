@@ -282,13 +282,13 @@ class LocalDePinValidator:
                     return ValidationResult(
                         passed=False,
                         message="No services running",
-                        details="Run 'varietykit localdepin start' to start services",
+                        details="Run 'varitykit localdepin start' to start services",
                     )
             else:
                 return ValidationResult(
                     passed=False,
                     message="docker-compose not found in current directory",
-                    details="Navigate to a VarityKit project or run 'varietykit init'",
+                    details="Navigate to a VarityKit project or run 'varitykit init'",
                 )
 
         except Exception as e:
@@ -390,7 +390,7 @@ class SystemValidator:
             return ValidationResult(
                 passed=False,
                 message=".env file not found",
-                details="Run 'varietykit init' to create project with .env",
+                details="Run 'varitykit init' to create project with .env",
             )
 
     @staticmethod
@@ -418,7 +418,7 @@ class SystemValidator:
             return ValidationResult(
                 passed=False,
                 message="Configuration file not found",
-                details="Run 'varietykit init' to create project",
+                details="Run 'varitykit init' to create project",
             )
 
 

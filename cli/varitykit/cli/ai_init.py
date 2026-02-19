@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 import click
-from varietykit.core.ai_engine import AIConfigurationEngine
+from varitykit.core.ai_engine import AIConfigurationEngine
 
 
 @click.command(name="init")
@@ -24,9 +24,9 @@ def init_command(output_dir, ai, min_quality):
     customized dashboard through conversational interface.
 
     Examples:
-        varietykit init                  # Create in current directory
-        varietykit init ./my-dashboard   # Create in specific directory
-        varietykit init --no-ai          # Use template-based generation
+        varitykit init                  # Create in current directory
+        varitykit init ./my-dashboard   # Create in specific directory
+        varitykit init --no-ai          # Use template-based generation
     """
     if not ai:
         click.echo("Template-based generation not yet implemented.")

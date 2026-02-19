@@ -19,31 +19,16 @@ from rich.table import Table
 @click.pass_context
 def thirdweb(ctx):
     """
-    Thirdweb SDK integration for contract deployment and interaction
+    Platform SDK integration (advanced - internal use)
 
-    Provides enhanced blockchain operations using the Thirdweb SDK,
-    including contract deployment, interaction, and IPFS storage.
-
-    \b
-    Quick Start:
-      varietykit thirdweb deploy <contract-path>
-      varietykit thirdweb read <address> <method> [args]
-      varietykit thirdweb write <address> <method> --params <params>
-      varietykit thirdweb storage <file-path>
-
-    \b
-    Examples:
-      # Deploy contract
-      varietykit thirdweb deploy ./out/MyToken.sol/MyToken.json
-
-      # Read from contract
-      varietykit thirdweb read 0x123... balanceOf --params '["0xabc..."]'
+    This is an advanced command for internal use.
+    For deploying apps, use: varitykit app deploy
 
       # Write to contract
-      varietykit thirdweb write 0x123... transfer --params '["0xabc...", 1000000]'
+      varitykit thirdweb write 0x123... transfer --params '["0xabc...", 1000000]'
 
       # Upload to IPFS
-      varietykit thirdweb storage ./metadata.json
+      varitykit thirdweb storage ./metadata.json
 
     \b
     Environment Variables Required:
@@ -120,14 +105,14 @@ def deploy(ctx, contract_path, constructor_args, network, name):
     \b
     Examples:
       # Deploy without constructor arguments
-      varietykit thirdweb deploy ./out/MyContract.sol/MyContract.json
+      varitykit thirdweb deploy ./out/MyContract.sol/MyContract.json
 
       # Deploy with constructor arguments
-      varietykit thirdweb deploy ./out/MyToken.sol/MyToken.json \\
+      varitykit thirdweb deploy ./out/MyToken.sol/MyToken.json \\
         --constructor-args '["MyToken", "MTK", 1000000]'
 
       # Deploy to specific network
-      varietykit thirdweb deploy ./out/NFT.sol/NFT.json --network varity-testnet
+      varitykit thirdweb deploy ./out/NFT.sol/NFT.json --network varity-testnet
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -302,13 +287,13 @@ def read(ctx, contract_address, method_name, params, network):
     \b
     Examples:
       # Read balance
-      varietykit thirdweb read 0x123... balanceOf --params '["0xabc..."]'
+      varitykit thirdweb read 0x123... balanceOf --params '["0xabc..."]'
 
       # Read token name
-      varietykit thirdweb read 0x123... name
+      varitykit thirdweb read 0x123... name
 
       # Multi-parameter read
-      varietykit thirdweb read 0x123... allowance \\
+      varitykit thirdweb read 0x123... allowance \\
         --params '["0xowner...", "0xspender..."]'
     """
     console = Console()
@@ -437,15 +422,15 @@ def write(ctx, contract_address, method_name, params, network, value):
     \b
     Examples:
       # Transfer tokens
-      varietykit thirdweb write 0x123... transfer \\
+      varitykit thirdweb write 0x123... transfer \\
         --params '["0xrecipient...", 1000000]'
 
       # Approve spending
-      varietykit thirdweb write 0x123... approve \\
+      varitykit thirdweb write 0x123... approve \\
         --params '["0xspender...", 1000000000]'
 
       # Send with value
-      varietykit thirdweb write 0x123... deposit \\
+      varitykit thirdweb write 0x123... deposit \\
         --params '[]' --value 1000000
     """
     console = Console()
@@ -580,16 +565,16 @@ def storage(ctx, file_path, download, output):
     \b
     Examples:
       # Upload file
-      varietykit thirdweb storage ./metadata.json
+      varitykit thirdweb storage ./metadata.json
 
       # Upload directory
-      varietykit thirdweb storage ./images/
+      varitykit thirdweb storage ./images/
 
       # Download from IPFS
-      varietykit thirdweb storage ipfs://QmXxx... --download
+      varitykit thirdweb storage ipfs://QmXxx... --download
 
       # Download to specific path
-      varietykit thirdweb storage ipfs://QmXxx... --download --output ./metadata.json
+      varitykit thirdweb storage ipfs://QmXxx... --download --output ./metadata.json
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -753,7 +738,7 @@ def setup(ctx):
 
         # Create package.json
         package_json = {
-            "name": "varietykit-thirdweb-scripts",
+            "name": "varitykit-thirdweb-scripts",
             "version": "1.0.0",
             "type": "module",
             "dependencies": {
@@ -786,10 +771,10 @@ def setup(ctx):
                 "[bold green]✓ Thirdweb Setup Complete[/bold green]\n\n"
                 "Helper scripts installed successfully.\n"
                 "You can now use:\n"
-                "  varietykit thirdweb deploy\n"
-                "  varietykit thirdweb read\n"
-                "  varietykit thirdweb write\n"
-                "  varietykit thirdweb storage",
+                "  varitykit thirdweb deploy\n"
+                "  varitykit thirdweb read\n"
+                "  varitykit thirdweb write\n"
+                "  varitykit thirdweb storage",
                 border_style="green",
             )
         )

@@ -1,7 +1,7 @@
 {
   "name": "@varity-labs/types",
   "version": "2.0.0-alpha.1",
-  "description": "Shared TypeScript type definitions for Varity SDK",
+  "description": "Type definitions for Varity SDK — auth, database, API, and utility types",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -25,12 +25,22 @@
     "clean": "rm -rf dist",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "test:unit": "jest"
+    "test:unit": "jest",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": ["varity", "types", "typescript", "sdk"],
+  "keywords": ["varity", "types", "typescript", "sdk", "developer-tools", "react", "nextjs"],
   "author": "Varity",
   "license": "MIT",
-  "dependencies": {
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/varity-labs/varity-sdk.git",
+    "directory": "packages/core/varity-types"
+  },
+  "homepage": "https://docs.varity.so",
+  "bugs": {
+    "url": "https://github.com/varity-labs/varity-sdk/issues"
+  },
+  "optionalDependencies": {
     "thirdweb": "^5.112.0"
   },
   "devDependencies": {

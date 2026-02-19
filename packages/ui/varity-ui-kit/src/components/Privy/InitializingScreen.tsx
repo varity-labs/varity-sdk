@@ -8,7 +8,7 @@ export interface InitializingScreenProps {
   title?: string;
   /**
    * Custom description text
-   * @default "Setting up Web3 providers and authentication. This should take just a few seconds."
+   * @default "Setting up authentication and services. This should take just a few seconds."
    */
   description?: string;
   /**
@@ -45,9 +45,9 @@ export interface InitializingScreenProps {
  * ```tsx
  * <InitializingScreen
  *   title="Setting up your workspace..."
- *   description="Connecting to blockchain and loading your data."
+ *   description="Loading your data and services."
  *   steps={[
- *     "Connecting to Varity L3",
+ *     "Connecting to Varity",
  *     "Loading your profile",
  *     "Preparing dashboard"
  *   ]}
@@ -56,11 +56,11 @@ export interface InitializingScreenProps {
  */
 export function InitializingScreen({
   title = 'Initializing Dashboard...',
-  description = 'Setting up Web3 providers and authentication. This should take just a few seconds.',
+  description = 'Setting up authentication and services. This should take just a few seconds.',
   steps = [
-    'Loading Privy authentication',
-    'Connecting to Varity L3',
-    'Preparing wallet connection',
+    'Loading authentication',
+    'Connecting to Varity',
+    'Preparing your session',
   ],
 }: InitializingScreenProps): JSX.Element {
   return (

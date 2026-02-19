@@ -10,7 +10,10 @@ import { NetworkConfig, Network } from './types'
  * Network configurations for Varity SDK
  * Contract addresses will be populated after deployment
  */
-export const NETWORK_CONFIGS: Record<Network, NetworkConfig> = {
+/**
+ * Internal network configurations (keyed by internal identifiers)
+ */
+const INTERNAL_NETWORK_CONFIGS = {
   'arbitrum-sepolia': {
     chainId: 421614, // Arbitrum Sepolia testnet chain ID
     rpcUrl: process.env.ARBITRUM_SEPOLIA_RPC || 'https://sepolia-rollup.arbitrum.io/rpc',
@@ -53,13 +56,26 @@ export const NETWORK_CONFIGS: Record<Network, NetworkConfig> = {
       VarityWalletFactory: process.env.WALLET_FACTORY_L3_MAINNET || ''
     }
   }
+} satisfies Record<string, NetworkConfig>
+
+/**
+ * Network aliases - developer-friendly names that map to internal network identifiers
+ */
+const NETWORK_ALIASES: Record<string, string> = {
+  'beta': 'arbitrum-l3-testnet',
+  'production': 'arbitrum-l3-mainnet',
 }
+
+/**
+ * Public network configs (includes aliases)
+ */
+export const NETWORK_CONFIGS = INTERNAL_NETWORK_CONFIGS as Record<string, NetworkConfig>
 
 /**
  * Default SDK configuration
  */
 export const DEFAULT_CONFIG = {
-  network: 'arbitrum-sepolia' as Network,
+  network: 'beta' as Network,
   apiEndpoint: process.env.VARITY_API_ENDPOINT || 'https://api.varity.io',
   timeout: 30000 // 30 seconds
 }
@@ -68,9 +84,11 @@ export const DEFAULT_CONFIG = {
  * Get network configuration
  */
 export function getNetworkConfig(network: Network): NetworkConfig {
-  const config = NETWORK_CONFIGS[network]
+  // Resolve aliases (e.g., 'beta' → 'arbitrum-l3-testnet')
+  const resolved = NETWORK_ALIASES[network] || network
+  const config = INTERNAL_NETWORK_CONFIGS[resolved as keyof typeof INTERNAL_NETWORK_CONFIGS]
   if (!config) {
-    throw new Error(`Unsupported network: ${network}`)
+    throw new Error(`Unsupported network: ${network}. Use 'beta' or 'production'.`)
   }
   return config
 }

@@ -155,7 +155,7 @@ export const useAuth = (): UseAuthReturn => {
 /**
  * useWalletConnect Hook
  *
- * Helper hook for connecting Web3 wallets (MetaMask, WalletConnect, etc).
+ * Helper hook for connecting external wallets (MetaMask, etc).
  *
  * @example
  * ```tsx

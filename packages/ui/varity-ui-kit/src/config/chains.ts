@@ -51,7 +51,7 @@ export {
 /**
  * Thirdweb Client ID (for UI components)
  */
-export const THIRDWEB_CLIENT_ID = 'acb17e07e34ab2b8317aa40cbb1b5e1d';
+export const THIRDWEB_CLIENT_ID = 'a35636133eb5ec6f30eb9f4c15fce2f3';
 
 /**
  * Get block explorer URL for any supported chain

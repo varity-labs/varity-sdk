@@ -274,7 +274,7 @@ For more information:
 
 ## 📞 Support
 
-- **Documentation**: https://docs.varity.ai/varietykit
+- **Documentation**: https://docs.varity.so/varietykit
 - **GitHub Issues**: https://github.com/varity/varietykit/issues
 - **Discord**: https://discord.gg/varity
 

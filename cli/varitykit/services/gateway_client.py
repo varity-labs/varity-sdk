@@ -1,7 +1,7 @@
 """
 Gateway Client — Register and manage custom domains via the Varity Gateway.
 
-Enables automatic domain registration on deploy: every app gets {name}.varity.app.
+Enables automatic domain registration on deploy: every app gets varity.app/{name}.
 The CLI calls the gateway API to register/update domain mappings.
 
 Security:

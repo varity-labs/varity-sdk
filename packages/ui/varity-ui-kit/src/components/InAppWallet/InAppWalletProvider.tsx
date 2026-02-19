@@ -15,7 +15,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ThirdwebProvider } from 'thirdweb/react';
 import { useActiveAccount, useConnect } from 'thirdweb/react';
-import { inAppWallet } from 'thirdweb/wallets';
+import { inAppWallet, preAuthenticate } from 'thirdweb/wallets/in-app';
 import { createThirdwebClient } from 'thirdweb';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@varity-labs/types';
@@ -33,7 +33,10 @@ export interface InAppWalletContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  /** Step 1: Send OTP to email */
   loginWithEmail: (email: string) => Promise<void>;
+  /** Step 2: Verify OTP code from email */
+  verifyEmailCode: (email: string, verificationCode: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithApple: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
@@ -89,26 +92,49 @@ function InAppWalletManager({
   const loginWithEmail = useCallback(async (email: string) => {
     setIsLoading(true);
     try {
-      const wallet = inAppWallet();
-      setWallet(wallet);
-
-      // Use connect hook with v5 API
-      await connect(async () => {
-        await wallet.connect({
-          client,
-          strategy: 'email' as const,
-          email,
-        });
-        return wallet;
+      // Step 1: Send OTP to email
+      await preAuthenticate({
+        client,
+        strategy: 'email',
+        email,
       });
 
-      toast.success(`Welcome! Check ${email} for verification code.`);
+      toast.success(`Check ${email} for your verification code.`);
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
       console.error('Email login error:', errorMessage);
       const errorObj = error instanceof Error ? error : new Error(errorMessage);
       onLoginError?.(errorObj);
       toast.error('Failed to send verification code');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client, onLoginError]);
+
+  const verifyEmailCode = useCallback(async (email: string, verificationCode: string) => {
+    setIsLoading(true);
+    try {
+      const w = inAppWallet();
+      setWallet(w);
+
+      // Step 2: Verify OTP and connect wallet
+      await connect(async () => {
+        await w.connect({
+          client,
+          strategy: 'email' as const,
+          email,
+          verificationCode,
+        });
+        return w;
+      });
+
+      toast.success('Successfully logged in!');
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      console.error('Email verification error:', errorMessage);
+      const errorObj = error instanceof Error ? error : new Error(errorMessage);
+      onLoginError?.(errorObj);
+      toast.error('Invalid verification code');
     } finally {
       setIsLoading(false);
     }
@@ -216,6 +242,7 @@ function InAppWalletManager({
     isAuthenticated,
     isLoading,
     loginWithEmail,
+    verifyEmailCode,
     loginWithGoogle,
     loginWithApple,
     loginWithFacebook,

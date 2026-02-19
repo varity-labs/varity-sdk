@@ -8,8 +8,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from varietykit.core.build_manager import BuildManager
-from varietykit.core.types import BuildError
+from varitykit.core.build_manager import BuildManager
+from varitykit.core.types import BuildError
 
 
 class TestBuildManager:

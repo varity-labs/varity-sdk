@@ -21,18 +21,18 @@ from rich.progress import (
 )
 from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.table import Table
-from varietykit.core.template_generator import TemplateGenerator
-from varietykit.core.templates import TemplateInfo, TemplateManager
-from varietykit.utils.validators import ConfigValidator
+from varitykit.core.template_generator import TemplateGenerator
+from varitykit.core.templates import TemplateInfo, TemplateManager
+from varitykit.utils.validators import ConfigValidator
 
 
 @click.group()
 @click.pass_context
 def template(ctx):
     """
-    Create, test, and manage dashboard templates
+    Create, test, and manage application templates
 
-    Build company-specific AI Dashboard templates with AI assistance.
+    Build application templates with AI assistance.
     Create production-ready templates in minutes, not weeks.
 
     \b
@@ -45,10 +45,10 @@ def template(ctx):
 
     \b
     Quick Start:
-      varietykit template create          # Create new template (AI-powered)
-      varietykit template test            # Run automated tests
-      varietykit template preview         # Preview in browser
-      varietykit template validate        # Check quality
+      varitykit template create          # Create new template (AI-powered)
+      varitykit template test            # Run automated tests
+      varitykit template preview         # Preview in browser
+      varitykit template validate        # Check quality
 
     \b
     Template Creation Flow:
@@ -61,8 +61,8 @@ def template(ctx):
     \b
     Revenue Sharing:
       • Publish templates to Varity marketplace
-      • 70/30 split (you get 70%)
-      • Automatic payments via Varity L3
+      • 90/10 split (you get 90%)
+      • Automatic revenue sharing
       • Track downloads and revenue
     """
     pass
@@ -78,14 +78,14 @@ def create(ctx, industry, name, output, interactive):
     """
     Create a new template with AI assistance
 
-    Guides you through creating a production-ready dashboard template
+    Guides you through creating a production-ready application template
     with AI-generated components, tests, and documentation.
 
     \b
     Examples:
-      varietykit template create
-      varietykit template create --industry legal --name legal-dashboard
-      varietykit template create --no-interactive --industry healthcare
+      varitykit template create
+      varitykit template create --industry legal --name legal-dashboard
+      varitykit template create --no-interactive --industry healthcare
 
     \b
     What You'll Provide:
@@ -97,7 +97,7 @@ def create(ctx, industry, name, output, interactive):
     \b
     What AI Generates:
       • 5-12 React components (TypeScript)
-      • Dashboard pages with routing
+      • Application pages with routing
       • API integration code
       • TypeScript types and interfaces
       • Tailwind CSS styling
@@ -116,7 +116,7 @@ def create(ctx, industry, name, output, interactive):
     console.print(
         Panel.fit(
             "[bold cyan]VarityKit Template Creator[/bold cyan]\n"
-            "AI-powered template generation for company-specific dashboards\n\n"
+            "AI-powered template generation for applications\n\n"
             "[dim]Create production-ready templates in minutes[/dim]",
             border_style="cyan",
         )
@@ -297,10 +297,10 @@ def create(ctx, industry, name, output, interactive):
                 f"[cyan]Location:[/cyan] {output_dir}\n\n"
                 f"[bold]Next Steps:[/bold]\n"
                 f"  1. cd {output_dir.name}\n"
-                f"  2. varietykit template test      # Run tests\n"
-                f"  3. varietykit template preview   # Preview in browser\n"
-                f"  4. varietykit template validate  # Check quality\n"
-                f"  5. varietykit template publish   # Publish to marketplace\n\n"
+                f"  2. varitykit template test      # Run tests\n"
+                f"  3. varitykit template preview   # Preview in browser\n"
+                f"  4. varitykit template validate  # Check quality\n"
+                f"  5. varitykit template publish   # Publish to marketplace\n\n"
                 f"[dim]Total time: ~{test_results.get('generation_time', 0)} seconds[/dim]",
                 border_style="green",
             )
@@ -327,9 +327,9 @@ def test(ctx, coverage, watch):
 
     \b
     Examples:
-      varietykit template test              # Run all tests
-      varietykit template test --coverage   # With coverage report
-      varietykit template test --watch      # Watch mode
+      varitykit template test              # Run all tests
+      varitykit template test --coverage   # With coverage report
+      varitykit template test --watch      # Watch mode
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -382,7 +382,7 @@ def test(ctx, coverage, watch):
             console.print(
                 Panel.fit(
                     "[bold green]✅ All Tests Passed![/bold green]\n\n"
-                    "[dim]Next: varietykit template validate[/dim]",
+                    "[dim]Next: varitykit template validate[/dim]",
                     border_style="green",
                 )
             )
@@ -418,9 +418,9 @@ def preview(ctx, port, open):
 
     \b
     Examples:
-      varietykit template preview           # Default port 3000
-      varietykit template preview --port 3001
-      varietykit template preview --no-open # Don't auto-open browser
+      varitykit template preview           # Default port 3000
+      varitykit template preview --port 3001
+      varitykit template preview --no-open # Don't auto-open browser
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -489,8 +489,8 @@ def validate(ctx, fix):
 
     \b
     Examples:
-      varietykit template validate       # Check quality
-      varietykit template validate --fix # Auto-fix issues
+      varitykit template validate       # Check quality
+      varitykit template validate --fix # Auto-fix issues
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -633,7 +633,7 @@ def validate(ctx, fix):
                 "[bold green]✅ Quality Validation Passed![/bold green]\n\n"
                 f"Overall Score: {overall_score}/100\n\n"
                 "[bold]Ready to publish![/bold]\n"
-                "[dim]Next: varietykit template publish[/dim]",
+                "[dim]Next: varitykit template publish[/dim]",
                 border_style="green",
             )
         )
@@ -693,8 +693,8 @@ def info(ctx, template_name):
 
     \b
     Examples:
-      varietykit template info finance
-      varietykit template info healthcare
+      varitykit template info finance
+      varitykit template info healthcare
     """
     console = Console()
     logger = ctx.obj["logger"]

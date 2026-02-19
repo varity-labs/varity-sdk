@@ -63,7 +63,7 @@ export interface InitTimeoutScreenProps {
 export function InitTimeoutScreen({
   onRetry,
   title = 'Initialization Taking Longer Than Expected',
-  description = 'The Web3 providers are taking longer than usual to initialize. This might be due to network conditions.',
+  description = 'The authentication services are taking longer than usual to initialize. This might be due to network conditions.',
   tips = [
     'Check your internet connection',
     'Privy services may be experiencing delays',

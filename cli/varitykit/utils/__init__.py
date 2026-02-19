@@ -2,8 +2,8 @@
 Utility modules for VarityKit CLI
 """
 
-from varietykit.utils.logger import VarityLogger, get_logger, set_log_level
-from varietykit.utils.validators import (
+from varitykit.utils.logger import VarityLogger, get_logger, set_log_level
+from varitykit.utils.validators import (
     ConfigValidator,
     EnvironmentValidator,
     NetworkValidator,

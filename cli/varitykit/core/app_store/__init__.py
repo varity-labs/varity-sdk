@@ -10,7 +10,7 @@ Components:
     - Types: Data structures for App Store integration
 
 Usage:
-    from varietykit.core.app_store import AppStoreClient, MetadataBuilder
+    from varitykit.core.app_store import AppStoreClient, MetadataBuilder
 
     client = AppStoreClient(
         contract_address="0x...",

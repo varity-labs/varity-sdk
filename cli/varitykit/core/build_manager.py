@@ -4,6 +4,8 @@ Build manager for executing project builds.
 This module handles building projects based on detected type and framework.
 """
 
+import os
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -48,6 +50,17 @@ class BuildManager:
             print("No build command specified, skipping build step")
             return self._collect_artifacts(path, output_dir, 0.0)
 
+        # Clean stale caches before build to ensure deterministic output
+        for cache_dir in [".next", "out"]:
+            cache_path = path / cache_dir
+            if cache_path.exists():
+                print(f"Cleaning stale cache: {cache_dir}/")
+                try:
+                    shutil.rmtree(cache_path)
+                except OSError:
+                    # WSL/Windows can fail on rmtree; fall back to rm -rf
+                    subprocess.run(["rm", "-rf", str(cache_path)], check=True)
+
         # Execute build
         start_time = time.time()
         print(f"\nRunning build command: {build_command}")
@@ -55,6 +68,10 @@ class BuildManager:
 
         # Split build command outside try block for error handling
         cmd_parts = build_command.split()
+
+        # Build with production environment to ensure minified output
+        build_env = os.environ.copy()
+        build_env["NODE_ENV"] = "production"
 
         try:
             # Execute build with real-time output
@@ -66,6 +83,7 @@ class BuildManager:
                 text=True,
                 bufsize=1,
                 universal_newlines=True,
+                env=build_env,
             )
 
             # Stream output in real-time

@@ -306,7 +306,7 @@ If you encounter issues during publication:
 - Check [Python Packaging Guide](https://packaging.python.org/)
 - Review [PyPI Documentation](https://pypi.org/help/)
 - Ask in Python Packaging Discord
-- Contact Varity team: support@varity.io
+- Contact Varity team: support@varity.so
 
 ---
 

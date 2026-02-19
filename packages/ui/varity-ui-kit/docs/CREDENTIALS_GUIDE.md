@@ -514,9 +514,9 @@ export default function App() {
 
 ## Support
 
-- **Documentation**: https://docs.varity.io/credentials
+- **Documentation**: https://docs.varity.so/credentials
 - **Discord**: https://discord.gg/varity
-- **Email**: support@varity.io
+- **Email**: support@varity.so
 - **GitHub Issues**: https://github.com/varity-labs/varity-sdk/issues
 
 ## FAQ

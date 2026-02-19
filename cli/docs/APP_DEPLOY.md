@@ -751,20 +751,20 @@ Note: Multi-chain support is limited in Phase 1.
 
 ### Learn More
 
-- [Varity SDK Documentation](https://docs.varity.ai/sdk)
+- [Varity SDK Documentation](https://docs.varity.so/sdk)
 - [thirdweb Storage Docs](https://portal.thirdweb.com/storage)
 - [IPFS Documentation](https://docs.ipfs.tech/)
 
 ### Get Help
 
 - [Discord Community](https://discord.gg/varity)
-- [GitHub Issues](https://github.com/varity-ai/varity-sdk/issues)
-- [Email Support](mailto:support@varity.ai)
+- [GitHub Issues](https://github.com/varity-labs/varity-sdk/issues)
+- [Email Support](mailto:support@varity.so)
 
 ### Stay Updated
 
 - [Twitter](https://twitter.com/varity_ai)
-- [Blog](https://varity.ai/blog)
+- [Blog](https://varity.so/blog)
 - [Changelog](../CHANGELOG.md)
 
 ---

@@ -31,7 +31,8 @@
     "build-storybook": "storybook build",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "varity",
@@ -45,17 +46,28 @@
   ],
   "author": "Varity",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/varity-labs/varity-sdk.git",
+    "directory": "packages/ui/varity-ui-kit"
+  },
+  "homepage": "https://docs.varity.so",
+  "bugs": {
+    "url": "https://github.com/varity-labs/varity-sdk/issues"
+  },
   "dependencies": {
     "@privy-io/react-auth": "^1.88.4",
-    "@privy-io/wagmi": "^0.2.12",
     "@tanstack/react-query": "^5.59.0",
-    "@varity-labs/sdk": "workspace:*",
-    "@varity-labs/client-js": "workspace:*",
-    "@varity-labs/types": "workspace:*",
+    "@varity-labs/sdk": "^2.0.0-alpha.1",
+    "@varity-labs/types": "^2.0.0-alpha.1",
+    "lucide-react": "^0.554.0",
+    "react-hot-toast": "^2.6.0",
+    "thirdweb": "^5.112.0"
+  },
+  "optionalDependencies": {
+    "@privy-io/wagmi": "^0.2.12",
     "axios": "^1.6.0",
     "ethers": "^6.10.0",
-    "react-hot-toast": "^2.6.0",
-    "thirdweb": "^5.112.0",
     "viem": "^2.7.0",
     "wagmi": "^2.12.0"
   },
@@ -71,10 +83,10 @@
     "@storybook/react": "^7.6.0",
     "@storybook/react-webpack5": "^7.6.0",
     "@storybook/testing-library": "^0.2.2",
-    "@testing-library/jest-dom": "^6.1.0",
-    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.3.1",
     "@testing-library/react-hooks": "^8.0.1",
-    "@testing-library/user-event": "^14.5.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
@@ -85,6 +97,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.32",
@@ -92,7 +105,7 @@
     "react-dom": "^18.2.0",
     "storybook": "^7.6.0",
     "tailwindcss": "^3.4.0",
-    "ts-jest": "^29.1.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.3.0"
   }
 }

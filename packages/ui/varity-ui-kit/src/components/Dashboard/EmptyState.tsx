@@ -100,18 +100,18 @@ export function EmptyState({
     >
       {icon && (
         <div
-          className={`flex items-center justify-center ${styles.iconWrapper} bg-gray-100 rounded-full mb-4`}
+          className={`flex items-center justify-center ${styles.iconWrapper} bg-gray-50 ring-8 ring-gray-100 rounded-full mb-4`}
         >
-          <div className={`text-gray-400 ${styles.icon}`}>{icon}</div>
+          <div className={`text-gray-300 ${styles.icon}`}>{icon}</div>
         </div>
       )}
 
-      <h3 className={`font-semibold text-gray-900 ${styles.title}`}>
+      <h3 className={`font-bold text-gray-900 ${styles.title}`}>
         {title}
       </h3>
 
       {description && (
-        <p className={`mt-2 text-gray-500 max-w-sm ${styles.description}`}>
+        <p className={`mt-2 text-gray-600 max-w-sm ${styles.description}`}>
           {description}
         </p>
       )}
@@ -124,7 +124,7 @@ export function EmptyState({
               className={`${styles.button} font-medium rounded-lg transition-colors ${
                 action.variant === 'secondary'
                   ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md'
               }`}
             >
               {action.label}

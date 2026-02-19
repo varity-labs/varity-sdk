@@ -35,7 +35,7 @@ describe('Config', () => {
 
     it('should have arbitrum-l3-testnet configuration', () => {
       expect(NETWORK_CONFIGS['arbitrum-l3-testnet']).toBeDefined()
-      expect(NETWORK_CONFIGS['arbitrum-l3-testnet'].chainId).toBe(999999)
+      expect(NETWORK_CONFIGS['arbitrum-l3-testnet'].chainId).toBe(33529)
     })
 
     it('should have arbitrum-l3-mainnet configuration', () => {
@@ -70,7 +70,7 @@ describe('Config', () => {
 
   describe('DEFAULT_CONFIG', () => {
     it('should have default network', () => {
-      expect(DEFAULT_CONFIG.network).toBe('arbitrum-sepolia')
+      expect(DEFAULT_CONFIG.network).toBe('beta')
     })
 
     it('should have default API endpoint', () => {
@@ -206,7 +206,7 @@ describe('Config', () => {
       const config = getNetworkConfig('arbitrum-l3-testnet')
 
       expect(config).toBeDefined()
-      expect(config.chainId).toBe(999999)
+      expect(config.chainId).toBe(33529)
     })
 
     it('should return config for arbitrum-l3-mainnet', () => {

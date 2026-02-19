@@ -13,7 +13,7 @@ from typing import Optional
 class VarityLogger:
     """Enterprise-grade logger with structured logging support"""
 
-    def __init__(self, name: str = "varietykit", level: str = "INFO", json_format: bool = False):
+    def __init__(self, name: str = "varitykit", level: str = "INFO", json_format: bool = False):
         self.name = name
         self.level = getattr(logging, level.upper())
         self.json_format = json_format

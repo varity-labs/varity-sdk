@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from varietykit.utils.logger import get_logger
+from varitykit.utils.logger import get_logger
 
 
 @dataclass
@@ -268,7 +268,7 @@ class TemplateManager:
     def _apply_template_context(self, project_path: Path, context: Dict[str, Any]):
         """Apply template context to files"""
         # Files to process
-        files_to_process = ["package.json", "pyproject.toml", "README.md", ".varietykit.toml"]
+        files_to_process = ["package.json", "pyproject.toml", "README.md", ".varitykit.toml"]
 
         for filename in files_to_process:
             file_path = project_path / filename

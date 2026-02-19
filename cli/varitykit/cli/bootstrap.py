@@ -9,7 +9,7 @@ import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from varietykit.core.config import ConfigManager
+from varitykit.core.config import ConfigManager
 
 
 @click.command()
@@ -26,7 +26,7 @@ def bootstrap(ctx, skip_npm, skip_pip, skip_docker):
     - pip packages for backend
     - Docker images
 
-    Run this command after 'varietykit init' or when cloning an existing project.
+    Run this command after 'varitykit init' or when cloning an existing project.
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -38,7 +38,7 @@ def bootstrap(ctx, skip_npm, skip_pip, skip_docker):
         )
     )
 
-    # Find project root (look for .varietykit.toml)
+    # Find project root (look for .varitykit.toml)
     config_manager = ConfigManager()
     config_file = config_manager.find_config_file()
 
@@ -187,9 +187,9 @@ def bootstrap(ctx, skip_npm, skip_pip, skip_docker):
                 "[bold green]✓ Bootstrap completed successfully![/bold green]\n\n"
                 "[cyan]Next steps:[/cyan]\n"
                 "  1. Update .env file with your configuration\n"
-                "  2. varietykit dev (start development server)\n"
-                "  3. varietykit localdepin start (start local blockchain)\n\n"
-                "[dim]For more information: varietykit --help[/dim]",
+                "  2. varitykit dev (start development server)\n"
+                "  3. varitykit localdepin start (start local blockchain)\n\n"
+                "[dim]For more information: varitykit --help[/dim]",
                 border_style="green",
             )
         )
@@ -200,7 +200,7 @@ def bootstrap(ctx, skip_npm, skip_pip, skip_docker):
                 "[bold yellow]⚠ Bootstrap completed with warnings[/bold yellow]\n\n"
                 "Some dependencies failed to install.\n"
                 "Check the output above and install manually if needed.\n\n"
-                "[dim]Run 'varietykit doctor' to diagnose issues.[/dim]",
+                "[dim]Run 'varitykit doctor' to diagnose issues.[/dim]",
                 border_style="yellow",
             )
         )

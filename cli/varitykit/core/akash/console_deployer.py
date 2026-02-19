@@ -7,9 +7,11 @@ No local CLI, wallet, or AKT tokens required.
 API Docs: https://akash.network/docs/api-documentation/console-api/
 """
 
+from __future__ import annotations
+
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
@@ -52,6 +54,7 @@ class AkashConsoleDeployer:
         self.base_url = base_url or os.getenv("AKASH_CONSOLE_API", self.BASE_URL)
         self.default_deposit = default_deposit
         self.timeout = timeout
+        self._certificate: Optional[Dict[str, str]] = None  # Cached certificate
 
         if not self.api_key:
             raise AkashError(
@@ -119,42 +122,73 @@ class AkashConsoleDeployer:
         deposit = deposit or self.default_deposit
 
         try:
-            # Step 1: Create deployment
+            # Step 1: Create deployment (IMPORTANT: wrap in "data" object)
             print("Creating deployment...")
             create_response = self._request(
                 "POST",
                 "/deployments",
-                data={"sdl": sdl, "deposit": deposit},
+                data={"data": {"sdl": sdl, "deposit": deposit}},
             )
 
-            dseq = create_response.get("dseq")
+            # Response is wrapped in "data" object: {"data": {"dseq": "...", "manifest": "..."}}
+            response_data = create_response.get("data", create_response)
+            dseq = response_data.get("dseq")
+            manifest = response_data.get("manifest")
             if not dseq:
-                raise AkashError("No deployment ID returned")
+                raise AkashError(f"No deployment ID returned. Response: {create_response}")
 
             print(f"  Deployment ID: {dseq}")
 
             # Step 2: Wait for bids
             print("Waiting for provider bids...")
-            bids = self._wait_for_bids(dseq)
+            bids, raw_bids = self._wait_for_bids(dseq)
 
             if not bids:
                 raise AkashError("No provider bids received")
 
             print(f"  Received {len(bids)} bids")
 
-            # Step 3: Select best bid (lowest price)
-            best_bid = min(bids, key=lambda b: b.price)
-            print(f"  Selected provider: {best_bid.provider}")
+            # Step 3: Select best bid (already sorted by price - cheapest first)
+            best_bid = bids[0]  # Cheapest bid
+            best_raw_bid = raw_bids[0]
+            print(f"  Selected provider: {best_bid.provider} (price: {best_bid.price} uakt/block)")
 
-            # Step 4: Create lease
+            # Step 4: Check if certificate is required and create if needed
+            # isCertificateRequired is at top level of raw bid
+            needs_cert = best_raw_bid.get("isCertificateRequired", False)
+            certificate = None
+            if needs_cert:
+                print("  Creating mTLS certificate...")
+                certificate = self._create_certificate()
+
+            # Step 5: Create lease with proper format
             print("Creating lease...")
+            # bid_id is nested: raw_bid.bid.id
+            bid_info = best_raw_bid.get("bid", {})
+            bid_id = bid_info.get("id", {})
+            lease_payload: Dict[str, Any] = {
+                "manifest": manifest,
+                "leases": [{
+                    "dseq": dseq,
+                    "gseq": bid_id.get("gseq", 1),
+                    "oseq": bid_id.get("oseq", 1),
+                    "provider": best_bid.provider,
+                }]
+            }
+
+            if certificate:
+                lease_payload["certificate"] = {
+                    "certPem": certificate.get("certPem", ""),
+                    "keyPem": certificate.get("encryptedKey", ""),
+                }
+
             lease_response = self._request(
                 "POST",
                 "/leases",
-                data={"dseq": dseq, "provider": best_bid.provider},
+                data=lease_payload,
             )
 
-            # Step 5: Get deployment info
+            # Step 6: Get deployment info
             if wait_for_active:
                 print("Waiting for deployment to become active...")
                 time.sleep(10)  # Give provider time to start
@@ -162,7 +196,7 @@ class AkashConsoleDeployer:
             deployment_info = self.get_deployment(dseq)
 
             # Extract URL from deployment info
-            url = self._extract_url(deployment_info)
+            url = self._extract_url(deployment_info, lease_response)
             print(f"  URL: {url}")
 
             return AkashDeploymentResult(
@@ -205,57 +239,154 @@ class AkashConsoleDeployer:
     def _wait_for_bids(
         self,
         dseq: str,
-        max_wait: int = 60,
+        max_wait: int = 120,
         poll_interval: int = 5,
-    ) -> List[AkashProviderBid]:
-        """Wait for and retrieve provider bids"""
+    ) -> Tuple[List[AkashProviderBid], List[Dict[str, Any]]]:
+        """
+        Wait for and retrieve provider bids.
+
+        Returns:
+            Tuple of (parsed bids, raw bid data for later use)
+        """
         start_time = time.time()
 
         while time.time() - start_time < max_wait:
             response = self._request("GET", "/bids", params={"dseq": dseq})
-            bids_data = response.get("bids", [])
+            # Bids are under "data" array, not "bids"
+            bids_data = response.get("data", [])
 
             if bids_data:
-                return [
-                    AkashProviderBid(
-                        provider=bid.get("provider", ""),
-                        price=int(bid.get("price", 0)),
-                        location=bid.get("location"),
-                        uptime=float(bid.get("uptime", 95.0)),
-                        reputation_score=float(bid.get("reputation", 80.0)),
+                parsed_bids = []
+                for bid_wrapper in bids_data:
+                    # Structure: {"bid": {"id": {...}, "price": {...}}, "isCertificateRequired": bool}
+                    bid = bid_wrapper.get("bid", {})
+                    bid_id = bid.get("id", {})
+
+                    # Get provider from bid.id.provider
+                    provider = bid_id.get("provider", "")
+
+                    # Get price from bid.price.amount (it's a decimal string)
+                    price_obj = bid.get("price", {})
+                    price_str = price_obj.get("amount", "0")
+                    # Convert decimal string to int (uakt)
+                    try:
+                        price = int(float(price_str))
+                    except (ValueError, TypeError):
+                        price = 0
+
+                    parsed_bids.append(
+                        AkashProviderBid(
+                            provider=provider,
+                            price=price,
+                            location=bid_wrapper.get("location"),
+                            uptime=float(bid_wrapper.get("uptime", 95.0)),
+                            reputation_score=float(bid_wrapper.get("reputation", 80.0)),
+                        )
                     )
-                    for bid in bids_data
-                ]
+
+                # Sort by price (cheapest first) and return
+                parsed_bids.sort(key=lambda b: b.price)
+                return parsed_bids, bids_data
 
             time.sleep(poll_interval)
 
-        return []
+        return [], []
 
-    def _extract_url(self, deployment_info: Dict) -> str:
-        """Extract URL from deployment info"""
-        # Try to get URL from various possible locations
+    def _create_certificate(self) -> Dict[str, str]:
+        """
+        Create mTLS certificate for secure provider communication.
+
+        Returns:
+            Certificate data with certPem, pubkeyPem, encryptedKey
+        """
+        # Use cached certificate if available
+        if self._certificate:
+            return self._certificate
+
+        response = self._request(
+            "POST",
+            "/certificates",
+            data={},
+        )
+
+        self._certificate = response
+        return response
+
+    def _extract_url(
+        self,
+        deployment_info: Dict,
+        lease_response: Optional[Dict] = None,
+    ) -> str:
+        """
+        Extract URL from deployment info or lease response.
+
+        Args:
+            deployment_info: Deployment details from GET /v1/deployments/{dseq}
+            lease_response: Response from POST /v1/leases (optional)
+
+        Returns:
+            Public URL for accessing the deployed application
+        """
+        # First, try to get URL from lease response (has most current info)
+        if lease_response:
+            services = lease_response.get("services", {})
+            for service in services.values() if isinstance(services, dict) else []:
+                if isinstance(service, dict):
+                    uris = service.get("uris", [])
+                    if uris:
+                        return uris[0]
+
+        # Try to get URL from various possible locations in deployment info
         if "url" in deployment_info:
             return deployment_info["url"]
 
+        # Check services.{name}.uris[] (primary location per API spec)
+        if "services" in deployment_info:
+            services = deployment_info["services"]
+            if isinstance(services, dict):
+                for service in services.values():
+                    if isinstance(service, dict):
+                        uris = service.get("uris", [])
+                        if uris:
+                            return uris[0]
+            elif isinstance(services, list):
+                for service in services:
+                    if isinstance(service, dict):
+                        uris = service.get("uris", [])
+                        if uris:
+                            return uris[0]
+
+        # Check forwarded_ports as fallback
         if "lease" in deployment_info:
             lease = deployment_info["lease"]
             if "forwarded_ports" in lease:
                 ports = lease["forwarded_ports"]
                 if ports:
                     # Construct URL from first forwarded port
-                    port_info = ports[0] if isinstance(ports, list) else next(iter(ports.values()))
+                    if isinstance(ports, list):
+                        port_info = ports[0]
+                    elif isinstance(ports, dict):
+                        port_info = next(iter(ports.values()), {})
+                    else:
+                        port_info = {}
                     host = port_info.get("host", "")
-                    port = port_info.get("external_port", "")
+                    ext_port = port_info.get("external_port", "")
                     if host:
-                        return f"https://{host}:{port}" if port else f"https://{host}"
+                        return f"https://{host}:{ext_port}" if ext_port else f"https://{host}"
 
+        # Also check services.*.forwarded_ports
         if "services" in deployment_info:
             services = deployment_info["services"]
-            for service in services.values() if isinstance(services, dict) else services:
-                if isinstance(service, dict) and "uris" in service:
-                    uris = service["uris"]
-                    if uris:
-                        return uris[0]
+            if isinstance(services, dict):
+                for service in services.values():
+                    if isinstance(service, dict) and "forwarded_ports" in service:
+                        ports = service["forwarded_ports"]
+                        if ports and isinstance(ports, dict):
+                            for port_info in ports.values():
+                                host = port_info.get("host", "")
+                                ext_port = port_info.get("external_port", "")
+                                if host:
+                                    return f"https://{host}:{ext_port}" if ext_port else f"https://{host}"
 
         return f"https://deployment-{deployment_info.get('dseq', 'unknown')}.akash.network"
 
@@ -288,7 +419,7 @@ class AkashConsoleDeployer:
         return self._request(
             "POST",
             "/deposit-deployment",
-            data={"dseq": dseq, "deposit": amount},
+            data={"data": {"dseq": dseq, "deposit": amount}},
         )
 
     def close_deployment(self, dseq: str) -> bool:

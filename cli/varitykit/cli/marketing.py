@@ -39,9 +39,9 @@ def marketing():
 
     \b
     Quick Start:
-      varietykit marketing deploy --network mainnet
-      varietykit marketing status
-      varietykit marketing logs
+      varitykit marketing deploy --network mainnet
+      varitykit marketing status
+      varitykit marketing logs
 
     \b
     Cost Comparison:
@@ -53,7 +53,7 @@ def marketing():
 
 def get_deployment_info_file() -> Path:
     """Get path to deployment info file"""
-    config_dir = Path.home() / ".varietykit" / "marketing"
+    config_dir = Path.home() / ".varitykit" / "marketing"
     config_dir.mkdir(parents=True, exist_ok=True)
     return config_dir / "deployment.json"
 
@@ -121,13 +121,13 @@ def deploy(network, build, registry, skip_push):
     \b
     Examples:
       # Deploy to mainnet (production)
-      varietykit marketing deploy --network mainnet --build
+      varitykit marketing deploy --network mainnet --build
 
       # Deploy to testnet (testing)
-      varietykit marketing deploy --network testnet --build
+      varitykit marketing deploy --network testnet --build
 
       # Deploy without building (use existing image)
-      varietykit marketing deploy --network mainnet
+      varitykit marketing deploy --network mainnet
     """
     console.print(
         Panel.fit(
@@ -463,8 +463,8 @@ def deploy(network, build, registry, skip_push):
             f"[bold]Deployment ID:[/bold] {deployment_id}\n"
             f"[bold]Provider:[/bold] {provider}\n"
             f"[bold]Network:[/bold] {akash_config['name']}\n\n"
-            f"[dim]View status:[/dim] varietykit marketing status\n"
-            f"[dim]View logs:[/dim] varietykit marketing logs",
+            f"[dim]View status:[/dim] varitykit marketing status\n"
+            f"[dim]View logs:[/dim] varitykit marketing logs",
             border_style="green",
         )
     )
@@ -480,7 +480,7 @@ def status():
 
     \b
     Example:
-      varietykit marketing status
+      varitykit marketing status
     """
     info = load_deployment_info()
 
@@ -489,7 +489,7 @@ def status():
             Panel.fit(
                 "[bold yellow]No deployment found[/bold yellow]\n\n"
                 "Deploy the marketing website with:\n"
-                "  varietykit marketing deploy --network mainnet --build",
+                "  varitykit marketing deploy --network mainnet --build",
                 border_style="yellow",
             )
         )
@@ -542,13 +542,13 @@ def logs(follow, lines):
     \b
     Examples:
       # View last 100 lines
-      varietykit marketing logs
+      varitykit marketing logs
 
       # View last 500 lines
-      varietykit marketing logs --lines 500
+      varitykit marketing logs --lines 500
 
       # Follow logs in real-time
-      varietykit marketing logs --follow
+      varitykit marketing logs --follow
     """
     info = load_deployment_info()
 
@@ -601,7 +601,7 @@ def close(confirm):
 
     \b
     Example:
-      varietykit marketing close --confirm
+      varitykit marketing close --confirm
     """
     info = load_deployment_info()
 

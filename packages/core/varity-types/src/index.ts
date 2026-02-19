@@ -2,7 +2,7 @@
  * Varity Types - Main Export File
  *
  * This package provides comprehensive type definitions for the Varity SDK,
- * including storage backends, API integration, and AI/ML.
+ * including API patterns, storage backends, authentication, and utility types.
  *
  * @packageDocumentation
  */
@@ -55,8 +55,8 @@ export type {
   LoginResponse,
   AuthToken,
   WebhookPayload,
-  OracleData,
-  PriceData,
+  // OracleData,    // Crypto oracle concept — hidden for MVP
+  // PriceData,     // Crypto price feed — hidden for MVP
   KPI,
   KPIResult,
   TimeSeriesDataPoint,
@@ -72,10 +72,11 @@ export type {
 } from './api';
 
 // ============================================================================
-// Storage Types (NEW - S3/GCS Compatible Storage)
+// Storage Types (S3/GCS Compatible Storage)
+// Note: Storage module is not functional for MVP, but types are kept exported
+// because @varity-labs/sdk depends on them at compile time.
 // ============================================================================
 
-// Export all storage types and interfaces
 export type {
   IStorageAdapter,
   UploadOptions,
@@ -106,7 +107,6 @@ export type {
   BandwidthMetrics
 } from './storage'
 
-// Export storage enums
 export {
   StorageBackend,
   StorageTier,
@@ -235,9 +235,8 @@ export type {
   GCSServiceAccountToken,
   VarityAPIKey,
   RateLimit,
-  // Advanced: Available via direct import from submodule
-  // Web3AuthRequest,
-  // Web3AuthResult,
+  // Web3AuthRequest,   // Hidden — blockchain auth
+  // Web3AuthResult,    // Hidden — blockchain auth
   AuthorizationPolicy,
   PolicyStatement,
   PolicyCondition,
@@ -255,7 +254,6 @@ export {
   PermissionChecker
 } from './auth'
 
-// Export type guards
 export {
   isAWSSignatureV4Credentials,
   isGCSServiceAccount,
@@ -339,33 +337,13 @@ export type {
 /**
  * Package version
  */
-export const VERSION = '1.0.0'
+export const VERSION = '2.0.0-alpha.1'
 
 /**
  * Package name
  */
 export const PACKAGE_NAME = '@varity-labs/types'
 
-/**
- * Supported storage backends
- */
-export const SUPPORTED_STORAGE_BACKENDS = [
-  'filecoin-ipfs',
-  'celestia',
-  's3-compatible',
-  'gcs-compatible',
-  'multi-tier'
-] as const
-
-/**
- * Supported migration sources
- */
-export const SUPPORTED_MIGRATION_SOURCES = [
-  'aws-s3',
-  'gcp-gcs',
-  'azure-blob',
-  'local-filesystem',
-  'http',
-  'ftp',
-  'varity'
-] as const
+// Storage and migration constants hidden for MVP — modules not functional yet.
+// export const SUPPORTED_STORAGE_BACKENDS = ['s3-compatible', 'gcs-compatible', 'multi-tier'] as const
+// export const SUPPORTED_MIGRATION_SOURCES = ['aws-s3', 'gcp-gcs', 'azure-blob', 'local-filesystem', 'http', 'ftp', 'varity'] as const

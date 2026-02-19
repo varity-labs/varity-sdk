@@ -28,13 +28,13 @@ def completions(ctx, shell, install):
     \b
     Usage:
       # Auto-detect shell and show instructions
-      varietykit completions
+      varitykit completions
 
       # Generate for specific shell
-      varietykit completions --shell bash
+      varitykit completions --shell bash
 
       # Auto-install to shell config
-      varietykit completions --install
+      varitykit completions --install
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -82,19 +82,19 @@ def get_completion_script(shell: str) -> str:
     if shell == "bash":
         return """
 # VarityKit shell completions for bash
-eval "$(_VARIETYKIT_COMPLETE=bash_source varietykit)"
+eval "$(_VARIETYKIT_COMPLETE=bash_source varitykit)"
 """
 
     elif shell == "zsh":
         return """
 # VarityKit shell completions for zsh
-eval "$(_VARIETYKIT_COMPLETE=zsh_source varietykit)"
+eval "$(_VARIETYKIT_COMPLETE=zsh_source varitykit)"
 """
 
     elif shell == "fish":
         return """
 # VarityKit shell completions for fish
-eval (env _VARIETYKIT_COMPLETE=fish_source varietykit)
+eval (env _VARIETYKIT_COMPLETE=fish_source varitykit)
 """
 
     return ""
@@ -188,7 +188,7 @@ def show_instructions(shell: str, console: Console):
     )
 
     console.print("\n[bold]Option 1: Auto-install[/bold]")
-    console.print("  [cyan]varietykit completions --install[/cyan]\n")
+    console.print("  [cyan]varitykit completions --install[/cyan]\n")
 
     console.print("[bold]Option 2: Manual installation[/bold]")
     console.print(f"  Add this line to [cyan]{config_file}[/cyan]:\n")
@@ -197,10 +197,10 @@ def show_instructions(shell: str, console: Console):
     console.print("[bold]Option 3: Temporary (current session only)[/bold]")
 
     if shell == "bash":
-        console.print('  [cyan]eval "$(_VARIETYKIT_COMPLETE=bash_source varietykit)"[/cyan]\n')
+        console.print('  [cyan]eval "$(_VARIETYKIT_COMPLETE=bash_source varitykit)"[/cyan]\n')
     elif shell == "zsh":
-        console.print('  [cyan]eval "$(_VARIETYKIT_COMPLETE=zsh_source varietykit)"[/cyan]\n')
+        console.print('  [cyan]eval "$(_VARIETYKIT_COMPLETE=zsh_source varitykit)"[/cyan]\n')
     elif shell == "fish":
-        console.print("  [cyan]eval (env _VARIETYKIT_COMPLETE=fish_source varietykit)[/cyan]\n")
+        console.print("  [cyan]eval (env _VARIETYKIT_COMPLETE=fish_source varitykit)[/cyan]\n")
 
     console.print("[dim]After installation, restart your shell or source the config file.[/dim]\n")

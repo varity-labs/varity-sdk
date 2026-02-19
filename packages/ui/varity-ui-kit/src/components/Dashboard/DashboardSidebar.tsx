@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * DashboardSidebar - Navigation sidebar for Varity dashboards
  *
@@ -153,17 +155,17 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             style={{
               height: '32px',
               width: 'auto',
-              maxWidth: collapsed ? '32px' : '100%'
+              maxWidth: collapsed ? '32px' : '40px'
             }}
           />
         )}
-        {!collapsed && !logoUrl && (
+        {!collapsed && (
           <h1
             style={{
               margin: 0,
               fontSize: '18px',
-              fontWeight: 600,
-              color: 'var(--varity-primary-color, #1976d2)'
+              fontWeight: 700,
+              color: 'var(--varity-text-primary, #212121)'
             }}
           >
             {companyName}
@@ -182,7 +184,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           style={{
             padding: '16px',
             borderTop: '1px solid var(--varity-border-color, #e0e0e0)',
-            textAlign: 'center'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
           }}
         >
           <span
@@ -191,20 +196,49 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               color: 'var(--varity-text-secondary, #757575)'
             }}
           >
-            Powered by{' '}
-            <a
-              href="https://varity.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: 'var(--varity-primary-color, #1976d2)',
-                textDecoration: 'none',
-                fontWeight: 600
-              }}
-            >
-              Varity
-            </a>
+            Powered by
           </span>
+          <a
+            href="https://developer.store.varity.so"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: 'var(--varity-primary-color, #1976d2)',
+              textDecoration: 'none',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '12px'
+            }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 64 64"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ display: 'block' }}
+            >
+              <defs>
+                <linearGradient id="varity-sb-f1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#5EEAD4"/><stop offset="100%" stopColor="#0D9488"/>
+                </linearGradient>
+                <linearGradient id="varity-sb-f2" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#60A5FA"/><stop offset="100%" stopColor="#1D4ED8"/>
+                </linearGradient>
+                <linearGradient id="varity-sb-f4" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#14B8A6"/><stop offset="100%" stopColor="#2DD4BF"/>
+                </linearGradient>
+              </defs>
+              <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#varity-sb-f4)"/>
+              <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#varity-sb-f1)"/>
+              <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#varity-sb-f2)"/>
+              <path d="M8 36 L32 58 L20 58 Z" fill="url(#varity-sb-f1)" opacity="0.7"/>
+              <path d="M56 36 L44 58 L32 58 Z" fill="url(#varity-sb-f2)" opacity="0.7"/>
+              <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
+            </svg>
+            Varity
+          </a>
         </div>
       )}
     </aside>
@@ -220,6 +254,11 @@ function getIconForName(iconName: string): string {
     analytics: '📈',
     chart: '📉',
     users: '👥',
+    people: '👥',
+    team: '👥',
+    list: '📋',
+    todo: '✅',
+    task: '📝',
     settings: '⚙️',
     profile: '👤',
     storage: '💾',

@@ -25,15 +25,15 @@ import type {
 // ============================================================================
 
 export interface VaritySDKConfig {
-  /** Network to connect to */
-  network: 'arbitrum-sepolia' | 'arbitrum-l3-testnet' | 'arbitrum-l3-mainnet'
+  /** Network to connect to. Use 'beta' (recommended) or 'production'. */
+  network: Network
   /** API key for Varity backend services */
   apiKey?: string
   /** Custom RPC URL (optional) */
   rpcUrl?: string
-  /** Wallet provider (for browser) */
+  /** @internal Wallet provider (for browser, advanced use only) */
   walletProvider?: any
-  /** Private key (for server-side) */
+  /** @internal Private key (for server-side, advanced use only) */
   privateKey?: string
   /** Backend API endpoint */
   apiEndpoint?: string
@@ -65,7 +65,7 @@ export interface VaritySDKConfig {
     [StorageLayer.CUSTOMER_DATA]?: StorageBackend
   }
 
-  /** Filecoin/IPFS configuration (existing) */
+  /** @internal Filecoin/IPFS configuration (advanced use only) */
   filecoinConfig?: {
     /** Pinata API key */
     pinataApiKey?: string
@@ -77,7 +77,7 @@ export interface VaritySDKConfig {
     defaultPin?: boolean
   }
 
-  /** Celestia Data Availability configuration */
+  /** @internal Celestia Data Availability configuration (advanced use only) */
   celestiaConfig?: {
     /** Celestia RPC endpoint */
     rpcEndpoint?: string
@@ -88,7 +88,7 @@ export interface VaritySDKConfig {
   }
 }
 
-export type Network = 'arbitrum-sepolia' | 'arbitrum-l3-testnet' | 'arbitrum-l3-mainnet'
+export type Network = 'beta' | 'production' | 'arbitrum-sepolia' | 'arbitrum-l3-testnet' | 'arbitrum-l3-mainnet'
 
 export interface NetworkConfig {
   chainId: number

@@ -150,11 +150,9 @@ export class VaritySDK {
     // Initialize S3 module if S3 config provided
     if (this.config.s3Config) {
       this.s3 = new S3Module(this, this.config.s3Config)
-      console.log('✅ S3-compatible storage module initialized')
     }
 
     const moduleCount = 13 + (this.s3 ? 1 : 0)
-    console.log(`✅ Varity SDK initialized with comprehensive capability-based architecture (${moduleCount} universal modules)`)
   }
 
   /**

@@ -10,7 +10,16 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from .types import AppCategory, AppMetadata, AssetUploadError, MetadataValidationError
+from .types import (
+    AppCategory,
+    InfrastructureTier,
+    PartnershipService,
+    SERVICE_DETECTION_PATTERNS,
+    SERVICE_INFO,
+    AppMetadata,
+    AssetUploadError,
+    MetadataValidationError,
+)
 
 
 class MetadataBuilder:
@@ -51,6 +60,8 @@ class MetadataBuilder:
         deployment_result: Dict[str, Any],
         package_json_path: str,
         chain_id: int = 33529,
+        tier: Optional[str] = None,
+        has_payment_widget: bool = False,
     ) -> AppMetadata:
         """
         Build App Store metadata from deployment information.
@@ -60,6 +71,8 @@ class MetadataBuilder:
             deployment_result: Deployment result dictionary with frontend_url
             package_json_path: Path to package.json file
             chain_id: Chain ID where app is deployed (default: 33529 for Varity L3)
+            tier: Infrastructure tier (free, starter, growth, enterprise)
+            has_payment_widget: MANDATORY - Whether app uses PaymentWidget from @varity/ui-kit
 
         Returns:
             AppMetadata ready for smart contract submission
@@ -91,6 +104,12 @@ class MetadataBuilder:
         if category not in [c.value for c in AppCategory]:
             category = "Other"
 
+        # Determine infrastructure tier (CLI option > package.json > default)
+        if tier is None:
+            tier = varity_config.get("tier", "free")
+        if tier not in [t.value for t in InfrastructureTier]:
+            tier = "free"
+
         # Get app URL from deployment result
         app_url = deployment_result.get("frontend_url", "")
         if not app_url:
@@ -111,6 +130,9 @@ class MetadataBuilder:
                 # Log warning but don't fail if screenshots can't be uploaded
                 print(f"Warning: Could not upload screenshot {screenshot_path}: {e}")
 
+        # Auto-detect partnership services from package.json dependencies
+        services = self._detect_services(package_data)
+
         # Build and validate metadata
         metadata = AppMetadata(
             name=name,
@@ -121,6 +143,9 @@ class MetadataBuilder:
             category=category,
             screenshots=screenshot_urls,
             chain_id=chain_id,
+            tier=tier,
+            services=services,
+            has_payment_widget=has_payment_widget,
         )
 
         # Validate before returning
@@ -129,7 +154,12 @@ class MetadataBuilder:
         return metadata
 
     def build_from_package_json(
-        self, package_json_path: str, app_url: str, chain_id: int = 33529
+        self,
+        package_json_path: str,
+        app_url: str,
+        chain_id: int = 33529,
+        tier: Optional[str] = None,
+        has_payment_widget: bool = False,
     ) -> AppMetadata:
         """
         Build metadata directly from package.json (for manual submission).
@@ -138,6 +168,8 @@ class MetadataBuilder:
             package_json_path: Path to package.json
             app_url: Deployed application URL
             chain_id: Chain ID (default: 33529 for Varity L3)
+            tier: Infrastructure tier (free, starter, growth, enterprise)
+            has_payment_widget: MANDATORY - Whether app uses PaymentWidget from @varity/ui-kit
 
         Returns:
             AppMetadata ready for submission
@@ -156,6 +188,12 @@ class MetadataBuilder:
         category = varity_config.get("category", "Other")
         logo_path = varity_config.get("logo", "public/logo.png")
 
+        # Determine infrastructure tier
+        if tier is None:
+            tier = varity_config.get("tier", "free")
+        if tier not in [t.value for t in InfrastructureTier]:
+            tier = "free"
+
         # Upload assets
         logo_url = self._upload_asset_to_ipfs(logo_path, package_json_path)
 
@@ -168,6 +206,9 @@ class MetadataBuilder:
             except AssetUploadError:
                 pass  # Continue without screenshots
 
+        # Auto-detect partnership services
+        services = self._detect_services(package_data)
+
         metadata = AppMetadata(
             name=name,
             description=description,
@@ -177,10 +218,39 @@ class MetadataBuilder:
             category=category,
             screenshots=screenshot_urls,
             chain_id=chain_id,
+            tier=tier,
+            services=services,
+            has_payment_widget=has_payment_widget,
         )
 
         metadata.validate()
         return metadata
+
+    def _detect_services(self, package_data: Dict[str, Any]) -> str:
+        """
+        Auto-detect partnership services from package.json dependencies.
+
+        Scans dependencies and devDependencies for known service packages
+        (Privy, thirdweb, Filecoin) and returns a comma-separated string.
+
+        Args:
+            package_data: Parsed package.json data
+
+        Returns:
+            Comma-separated service IDs (e.g., "privy,thirdweb,filecoin")
+        """
+        all_deps: Dict[str, str] = {}
+        all_deps.update(package_data.get("dependencies", {}))
+        all_deps.update(package_data.get("devDependencies", {}))
+
+        detected: set = set()
+        for dep_name in all_deps:
+            for pattern, service in SERVICE_DETECTION_PATTERNS.items():
+                if dep_name == pattern or dep_name.startswith(pattern.rstrip("*")):
+                    detected.add(service.value)
+
+        # Sort for deterministic output
+        return ",".join(sorted(detected))
 
     def _load_package_json(self, package_json_path: str) -> Dict[str, Any]:
         """

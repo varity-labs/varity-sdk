@@ -443,7 +443,7 @@ Questions about migration?
 - **CLI Reference**: [CLI_THIRDWEB_COMMANDS.md](./CLI_THIRDWEB_COMMANDS.md)
 - **Examples**: [thirdweb-deployment-example.ts](../examples/thirdweb-deployment-example.ts)
 - **Discord**: https://discord.gg/varity
-- **Email**: support@varity.com
+- **Email**: support@varity.so
 
 ---
 

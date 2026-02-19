@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[18894],{18894:(e,t,n)=>{n.r(t),n.d(t,{default:()=>c});let c={connecting:"Подключение к смарт-аккаунту",failedToConnect:"Не удалось подключиться к смарт-аккаунту",wrongNetworkScreen:{failedToSwitch:"Не удалось сменить сеть",subtitle:"Ваш кошелек не подключен к нужной сети",title:"Неверная сеть"}}}}]);

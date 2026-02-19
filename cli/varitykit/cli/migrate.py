@@ -77,10 +77,10 @@ def migrate(ctx):
 
     \b
     Quick Start:
-      varietykit migrate s3 --bucket my-bucket
-      varietykit migrate gcs --bucket my-bucket
-      varietykit migrate status --job-id abc123
-      varietykit migrate verify-chain --source-chain 1
+      varitykit migrate s3 --bucket my-bucket
+      varitykit migrate gcs --bucket my-bucket
+      varitykit migrate status --job-id abc123
+      varitykit migrate verify-chain --source-chain 1
 
     \b
     Supported Chains:
@@ -121,16 +121,16 @@ def s3_migrate(ctx, bucket, prefix, region, target_layer, concurrency, dry_run, 
     \b
     Examples:
       # Migrate entire bucket
-      varietykit migrate s3 --bucket my-s3-bucket
+      varitykit migrate s3 --bucket my-s3-bucket
 
       # Migrate specific folder with verification
-      varietykit migrate s3 --bucket my-bucket --prefix "data/" --verify
+      varitykit migrate s3 --bucket my-bucket --prefix "data/" --verify
 
       # Dry run to estimate migration
-      varietykit migrate s3 --bucket my-bucket --dry-run
+      varitykit migrate s3 --bucket my-bucket --dry-run
 
       # High-speed migration with 20 concurrent transfers
-      varietykit migrate s3 --bucket my-bucket --concurrency 20
+      varitykit migrate s3 --bucket my-bucket --concurrency 20
 
     \b
     Prerequisites:
@@ -177,16 +177,16 @@ def gcs_migrate(ctx, bucket, prefix, project, target_layer, concurrency, dry_run
     \b
     Examples:
       # Migrate entire bucket
-      varietykit migrate gcs --bucket my-gcs-bucket --project my-project
+      varitykit migrate gcs --bucket my-gcs-bucket --project my-project
 
       # Migrate specific folder with verification
-      varietykit migrate gcs --bucket my-bucket --prefix "data/" --verify
+      varitykit migrate gcs --bucket my-bucket --prefix "data/" --verify
 
       # Dry run to estimate migration
-      varietykit migrate gcs --bucket my-bucket --dry-run
+      varitykit migrate gcs --bucket my-bucket --dry-run
 
       # High-speed migration
-      varietykit migrate gcs --bucket my-bucket --concurrency 20
+      varitykit migrate gcs --bucket my-bucket --concurrency 20
 
     \b
     Prerequisites:
@@ -224,7 +224,7 @@ def status(ctx, job_id):
 
     \b
     Examples:
-      varietykit migrate status --job-id mig_abc123xyz
+      varitykit migrate status --job-id mig_abc123xyz
 
     \b
     Output includes:
@@ -250,7 +250,7 @@ def verify(ctx, job_id):
 
     \b
     Examples:
-      varietykit migrate verify --job-id mig_abc123xyz
+      varitykit migrate verify --job-id mig_abc123xyz
 
     \b
     Verification checks:
@@ -282,13 +282,13 @@ def verify_chain(ctx, source_chain, dest_chain, source_rpc, dest_rpc, wallet):
     \b
     Examples:
       # Verify Ethereum to Varity L3 migration
-      varietykit migrate verify-chain --source-chain 1
+      varitykit migrate verify-chain --source-chain 1
 
       # Verify with wallet balance check
-      varietykit migrate verify-chain --source-chain 1 --wallet 0xYourAddress
+      varitykit migrate verify-chain --source-chain 1 --wallet 0xYourAddress
 
       # Use custom RPC endpoints
-      varietykit migrate verify-chain --source-chain 1 \\
+      varitykit migrate verify-chain --source-chain 1 \\
         --source-rpc https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
 
     \b
@@ -341,14 +341,14 @@ def preflight(ctx, source_chain, dest_chain, wallet, contracts, source_rpc, dest
     \b
     Examples:
       # Basic pre-flight check
-      varietykit migrate preflight --source-chain 1 --wallet 0xYourAddress
+      varitykit migrate preflight --source-chain 1 --wallet 0xYourAddress
 
       # Check specific contracts
-      varietykit migrate preflight --source-chain 1 \\
+      varitykit migrate preflight --source-chain 1 \\
         --contracts 0xContract1,0xContract2
 
       # Ensure minimum gas balance
-      varietykit migrate preflight --source-chain 1 \\
+      varitykit migrate preflight --source-chain 1 \\
         --wallet 0xYourAddress --min-gas 0.1
 
     \b
@@ -389,7 +389,7 @@ def chains(ctx):
 
     \b
     Example:
-      varietykit migrate chains
+      varitykit migrate chains
 
     \b
     Supported Chains:
@@ -430,15 +430,15 @@ def report(ctx, source_chain, dest_chain, contracts, wallet, source_rpc, dest_rp
     \b
     Examples:
       # Console report
-      varietykit migrate report --source-chain 1
+      varitykit migrate report --source-chain 1
 
       # Markdown report with contract analysis
-      varietykit migrate report --source-chain 1 \\
+      varitykit migrate report --source-chain 1 \\
         --contracts 0xContract1,0xContract2 \\
         --format markdown --output report.md
 
       # JSON report for programmatic use
-      varietykit migrate report --source-chain 1 \\
+      varitykit migrate report --source-chain 1 \\
         --wallet 0xYourAddress --format json --output report.json
 
     \b

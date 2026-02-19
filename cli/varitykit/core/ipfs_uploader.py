@@ -11,8 +11,6 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .credential_fetcher import get_thirdweb_client_id
-
 
 class IPFSUploadError(Exception):
     """Raised when IPFS upload fails"""
@@ -62,10 +60,9 @@ class IPFSUploader:
         Initialize IPFS uploader
 
         Args:
-            client_id: thirdweb client ID (optional, auto-fetched from Varity for zero-config)
+            client_id: thirdweb client ID (optional, falls back to env var)
         """
-        # Try in order: 1) parameter, 2) env var, 3) Varity credential proxy
-        self.client_id = client_id or os.getenv("THIRDWEB_CLIENT_ID") or get_thirdweb_client_id()
+        self.client_id = client_id or os.getenv("THIRDWEB_CLIENT_ID")
         self.script_path = Path(__file__).parent.parent.parent / "scripts" / "upload_to_ipfs.js"
 
         # Verify Node.js script exists
@@ -112,9 +109,8 @@ class IPFSUploader:
         # Check for client ID
         if not self.client_id:
             raise IPFSUploadError(
-                "Failed to obtain thirdweb credentials.\n"
-                "This is unexpected - Varity should auto-provide credentials.\n"
-                "Please check your internet connection or report this issue."
+                "THIRDWEB_CLIENT_ID required. Set as environment variable or pass to constructor.\n"
+                "Get your client ID from: https://thirdweb.com/dashboard"
             )
 
         # Check Node.js is installed

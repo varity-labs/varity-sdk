@@ -1,103 +1,116 @@
 /**
- * Varity SDK - Shared Development Credentials
+ * Varity SDK - Managed Credentials
  *
- * Provides shared development credentials for seamless developer experience.
- * Developers can use Varity packages without manually setting up Privy and thirdweb credentials.
+ * Credentials are fully managed by Varity. Developers never need to obtain
+ * or configure authentication credentials manually.
  *
- * **IMPORTANT**: These credentials are for DEVELOPMENT/TESTING ONLY.
- * For production deployments, you MUST use your own credentials.
+ * How it works:
+ * 1. During development: Shared credentials are used automatically
+ * 2. During deployment: `varitykit app deploy` injects production credentials
+ * 3. The Varity Credential Proxy handles all credential provisioning
  *
- * @example Zero-config development
+ * @example
  * ```tsx
  * import { PrivyStack } from '@varity-labs/ui-kit';
  *
- * // Works immediately - uses shared dev credentials
+ * // Works immediately - no configuration needed
  * <PrivyStack>
- *   <YourApp />
- * </PrivyStack>
- * ```
- *
- * @example Production with custom credentials
- * ```tsx
- * import { PrivyStack } from '@varity-labs/ui-kit';
- *
- * <PrivyStack
- *   appId={process.env.PRIVY_APP_ID}
- *   thirdwebClientId={process.env.THIRDWEB_CLIENT_ID}
- * >
  *   <YourApp />
  * </PrivyStack>
  * ```
  */
 
 /**
- * Shared development credentials configuration
+ * Varity Credential Proxy URL
  *
- * These credentials are managed by Varity and shared across all development environments.
- * They enable developers to start building immediately without manual credential setup.
+ * The CLI fetches infrastructure credentials from this service during deployment.
+ * Developers never need to call this directly.
  *
- * **Security Notes**:
- * - Rate limiting is applied to prevent abuse
- * - Only works with Varity L3 Testnet (Chain ID 33529)
- * - Not suitable for production use
- * - May be rotated periodically
+ * @internal Used by varitykit CLI
+ */
+export const VARITY_CREDENTIAL_PROXY_URL =
+  process.env.VARITY_CREDENTIAL_PROXY_URL ||
+  'http://j8t2mv79s9arr5pb6b4nkjmoh4.ingress.akash.tagus.host';
+
+/**
+ * Varity-managed credentials
  *
- * **When to Upgrade**:
- * - Moving to production
- * - Need custom branding in auth flows
- * - Require higher rate limits
- * - Building on non-Varity chains
+ * These credentials are managed by Varity's Credential Proxy and used automatically.
+ * Developers do NOT need to obtain or configure these — they are handled internally
+ * by the SDK and CLI.
+ *
+ * @internal Used by @varity-labs/ui-kit providers
  */
 export const VARITY_DEV_CREDENTIALS = {
   /**
-   * Privy configuration
-   *
-   * Privy provides authentication (email, social, wallet).
-   * Get your own credentials at: https://dashboard.privy.io
+   * Authentication provider configuration (managed by Varity)
    */
   privy: {
     /**
-     * Shared Privy App ID for development
-     *
-     * Environment variable override: VARITY_PRIVY_APP_ID
-     * Production: Get your own at https://dashboard.privy.io
+     * App ID for authentication
+     * Override: VARITY_PRIVY_APP_ID environment variable
      */
     appId: process.env.VARITY_PRIVY_APP_ID || 'cmhwbozxu004fjr0cicfz0tf8',
   },
 
   /**
-   * thirdweb configuration
-   *
-   * thirdweb provides blockchain infrastructure (chain abstraction, contracts, storage).
-   * Get your own credentials at: https://thirdweb.com/dashboard
+   * Infrastructure provider configuration (managed by Varity)
    */
   thirdweb: {
     /**
-     * Shared thirdweb Client ID for development
-     *
-     * Environment variable override: VARITY_THIRDWEB_CLIENT_ID
-     * Production: Get your own at https://thirdweb.com/dashboard
+     * Client ID for infrastructure services
+     * Override: VARITY_THIRDWEB_CLIENT_ID environment variable
      */
-    clientId: process.env.VARITY_THIRDWEB_CLIENT_ID || 'acb17e07e34ab2b8317aa40cbb1b5e1d',
+    clientId: process.env.VARITY_THIRDWEB_CLIENT_ID || 'a35636133eb5ec6f30eb9f4c15fce2f3',
   },
 
   /**
-   * Rate limiting information (informational only)
+   * Rate limiting information
    */
   rateLimits: {
     privy: {
       monthlyActiveUsers: 1000,
-      note: 'Shared across all developers using VARITY_DEV_CREDENTIALS',
+      note: 'Shared across all developers using Varity dev credentials',
     },
     thirdweb: {
       requestsPerSecond: 100,
-      note: 'Shared across all developers using VARITY_DEV_CREDENTIALS',
+      note: 'Shared across all developers using Varity dev credentials',
     },
   },
 } as const;
 
 /**
+ * Varity-managed database credentials
+ *
+ * These credentials provide immediate database access during development.
+ * The dev token grants access to a shared `app_varity_dev` schema — each
+ * developer's data is isolated from production apps.
+ *
+ * In production, `varitykit app deploy` generates unique per-app credentials.
+ *
+ * @internal Used by @varity-labs/sdk Database class
+ */
+export const VARITY_DEV_DB_CREDENTIALS = {
+  /**
+   * Default app ID for development
+   * Override: NEXT_PUBLIC_VARITY_APP_ID or VARITY_APP_ID environment variable
+   */
+  appId: 'varity_dev',
+
+  /**
+   * Pre-signed JWT for development database access
+   * - Grants access to `app_varity_dev` schema only (schema isolation)
+   * - 10-year expiry (development convenience)
+   * - Rate limited: 100 req/min per IP
+   * Override: NEXT_PUBLIC_VARITY_APP_TOKEN environment variable
+   */
+  token:
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6InZhcml0eV9kZXYiLCJpc3MiOiJ2YXJpdHkuc28iLCJpYXQiOjE3NzA4MzI5MzIsImV4cCI6MjA4NjE5MjkzMn0.Kj4fijAhZJ5CihFj0Vf5YLMmPzEBtCKKyxdNWUNdRWs',
+} as const;
+
+/**
  * Type definition for credential configuration
+ * @internal
  */
 export interface CredentialConfig {
   privy: {
@@ -110,17 +123,7 @@ export interface CredentialConfig {
 
 /**
  * Check if using shared development credentials
- *
- * @param appId - Privy app ID to check
- * @param clientId - thirdweb client ID to check
- * @returns true if using shared development credentials
- *
- * @example
- * ```typescript
- * if (isUsingDevCredentials(appId, clientId)) {
- *   console.warn('Using shared dev credentials - upgrade for production');
- * }
- * ```
+ * @internal
  */
 export function isUsingDevCredentials(
   appId?: string,
@@ -133,18 +136,8 @@ export function isUsingDevCredentials(
 }
 
 /**
- * Check if credentials are suitable for production use
- *
- * @param appId - Privy app ID to check
- * @param clientId - thirdweb client ID to check
- * @returns true if credentials are production-ready
- *
- * @example
- * ```typescript
- * if (!isProductionCredentials(appId, clientId)) {
- *   throw new Error('Production requires custom credentials');
- * }
- * ```
+ * Check if credentials are production-grade
+ * @internal
  */
 export function isProductionCredentials(
   appId?: string,
@@ -155,38 +148,17 @@ export function isProductionCredentials(
 
 /**
  * Get warning message for development credential usage
- *
- * @param environment - Current environment (development, staging, production)
- * @returns Warning message or null if no warning needed
- *
- * @example
- * ```typescript
- * const warning = getCredentialWarning('production');
- * if (warning) {
- *   console.error(warning);
- * }
- * ```
+ * @internal
  */
 export function getCredentialWarning(
   environment: 'development' | 'staging' | 'production'
 ): string | null {
   if (environment === 'development') {
-    return null; // No warning in development
+    return null;
   }
 
-  return `⚠️  WARNING: Using shared VARITY_DEV_CREDENTIALS in ${environment} environment!
-
-Shared credentials are NOT suitable for ${environment} use.
-
-Action Required:
-1. Get Privy App ID: https://dashboard.privy.io
-2. Get thirdweb Client ID: https://thirdweb.com/dashboard
-3. Set environment variables:
-   - PRIVY_APP_ID=your-privy-app-id
-   - THIRDWEB_CLIENT_ID=your-thirdweb-client-id
-
-Learn more: https://docs.varity.io/credentials
-`;
+  return `Using shared Varity development credentials in ${environment} environment.
+Deploy with \`varitykit app deploy\` to use production credentials automatically.`;
 }
 
 // Track if the credential warning has already been logged (avoid spam during build)
@@ -194,9 +166,7 @@ let _credentialWarningLogged = false;
 
 /**
  * Log development credential usage warning (only once per process)
- *
- * @param appId - Privy app ID being used
- * @param clientId - thirdweb client ID being used
+ * @internal
  */
 export function logCredentialUsage(
   appId?: string,
@@ -209,17 +179,12 @@ export function logCredentialUsage(
 }
 
 /**
- * Resolve credentials with fallback to dev credentials
+ * Resolve credentials with automatic fallback
  *
- * @param appId - Custom Privy app ID (optional)
- * @param clientId - Custom thirdweb client ID (optional)
- * @returns Resolved credential configuration
+ * Returns Varity-managed credentials. Custom values can be passed
+ * but are not required — the defaults work out of the box.
  *
- * @example
- * ```typescript
- * const creds = resolveCredentials(customAppId, customClientId);
- * // Falls back to VARITY_DEV_CREDENTIALS if custom credentials not provided
- * ```
+ * @internal Used by @varity-labs/ui-kit providers
  */
 export function resolveCredentials(
   appId?: string,
@@ -234,27 +199,14 @@ export function resolveCredentials(
     },
   };
 
-  // Log usage warning
   logCredentialUsage(resolved.privy.appId, resolved.thirdweb.clientId);
 
   return resolved;
 }
 
 /**
- * Validate credentials are configured correctly
- *
- * @param appId - Privy app ID to validate
- * @param clientId - thirdweb client ID to validate
- * @throws Error if credentials are invalid
- *
- * @example
- * ```typescript
- * try {
- *   validateCredentials(appId, clientId);
- * } catch (error) {
- *   console.error('Invalid credentials:', error.message);
- * }
- * ```
+ * Validate that credential values are not empty
+ * @internal
  */
 export function validateCredentials(
   appId: string,
@@ -262,103 +214,59 @@ export function validateCredentials(
 ): void {
   if (!appId || appId.trim() === '') {
     throw new Error(
-      'Privy App ID is required. Get one at: https://dashboard.privy.io'
+      'Auth credentials are not configured. Deploy with `varitykit app deploy` to set up credentials automatically.'
     );
   }
 
   if (!clientId || clientId.trim() === '') {
     throw new Error(
-      'thirdweb Client ID is required. Get one at: https://thirdweb.com/dashboard'
-    );
-  }
-
-  // Validate format (basic checks)
-  if (!appId.startsWith('clp')) {
-    console.warn(
-      `⚠️  Privy App ID should start with 'clp'. Current: ${appId}`
+      'Infrastructure credentials are not configured. Deploy with `varitykit app deploy` to set up credentials automatically.'
     );
   }
 }
 
 /**
- * Get upgrade instructions for production
- *
- * @returns Markdown-formatted upgrade instructions
- *
- * @example
- * ```typescript
- * console.log(getUpgradeInstructions());
- * ```
+ * Get instructions for production deployment
+ * @internal
  */
 export function getUpgradeInstructions(): string {
   return `
-# Upgrading to Production Credentials
+# Production Deployment
 
-## Why Upgrade?
+## How Credentials Work
 
-Shared development credentials (VARITY_DEV_CREDENTIALS) are:
-- Rate limited across all developers
-- May be rotated periodically
-- Not suitable for production use
-- Lack custom branding options
+Varity manages all credentials automatically. You don't need to create accounts
+or configure API keys for any third-party services.
 
-## How to Upgrade
+## Development
 
-### 1. Get Privy App ID
-
-1. Visit https://dashboard.privy.io
-2. Sign up or log in
-3. Create a new app
-4. Copy your App ID (starts with 'clp')
-5. Configure login methods (email, social, wallet)
-
-### 2. Get thirdweb Client ID
-
-1. Visit https://thirdweb.com/dashboard
-2. Sign up or log in
-3. Create a new project
-4. Copy your Client ID
-5. Configure allowed domains
-
-### 3. Set Environment Variables
-
-\`\`\`bash
-# .env.local
-PRIVY_APP_ID=your-privy-app-id
-THIRDWEB_CLIENT_ID=your-thirdweb-client-id
-\`\`\`
-
-### 4. Update Your Code
-
+During development, shared credentials are used automatically:
 \`\`\`tsx
 import { PrivyStack } from '@varity-labs/ui-kit';
 
-<PrivyStack
-  appId={process.env.PRIVY_APP_ID}
-  thirdwebClientId={process.env.THIRDWEB_CLIENT_ID}
->
+// Works immediately - no setup needed
+<PrivyStack>
   <YourApp />
 </PrivyStack>
 \`\`\`
 
-## Benefits
+## Production Deployment
 
-- ✅ Unlimited usage (within your plan limits)
-- ✅ Custom branding in auth flows
-- ✅ Production support
-- ✅ Analytics and monitoring
-- ✅ No credential rotation concerns
+Deploy your app to get production credentials:
+\`\`\`bash
+varitykit app deploy
+\`\`\`
 
-## Cost
-
-Both Privy and thirdweb offer generous free tiers:
-- **Privy**: Free up to 1,000 MAU
-- **thirdweb**: Free tier available
+The CLI automatically:
+- Generates your app ID and authentication token
+- Configures your database connection
+- Injects all credentials into your build
+- Deploys your app with everything configured
 
 ## Need Help?
 
-- Documentation: https://docs.varity.io/credentials
+- Documentation: https://docs.varity.so
 - Discord: https://discord.gg/varity
-- Support: support@varity.io
+- Support: support@varity.so
 `;
 }

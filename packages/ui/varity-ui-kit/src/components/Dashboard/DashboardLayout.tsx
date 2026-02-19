@@ -33,6 +33,16 @@ export interface DashboardLayoutProps {
   user?: UserInfo
   /** Callback when user clicks logout */
   onLogout?: () => void
+  /** Custom navigation handler (default: window.location.href) */
+  onNavigate?: (path: string) => void
+  /** Callback when user navigates to profile */
+  onNavigateToProfile?: () => void
+  /** Callback when user navigates to settings */
+  onNavigateToSettings?: () => void
+  /** Callback when search bar in header is clicked */
+  onSearchClick?: () => void
+  /** Placeholder text for header search bar */
+  searchPlaceholder?: string
 }
 
 export interface NavigationItem {
@@ -51,7 +61,7 @@ export interface NavigationItem {
 export interface UserInfo {
   /** User's display name */
   name: string
-  /** User's wallet address */
+  /** User's email or identifier */
   address: string
   /** User's avatar URL */
   avatarUrl?: string
@@ -86,7 +96,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   companyName,
   navigationItems = [],
   user,
-  onLogout
+  onLogout,
+  onNavigate,
+  onNavigateToProfile,
+  onNavigateToSettings,
+  onSearchClick,
+  searchPlaceholder
 }) => {
   return (
     <div className="varity-dashboard-layout" style={{
@@ -101,6 +116,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           logoUrl={logoUrl}
           companyName={companyName}
           navigationItems={navigationItems}
+          onNavigate={onNavigate || ((path) => {
+            // Default: Navigate using window.location for client-side routing compatibility
+            if (typeof window !== 'undefined') {
+              window.location.href = path;
+            }
+          })}
         />
       )}
 
@@ -116,8 +137,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {showHeader && (
           <DashboardHeader
             height={headerHeight}
+            sidebarWidth={showSidebar ? sidebarWidth : 0}
             user={user}
             onLogout={onLogout}
+            onNavigateToProfile={onNavigateToProfile}
+            onNavigateToSettings={onNavigateToSettings}
+            onSearchClick={onSearchClick}
+            searchPlaceholder={searchPlaceholder}
           />
         )}
 

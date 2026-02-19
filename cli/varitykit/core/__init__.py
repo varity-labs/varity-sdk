@@ -3,7 +3,7 @@ Core modules for VarityKit
 """
 
 # Phase 2: App Store integration (Agent 6)
-from varietykit.core.app_store import (
+from varitykit.core.app_store import (
     AppMetadata,
     AppStatus,
     AppStoreClient,
@@ -13,12 +13,12 @@ from varietykit.core.app_store import (
     MetadataValidationError,
     SubmissionResult,
 )
-from varietykit.core.build_manager import BuildManager
-from varietykit.core.config import ConfigManager, VarityConfig
-from varietykit.core.deployment_orchestrator import DeploymentOrchestrator
-from varietykit.core.project_detector import ProjectDetector
-from varietykit.core.templates import TemplateManager
-from varietykit.core.types import (
+from varitykit.core.build_manager import BuildManager
+from varitykit.core.config import ConfigManager, VarityConfig
+from varitykit.core.deployment_orchestrator import DeploymentOrchestrator
+from varitykit.core.project_detector import ProjectDetector
+from varitykit.core.templates import TemplateManager
+from varitykit.core.types import (
     BuildArtifacts,
     BuildError,
     DeploymentError,

@@ -5,6 +5,24 @@ All notable changes to the Varity SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-alpha.2] - 2026-02-16
+
+### Added - MCP Server & App Scaffolding
+
+- **@varity-labs/mcp** v1.0.0 — Model Context Protocol server for AI editors
+  - 7 tools: `varity_search_docs`, `varity_cost_calculator`, `varity_init`, `varity_deploy`, `varity_deploy_status`, `varity_deploy_logs`, `varity_submit_to_store`
+  - Works with Cursor, Claude Code, VS Code (Copilot), and Windsurf
+  - stdio transport — runs locally, no API keys required
+  - Read-only tools annotated with `readOnlyHint`, destructive tools with `destructiveHint`
+- **create-varity-app** v1.0.0 — `npx create-varity-app my-app` scaffolding
+  - SaaS starter template with auth, database, dashboard, and payments
+  - Works with npm, pnpm, and yarn
+
+### Changed
+
+- Documentation updated: MCP server spec, AI tools overview, beta onboarding
+- Package READMEs cross-linked to `@varity-labs/mcp`
+
 ## [2.0.0-alpha.1] - 2026-01-18
 
 ### Added - Multi-Chain Support 🔗
@@ -153,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Go client completion
 - Multi-provider storage
 - Encryption provider abstraction
-- MCP server for Cursor
+- ~~MCP server for Cursor~~ → Shipped in 2.0.0-alpha.2 as `@varity-labs/mcp`
 
 ### Planned for Q2 2026
 
@@ -244,4 +262,4 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ---
 
-**Powered by Varity** | [Website](https://varity.ai) | [Documentation](https://docs.varity.ai)
+**Powered by Varity** | [Website](https://varity.so) | [Documentation](https://docs.varity.so)

@@ -16,19 +16,10 @@ from rich.table import Table
 @click.pass_context
 def task(ctx):
     """
-    Task utilities for wallet, storage, and dashboard operations
+    Task utilities (advanced - internal use)
 
-    \b
-    Available task groups:
-      wallet    - Create, import, and manage wallets
-      storage   - Upload, download, and manage storage
-      dashboard - Deploy, monitor, and manage dashboards
-
-    \b
-    Examples:
-      varietykit task wallet create
-      varietykit task storage upload ./data
-      varietykit task dashboard deploy
+    This is an advanced command for internal use.
+    For deploying apps, use: varitykit app deploy
     """
     pass
 
@@ -221,7 +212,7 @@ def list_wallets(ctx):
         console.print(
             Panel.fit(
                 "[bold yellow]No .env file found[/bold yellow]\n"
-                "Create a wallet with: varietykit task wallet create",
+                "Create a wallet with: varitykit task wallet create",
                 border_style="yellow",
             )
         )
@@ -434,7 +425,7 @@ def upload(ctx, file_path, pin):
         console.print(
             Panel.fit(
                 "[bold red]Cannot connect to IPFS node[/bold red]\n"
-                "Start LocalDePin with: varietykit localdepin start",
+                "Start LocalDePin with: varitykit localdepin start",
                 border_style="red",
             )
         )
@@ -539,7 +530,7 @@ def list_files(ctx):
         console.print(
             Panel.fit(
                 "[bold red]Cannot connect to IPFS node[/bold red]\n"
-                "Start LocalDePin with: varietykit localdepin start",
+                "Start LocalDePin with: varitykit localdepin start",
                 border_style="red",
             )
         )

@@ -217,7 +217,7 @@ class SDKConfig:
 
     def get_sdk_base_path(self) -> Path:
         """Get path to varity-core-backend SDK package"""
-        # Navigate from varietykit-cli to packages/varity-core-backend
+        # Navigate from varitykit-cli to packages/varity-core-backend
         cli_root = Path(__file__).parent.parent.parent
         sdk_path = cli_root.parent / "packages" / "varity-core-backend"
 

@@ -19,7 +19,7 @@ export enum AuthProvider {
   GCS_OAUTH2 = 'gcs-oauth2',
   GCS_SERVICE_ACCOUNT = 'gcs-service-account',
   VARITY_API_KEY = 'varity-api-key',
-  WEB3_WALLET = 'web3-wallet'
+  EMBEDDED_KEY = 'embedded-key'
 }
 
 // ============================================================================
@@ -578,7 +578,7 @@ export interface Session {
   authProvider: AuthProvider
 
   /** Stored credentials (type depends on provider) */
-  credentials: any
+  credentials: Record<string, unknown>
 
   /** When session was created */
   createdAt: Date

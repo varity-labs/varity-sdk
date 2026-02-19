@@ -195,7 +195,7 @@ export const DataTable = <T extends Record<string, any>>({
             ) : (
               paginatedData.map((row, rowIndex) => (
                 <tr
-                  key={rowIndex}
+                  key={row.id || `row-${rowIndex}`}
                   style={{
                     borderBottom: '1px solid var(--varity-border-color, #e0e0e0)',
                     backgroundColor: striped && rowIndex % 2 === 1 ? 'var(--varity-bg-secondary, #f9f9f9)' : 'transparent',

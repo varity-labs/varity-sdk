@@ -134,7 +134,7 @@ export function VarityPrivyProvider({
         },
       }}
       onSuccess={(user) => {
-        console.log('Privy login success:', user);
+        // Login success — no console output in production
         onLoginSuccess?.(user);
       }}
     >

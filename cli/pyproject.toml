@@ -1,7 +1,7 @@
 [project]
-name = "varietykit"
+name = "varitykit"
 version = "1.0.0"
-description = "AI-powered CLI for building dashboards on Varity L3"
+description = "Build, deploy, and monetize apps — faster and cheaper than AWS"
 readme = "README.md"
 authors = [
     {name = "Varity Team", email = "hello@varity.com"}
@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-keywords = ["varity", "blockchain", "depin", "ai", "dashboard", "cli", "web3"]
+keywords = ["varity", "deploy", "hosting", "cli", "saas"]
 dependencies = [
     # Core CLI dependencies
     "click>=8.1.0",
@@ -67,20 +67,20 @@ all = [
 ]
 
 [project.scripts]
-varietykit = "varietykit.cli.main:cli"
+varitykit = "varitykit.cli.main:cli"
 
 [project.urls]
-Homepage = "https://varity.ai"
-Documentation = "https://docs.varity.ai/varietykit"
-Repository = "https://github.com/varity-ai/varietykit-cli"
-"Bug Tracker" = "https://github.com/varity-ai/varietykit-cli/issues"
+Homepage = "https://varity.so"
+Documentation = "https://docs.varity.so"
+Repository = "https://github.com/varity-labs/varity-sdk"
+"Bug Tracker" = "https://github.com/varity-labs/varity-sdk/issues"
 
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["varietykit", "varietykit.cli", "varietykit.core", "varietykit.utils"]
+packages = ["varitykit", "varitykit.cli", "varitykit.core", "varitykit.utils"]
 
 [tool.black]
 line-length = 100
@@ -145,7 +145,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --strict-markers --cov=varietykit --cov-report=term-missing"
+addopts = "-ra -q --strict-markers --cov=varitykit --cov-report=term-missing"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
@@ -157,7 +157,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["varietykit"]
+source = ["varitykit"]
 omit = ["*/tests/*", "*/__pycache__/*", "*/site-packages/*"]
 
 [tool.coverage.report]

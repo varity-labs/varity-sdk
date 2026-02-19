@@ -439,12 +439,12 @@ varietykit monitor dashboard
 
 ## Resources
 
-- **Documentation:** https://docs.varity.ai
-- **API Reference:** https://api.varity.ai
+- **Documentation:** https://docs.varity.so
+- **API Reference:** https://api.varity.so
 - **GitHub:** https://github.com/varity/varietykit-cli
 - **Discord Community:** https://discord.gg/varity
 - **YouTube Tutorials:** https://youtube.com/@varity-ai
-- **Email Support:** dev@varity.ai
+- **Email Support:** dev@varity.so
 
 ---
 
@@ -478,7 +478,7 @@ varietykit monitor dashboard
 ### Get Support
 
 - **Chat:** Join our [Discord](https://discord.gg/varity)
-- **Email:** dev@varity.ai
+- **Email:** dev@varity.so
 - **GitHub Issues:** github.com/varity/varietykit-cli/issues
 - **Stack Overflow:** Tag your questions with `varity-l3`
 

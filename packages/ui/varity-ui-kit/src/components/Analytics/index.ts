@@ -8,6 +8,8 @@ export { AnalyticsCard } from './AnalyticsCard'
 export { ChartContainer } from './ChartContainer'
 export { DataTable } from './DataTable'
 export { MetricDisplay } from './MetricDisplay'
+export { Sparkline, SPARKLINE_COLORS, getSparklineColors } from './Sparkline'
+export { EnhancedKPICard } from './EnhancedKPICard'
 
 export type { AnalyticsCardProps } from './AnalyticsCard'
 export type { ChartContainerProps, ChartAction } from './ChartContainer'

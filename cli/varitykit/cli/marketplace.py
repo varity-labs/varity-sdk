@@ -16,8 +16,8 @@ from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.table import Table
-from varietykit.core.templates import TemplateManager
-from varietykit.utils.validators import ConfigValidator
+from varitykit.core.templates import TemplateManager
+from varitykit.utils.validators import ConfigValidator
 
 
 @click.group()
@@ -40,9 +40,9 @@ def marketplace(ctx):
 
     \b
     Quick Start:
-      varietykit marketplace publish        # Publish your template
-      varietykit marketplace search legal   # Find templates
-      varietykit marketplace stats          # View your earnings
+      varitykit marketplace publish        # Publish your template
+      varitykit marketplace search legal   # Find templates
+      varitykit marketplace stats          # View your earnings
 
     \b
     Revenue Model:
@@ -78,9 +78,9 @@ def publish(ctx, price, license, auto_deploy, yes):
 
     \b
     Examples:
-      varietykit marketplace publish
-      varietykit marketplace publish --price 299
-      varietykit marketplace publish --auto-deploy --yes
+      varitykit marketplace publish
+      varitykit marketplace publish --price 299
+      varitykit marketplace publish --auto-deploy --yes
 
     \b
     Publishing Process:
@@ -144,7 +144,7 @@ def publish(ctx, price, license, auto_deploy, yes):
     ) as progress:
         task = progress.add_task("[cyan]Running quality checks...", total=None)
 
-        # Run validation (would actually run varietykit template validate)
+        # Run validation (would actually run varitykit template validate)
         quality_score = 92  # Mock - would get from actual validation
         test_coverage = 87  # Mock
 
@@ -156,7 +156,7 @@ def publish(ctx, price, license, auto_deploy, yes):
                 f"[bold red]Quality Score Too Low[/bold red]\n\n"
                 f"Your template scored {quality_score}/100\n"
                 f"Required: 85/100\n\n"
-                "Run 'varietykit template validate' to see issues",
+                "Run 'varitykit template validate' to see issues",
                 border_style="red",
             )
         )
@@ -312,7 +312,7 @@ def publish(ctx, price, license, auto_deploy, yes):
     }
 
     # Save marketplace metadata
-    marketplace_file = current_dir / ".varietykit-marketplace.json"
+    marketplace_file = current_dir / ".varitykit-marketplace.json"
     with open(marketplace_file, "w") as f:
         json.dump(marketplace_listing, f, indent=2)
 
@@ -339,8 +339,8 @@ def publish(ctx, price, license, auto_deploy, yes):
             f"[cyan]Quality Score:[/cyan] {quality_score}/100\n\n"
             f"[bold]Next Steps:[/bold]\n"
             f"  • Share your template: {repo_url}\n"
-            f"  • Track sales: varietykit marketplace stats\n"
-            f"  • Update template: varietykit marketplace update\n\n"
+            f"  • Track sales: varitykit marketplace stats\n"
+            f"  • Update template: varitykit marketplace update\n\n"
             f"[dim]Marketplace URL: https://marketplace.varity.ai/templates/{template_name}[/dim]",
             border_style="green",
         )
@@ -365,10 +365,10 @@ def search(ctx, query, category, max_price, min_quality, limit):
 
     \b
     Examples:
-      varietykit marketplace search legal
-      varietykit marketplace search --category Finance
-      varietykit marketplace search --max-price 200
-      varietykit marketplace search healthcare --min-quality 90
+      varitykit marketplace search legal
+      varitykit marketplace search --category Finance
+      varitykit marketplace search --max-price 200
+      varitykit marketplace search healthcare --min-quality 90
 
     \b
     Search Filters:
@@ -502,7 +502,7 @@ def search(ctx, query, category, max_price, min_quality, limit):
 
     console.print("\n")
     console.print(table)
-    console.print(f"\n[dim]To install: varietykit marketplace install <template-name>[/dim]\n")
+    console.print(f"\n[dim]To install: varitykit marketplace install <template-name>[/dim]\n")
 
 
 @marketplace.command()
@@ -519,8 +519,8 @@ def install(ctx, template_name, output, yes):
 
     \b
     Examples:
-      varietykit marketplace install legal-case-management
-      varietykit marketplace install healthcare-portal --output ./my-project
+      varitykit marketplace install legal-case-management
+      varitykit marketplace install healthcare-portal --output ./my-project
 
     \b
     Installation Process:
@@ -641,7 +641,7 @@ def install(ctx, template_name, output, yes):
             f"  1. cd {output_dir.name}\n"
             f"  2. Review README.md\n"
             f"  3. Customize for your needs\n"
-            f"  4. varietykit dev\n\n"
+            f"  4. varitykit dev\n\n"
             f"[dim]Support: See template repository for documentation[/dim]",
             border_style="green",
         )
@@ -747,8 +747,8 @@ def unpublish(ctx, template_name, confirm):
 
     \b
     Examples:
-      varietykit marketplace unpublish my-template
-      varietykit marketplace unpublish my-template --confirm
+      varitykit marketplace unpublish my-template
+      varitykit marketplace unpublish my-template --confirm
 
     \b
     Note:
@@ -781,7 +781,7 @@ def unpublish(ctx, template_name, confirm):
             "  • No new purchases possible\n"
             "  • Existing customers unaffected\n"
             "  • Revenue sharing continues for existing users\n\n"
-            "[dim]To republish: varietykit marketplace publish[/dim]",
+            "[dim]To republish: varitykit marketplace publish[/dim]",
             border_style="green",
         )
     )
@@ -801,8 +801,8 @@ def update(ctx, version, price):
 
     \b
     Examples:
-      varietykit marketplace update --version 1.1.0
-      varietykit marketplace update --price 349
+      varitykit marketplace update --version 1.1.0
+      varitykit marketplace update --price 349
 
     \b
     What You Can Update:
@@ -817,11 +817,11 @@ def update(ctx, version, price):
 
     # Check marketplace metadata
     current_dir = Path.cwd()
-    marketplace_file = current_dir / ".varietykit-marketplace.json"
+    marketplace_file = current_dir / ".varitykit-marketplace.json"
 
     if not marketplace_file.exists():
         console.print(
-            "[red]Template not published. Run 'varietykit marketplace publish' first[/red]"
+            "[red]Template not published. Run 'varitykit marketplace publish' first[/red]"
         )
         ctx.exit(1)
 

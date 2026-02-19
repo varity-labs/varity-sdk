@@ -135,28 +135,22 @@ describe('validateCredentials', () => {
     }).not.toThrow();
   });
 
-  test('should throw when Privy App ID is missing', () => {
+  test('should throw when app ID is missing', () => {
     expect(() => {
       validateCredentials('', 'valid_client_id');
-    }).toThrow('Privy App ID is required');
+    }).toThrow('Auth credentials are not configured');
   });
 
-  test('should throw when thirdweb Client ID is missing', () => {
+  test('should throw when client ID is missing', () => {
     expect(() => {
       validateCredentials('clpq_valid_app_id', '');
-    }).toThrow('thirdweb Client ID is required');
+    }).toThrow('Infrastructure credentials are not configured');
   });
 
-  test('should warn when Privy App ID format is invalid', () => {
-    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-    validateCredentials('invalid_format', 'valid_client_id');
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("should start with 'clp'")
-    );
-
-    consoleSpy.mockRestore();
+  test('should accept any format for app ID', () => {
+    expect(() => {
+      validateCredentials('any_format', 'valid_client_id');
+    }).not.toThrow();
   });
 });
 
@@ -176,8 +170,7 @@ describe('getCredentialWarning', () => {
     const warning = getCredentialWarning('production');
     expect(warning).not.toBeNull();
     expect(warning).toContain('production');
-    expect(warning).toContain('https://dashboard.privy.io');
-    expect(warning).toContain('https://thirdweb.com/dashboard');
+    expect(warning).toContain('varitykit app deploy');
   });
 });
 
@@ -185,10 +178,8 @@ describe('getUpgradeInstructions', () => {
   test('should return markdown-formatted instructions', () => {
     const instructions = getUpgradeInstructions();
 
-    expect(instructions).toContain('# Upgrading to Production Credentials');
-    expect(instructions).toContain('https://dashboard.privy.io');
-    expect(instructions).toContain('https://thirdweb.com/dashboard');
-    expect(instructions).toContain('PRIVY_APP_ID');
-    expect(instructions).toContain('THIRDWEB_CLIENT_ID');
+    expect(instructions).toContain('# Production Deployment');
+    expect(instructions).toContain('varitykit app deploy');
+    expect(instructions).toContain('PrivyStack');
   });
 });

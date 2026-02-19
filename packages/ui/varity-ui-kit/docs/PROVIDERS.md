@@ -742,8 +742,8 @@ A: Update imports. Use `@varity/ui-kit` exports, not direct paths.
 
 ---
 
-**Need help?** Join our [Discord](https://discord.gg/varity) or check the [docs](https://docs.varity.com).
+**Need help?** Join our [Discord](https://discord.gg/varity) or check the [docs](https://docs.varity.so).
 
-**Found a bug?** [Open an issue](https://github.com/varity/varity-sdk/issues).
+**Found a bug?** [Open an issue](https://github.com/varity-labs/varity-sdk/issues).
 
 **Powered by Varity** 🚀

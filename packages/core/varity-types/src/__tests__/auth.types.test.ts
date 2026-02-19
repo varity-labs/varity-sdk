@@ -41,7 +41,7 @@ describe('Authentication Enums', () => {
     expect(AuthProvider.GCS_OAUTH2).toBe('gcs-oauth2')
     expect(AuthProvider.GCS_SERVICE_ACCOUNT).toBe('gcs-service-account')
     expect(AuthProvider.VARITY_API_KEY).toBe('varity-api-key')
-    expect(AuthProvider.WEB3_WALLET).toBe('web3-wallet')
+    expect(AuthProvider.EMBEDDED_KEY).toBe('embedded-key')
   })
 
   test('AccessKeyStatus enum should have all status values', () => {
@@ -389,14 +389,14 @@ describe('Session Management', () => {
     const session: Session = {
       sessionId: 'session-abc123',
       customerId: 'customer-001',
-      authProvider: AuthProvider.WEB3_WALLET,
+      authProvider: AuthProvider.EMBEDDED_KEY,
       credentials: { walletAddress: '0x123...' },
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + 86400000),
       lastActivityAt: new Date()
     }
 
-    expect(session.authProvider).toBe(AuthProvider.WEB3_WALLET)
+    expect(session.authProvider).toBe(AuthProvider.EMBEDDED_KEY)
     expect(session.sessionId).toBe('session-abc123')
   })
 })

@@ -5,7 +5,7 @@ Zero-configuration database API for Varity applications. Build real-world apps w
 ## Quick Start
 
 ```typescript
-import { db } from '@varity/sdk';
+import { db } from '@varity-labs/sdk';
 
 // That's it! No configuration needed.
 // Credentials are automatically injected by Varity CLI during deployment.
@@ -16,7 +16,7 @@ import { db } from '@varity/sdk';
 ### Insert Documents
 
 ```typescript
-import { db } from '@varity/sdk';
+import { db } from '@varity-labs/sdk';
 
 // Add a product
 const product = await db.collection('products').add({
@@ -91,7 +91,7 @@ const product = await products.add({
 ## Real-World Example: E-Commerce
 
 ```typescript
-import { db } from '@varity/sdk';
+import { db } from '@varity-labs/sdk';
 
 interface Product {
   name: string;
@@ -184,7 +184,7 @@ function ProductList() {
 For most developers, zero configuration is perfect. But if you need custom settings:
 
 ```typescript
-import { Database } from '@varity/sdk';
+import { Database } from '@varity-labs/sdk';
 
 const customDb = new Database({
   proxyUrl: 'https://custom-proxy.example.com',

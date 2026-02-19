@@ -2,7 +2,7 @@
   "name": "varity-sdk-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "Varity SDK - Open source toolkit for deploying apps on Varity L3",
+  "description": "Build, deploy, and monetize production apps — auth, database, payments included. 70% cheaper than AWS.",
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18",
@@ -27,5 +27,29 @@
     "url": "https://github.com/varity-labs/varity-sdk"
   },
   "license": "MIT",
+  "keywords": [
+    "varity",
+    "sdk",
+    "deploy",
+    "saas",
+    "auth",
+    "database",
+    "payments",
+    "react",
+    "nextjs",
+    "developer-tools",
+    "fullstack",
+    "starter-template",
+    "mcp",
+    "model-context-protocol",
+    "cursor",
+    "claude",
+    "ai",
+    "vibe-coding"
+  ],
+  "homepage": "https://varity.so",
+  "bugs": {
+    "url": "https://github.com/varity-labs/varity-sdk/issues"
+  },
   "author": "Varity"
 }

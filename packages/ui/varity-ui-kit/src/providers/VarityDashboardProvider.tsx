@@ -55,7 +55,7 @@ const wagmiConfig = createConfig({
 const queryClient = new QueryClient();
 
 /**
- * InitializingScreen - Shows while Privy and thirdweb providers initialize
+ * InitializingScreen - Shows while authentication providers initialize
  */
 function InitializingScreen({ logo }: { logo?: string }) {
   return (
@@ -75,7 +75,7 @@ function InitializingScreen({ logo }: { logo?: string }) {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Initializing Dashboard...</h1>
         <p className="text-gray-600 mb-4">
-          Setting up Web3 providers and authentication.
+          Setting up authentication and services.
         </p>
         <div className="text-sm text-gray-500 space-y-1">
           <p className="flex items-center justify-center gap-2">
@@ -84,11 +84,11 @@ function InitializingScreen({ logo }: { logo?: string }) {
           </p>
           <p className="flex items-center justify-center gap-2">
             <span className="w-4 h-4 text-green-500">✓</span>
-            Connecting to Varity L3
+            Connecting to Varity
           </p>
           <p className="flex items-center justify-center gap-2">
             <span className="w-4 h-4 text-green-500">✓</span>
-            Preparing wallet connection
+            Preparing your session
           </p>
         </div>
       </div>
@@ -108,7 +108,7 @@ function InitTimeoutScreen({ onRetry }: { onRetry: () => void }) {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Taking Longer Than Expected</h1>
         <p className="text-gray-600 mb-4">
-          The Web3 providers are taking longer than usual to initialize.
+          The authentication services are taking longer than usual to initialize.
         </p>
         <ul className="text-sm text-gray-700 space-y-2 mb-4">
           <li className="flex items-start gap-2">
@@ -254,21 +254,18 @@ export interface VarityDashboardProviderProps {
 }
 
 /**
- * VarityDashboardProvider - Complete provider setup for Varity L3 dashboards
+ * VarityDashboardProvider - Complete provider setup for Varity dashboards
  *
  * Combines:
- * - Privy (authentication: email, social, wallet)
- * - Thirdweb (wallet management, contracts)
- * - WalletSync (unified wallet state)
+ * - Privy (authentication: email, social login)
  * - React Query (data fetching)
- * - Wagmi (Ethereum interactions)
+ * - Loading states and error handling
  *
  * Features:
- * - Embedded wallets for non-crypto users
- * - Gasless transactions support (when configured)
- * - NFT-based licensing support
- * - Cross-chain functionality
- * - Loading states and error handling
+ * - Email and social login for all users
+ * - Zero-config with dev credentials
+ * - Professional loading and error screens
+ * - Customizable appearance
  *
  * @example
  * ```tsx

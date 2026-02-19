@@ -362,7 +362,7 @@ LocalDePin is part of the VarityKit suite. See LICENSE for details.
 
 ## 🆘 Support
 
-- **Documentation**: https://docs.varity.ai
+- **Documentation**: https://docs.varity.so
 - **Issues**: https://github.com/varity/varietykit/issues
 - **Discord**: https://discord.gg/varity
 

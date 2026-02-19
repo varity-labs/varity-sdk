@@ -26,10 +26,10 @@ console = Console()
 
 def get_localdepin_dir() -> Path:
     """Get the localdepin directory path"""
-    # From varietykit/cli/localdepin.py -> varietykit-cli/localdepin
-    cli_dir = Path(__file__).parent  # varietykit/cli
-    varietykit_dir = cli_dir.parent  # varietykit
-    cli_root = varietykit_dir.parent  # varietykit-cli
+    # From varitykit/cli/localdepin.py -> varitykit-cli/localdepin
+    cli_dir = Path(__file__).parent  # varitykit/cli
+    varitykit_dir = cli_dir.parent  # varitykit
+    cli_root = varitykit_dir.parent  # varitykit-cli
     localdepin_dir = cli_root / "localdepin"
 
     if not localdepin_dir.exists():
@@ -143,7 +143,7 @@ SERVICE_HEALTH_CHECKS = {
     "postgres": {"port": 5432, "endpoint": None},  # No HTTP health check
     "redis": {"port": 6379, "endpoint": None},  # No HTTP health check
     "varity-api-local": {"port": 3001, "endpoint": "/health"},
-    "varietykit-explorer": {"port": 8080, "endpoint": "/"},
+    "varitykit-explorer": {"port": 8080, "endpoint": "/"},
 }
 
 
@@ -217,10 +217,10 @@ def localdepin(ctx):
 
     \b
     Quick Start:
-      varietykit localdepin start       # Start all services
-      varietykit localdepin status      # Check service status
-      varietykit localdepin logs        # View logs
-      varietykit localdepin stop        # Stop all services
+      varitykit localdepin start       # Start all services
+      varitykit localdepin status      # Check service status
+      varitykit localdepin logs        # View logs
+      varitykit localdepin stop        # Stop all services
 
     \b
     Service URLs:
@@ -247,10 +247,10 @@ def start(ctx, detach: bool, build: bool, wait: bool, timeout: int):
 
     \b
     Examples:
-      varietykit localdepin start              # Start and wait for health
-      varietykit localdepin start -d           # Start in background
-      varietykit localdepin start --build      # Rebuild images first
-      varietykit localdepin start --no-wait    # Don't wait for health checks
+      varitykit localdepin start              # Start and wait for health
+      varitykit localdepin start -d           # Start in background
+      varitykit localdepin start --build      # Rebuild images first
+      varitykit localdepin start --no-wait    # Don't wait for health checks
     """
     logger = (ctx.obj or {}).get("logger") if ctx.obj else None
 
@@ -349,7 +349,7 @@ def start(ctx, detach: bool, build: bool, wait: bool, timeout: int):
                         "• Celestia RPC:  http://localhost:26658\n"
                         "• Varity API:    http://localhost:3001\n"
                         "• Explorer:      http://localhost:8080\n\n"
-                        "[dim]Run 'varietykit localdepin status' to check service health[/dim]",
+                        "[dim]Run 'varitykit localdepin status' to check service health[/dim]",
                         border_style="green",
                     )
                 )
@@ -360,8 +360,8 @@ def start(ctx, detach: bool, build: bool, wait: bool, timeout: int):
                 console.print(
                     Panel.fit(
                         "[bold yellow]� Services started but some may not be healthy yet[/bold yellow]\n\n"
-                        "Run 'varietykit localdepin status' to check service status\n"
-                        "Run 'varietykit localdepin logs <service>' to view logs",
+                        "Run 'varitykit localdepin status' to check service status\n"
+                        "Run 'varitykit localdepin logs <service>' to view logs",
                         border_style="yellow",
                     )
                 )
@@ -380,8 +380,8 @@ def stop(ctx, volumes: bool):
 
     \b
     Examples:
-      varietykit localdepin stop        # Stop services, keep data
-      varietykit localdepin stop -v     # Stop services and delete data
+      varitykit localdepin stop        # Stop services, keep data
+      varitykit localdepin stop -v     # Stop services and delete data
     """
     logger = (ctx.obj or {}).get("logger") if ctx.obj else None
 
@@ -437,9 +437,9 @@ def status(ctx, format: str, verbose: bool):
 
     \b
     Examples:
-      varietykit localdepin status           # Table view
-      varietykit localdepin status -v        # Include health checks
-      varietykit localdepin status --json    # JSON output
+      varitykit localdepin status           # Table view
+      varitykit localdepin status -v        # Include health checks
+      varitykit localdepin status --json    # JSON output
     """
     logger = (ctx.obj or {}).get("logger") if ctx.obj else None
 
@@ -452,7 +452,7 @@ def status(ctx, format: str, verbose: bool):
         console.print(
             Panel.fit(
                 "[bold yellow]No services running[/bold yellow]\n\n"
-                "Start LocalDePin with: varietykit localdepin start",
+                "Start LocalDePin with: varitykit localdepin start",
                 border_style="yellow",
             )
         )
@@ -568,10 +568,10 @@ def logs(ctx, service: Optional[str], follow: bool, tail: int):
 
     \b
     Examples:
-      varietykit localdepin logs                    # All services
-      varietykit localdepin logs -s arbitrum-node   # Specific service
-      varietykit localdepin logs -f                 # Follow all logs
-      varietykit localdepin logs -s ipfs-node -f    # Follow IPFS logs
+      varitykit localdepin logs                    # All services
+      varitykit localdepin logs -s arbitrum-node   # Specific service
+      varitykit localdepin logs -f                 # Follow all logs
+      varitykit localdepin logs -s ipfs-node -f    # Follow IPFS logs
     """
     logger = (ctx.obj or {}).get("logger") if ctx.obj else None
 
@@ -642,7 +642,7 @@ def reset(ctx, confirm: bool):
             Panel.fit(
                 "[bold green] LocalDePin reset complete[/bold green]\n\n"
                 "All data has been deleted.\n"
-                "Start fresh with: varietykit localdepin start",
+                "Start fresh with: varitykit localdepin start",
                 border_style="green",
             )
         )

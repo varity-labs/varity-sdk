@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from varietykit.utils.logger import get_logger
+from varitykit.utils.logger import get_logger
 
 
 class TemplateGenerator:
@@ -372,7 +372,7 @@ yarn-error.log*
 *.swo
 
 # VarityKit
-.varietykit
+.varitykit
 """
         (output_dir / ".gitignore").write_text(gitignore)
 
@@ -476,7 +476,7 @@ src/
 Deploy to Varity L3:
 
 ```bash
-varietykit deploy run --network testnet
+varitykit deploy run --network testnet
 ```
 
 ## License

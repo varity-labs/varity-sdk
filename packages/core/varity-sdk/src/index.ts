@@ -1,13 +1,17 @@
 /**
- * Varity SDK v1 - Public API
+ * Varity SDK - Public API
  *
- * Main entry point for the Varity Backend SDK.
- * Exports all public interfaces, types, and classes.
+ * Main entry point for the Varity SDK.
+ * Provides database, auth credentials, and app development utilities.
  */
 
-// Core SDK
-export { VaritySDK, createVaritySDK } from './core/VaritySDK'
-export { getNetworkConfig, NETWORK_CONFIGS, DEFAULT_CONFIG, API_ENDPOINTS, STORAGE_CONFIG } from './core/config'
+// ============================================================================
+// Advanced: Core SDK (requires infrastructure setup)
+// Available via direct import if needed
+// ============================================================================
+// export { VaritySDK, createVaritySDK } from './core/VaritySDK'
+// export { getNetworkConfig, NETWORK_CONFIGS, DEFAULT_CONFIG } from './core/config'
+// export { API_ENDPOINTS, STORAGE_CONFIG } from './core/config'
 
 // Shared Development Credentials
 export {
@@ -22,267 +26,278 @@ export {
 } from './core/credentials'
 export type { CredentialConfig } from './core/credentials'
 
-// Template System
-export {
-  TemplateRegistry,
-  templateRegistry,
-  validateTemplate,
-  // Advanced: Available via direct import from submodule
-  // getContractABI,
-  // getContractAddress,
-  getEntity,
-  getMetric,
-  getEvent,
-  mergeTemplateConfig
-} from './core/template'
-export { loadISOTemplate, loadAllTemplates } from './core/template-loader'
-export type {
-  TemplateType,
-  TemplateConfig,
-  TemplateContract,
-  TemplateEntity,
-  EntityField,
-  TemplateEvent,
-  TemplateMetric,
-  TemplateDashboard,
-  DashboardWidget,
-  TemplateStorageConfig
-} from './core/template'
+// ============================================================================
+// Advanced: Template System (internal, not developer-facing)
+// ============================================================================
+// export {
+//   TemplateRegistry,
+//   templateRegistry,
+//   validateTemplate,
+//   getEntity,
+//   getMetric,
+//   getEvent,
+//   mergeTemplateConfig
+// } from './core/template'
+// export { loadISOTemplate, loadAllTemplates } from './core/template-loader'
+// export type {
+//   TemplateType,
+//   TemplateConfig,
+//   TemplateContract,
+//   TemplateEntity,
+//   EntityField,
+//   TemplateEvent,
+//   TemplateMetric,
+//   TemplateDashboard,
+//   DashboardWidget,
+//   TemplateStorageConfig
+// } from './core/template'
 
-// Types - SDK Configuration
-export type {
-  VaritySDKConfig,
-  Network,
-  NetworkConfig,
-  ContractAddresses
-} from './core/types'
+// ============================================================================
+// Advanced: SDK Configuration Types (requires infrastructure setup)
+// ============================================================================
+// export type {
+//   VaritySDKConfig,
+//   Network,
+//   NetworkConfig,
+//   ContractAddresses
+// } from './core/types'
 
-// Types - ISO Dashboard
-export type {
-  ISOMerchant,
-  RegisterMerchantInput,
-  ISOMerchantFilters,
-  ISOTransaction,
-  RecordTransactionInput,
-  BatchTransactionResult,
-  ISORep,
-  RegisterRepInput,
-  ISORepLeaderboard,
-  ISOKPISummary,
-  ISOTrendData,
-  ISOGrowthMetrics,
-  ISORepPerformance,
-  ISOProblemMerchant,
-  FeeStructure,
-  ResidualResult
-} from './core/types'
+// ============================================================================
+// Advanced: ISO Dashboard Types (internal template)
+// ============================================================================
+// export type {
+//   ISOMerchant,
+//   RegisterMerchantInput,
+//   ISOMerchantFilters,
+//   ISOTransaction,
+//   RecordTransactionInput,
+//   BatchTransactionResult,
+//   ISORep,
+//   RegisterRepInput,
+//   ISORepLeaderboard,
+//   ISOKPISummary,
+//   ISOTrendData,
+//   ISOGrowthMetrics,
+//   ISORepPerformance,
+//   ISOProblemMerchant,
+//   FeeStructure,
+//   ResidualResult
+// } from './core/types'
 
-// Types - Shared Modules
-export type {
-  StorageResult,
-  StorageOptions,
-  AIResponse,
-  AIResponseWithSources,
-  MerchantInsights,
-  AnomalyAnalysis,
-  UserProfile,
-  // Advanced: Available via direct import from submodule
-  // ZKProof,
-  // AccessCondition,
-  // DataProof,
-  // // TEE Types
-  // TEEProvider,
-  // TEEAttestation,
-  // TEEQueryOptions,
-  // TEEResponse,
-  // // ZKML Types
-  // ZKMLProofType,
-  // ZKMLCircuitType,
-  // ZKMLProof,
-  // ZKMLVerificationResult,
-  // ZKMLCircuitConfig,
-  // ZKMLProofInput,
-  // ZKMLProofStats
-} from './core/types'
+// ============================================================================
+// Advanced: Shared Module Types (requires infrastructure setup)
+// ============================================================================
+// export type {
+//   StorageResult,
+//   StorageOptions,
+//   AIResponse,
+//   AIResponseWithSources,
+//   MerchantInsights,
+//   AnomalyAnalysis,
+//   UserProfile,
+//   ZKProof,
+//   AccessCondition,
+//   DataProof,
+//   TEEProvider,
+//   TEEAttestation,
+//   TEEQueryOptions,
+//   TEEResponse,
+//   ZKMLProofType,
+//   ZKMLCircuitType,
+//   ZKMLProof,
+//   ZKMLVerificationResult,
+//   ZKMLCircuitConfig,
+//   ZKMLProofInput,
+//   ZKMLProofStats
+// } from './core/types'
 
-// Types - Utilities
-export type {
-  Pagination,
-  PaginatedResult,
-  ErrorResponse,
-  // Advanced: Available via direct import from submodule
-  // TransactionReceipt,
-  BackendAPIConfig,
-  PinataUploadResponse,
-  // Advanced: Available via direct import from submodule
-  // CelestiaSubmitResponse
-} from './core/types'
+// ============================================================================
+// Advanced: Utility Types (requires infrastructure setup)
+// ============================================================================
+// export type {
+//   Pagination,
+//   PaginatedResult,
+//   ErrorResponse,
+//   TransactionReceipt,
+//   BackendAPIConfig,
+//   PinataUploadResponse,
+//   CelestiaSubmitResponse
+// } from './core/types'
 
-// Enums
-export { MerchantStatus, TransactionType, RepStatus } from './core/types'
-// Advanced: Available via direct import from submodule
+// ============================================================================
+// Advanced: Enums (internal template)
+// ============================================================================
+// export { MerchantStatus, TransactionType, RepStatus } from './core/types'
 // export { StorageLayer, Role } from './core/types'
 
-// Storage Module (Filecoin/IPFS + Multi-backend Support)
-export { StorageModule, S3Module } from './modules/storage'
-export type {
-  UploadResult,
-  DataPointer,
-  Pin,
-  PinFilters,
-  CelestiaReceipt,
-  S3PutObjectParams,
-  S3GetObjectParams,
-  S3GetObjectResponse,
-  S3DeleteObjectParams,
-  S3ListObjectsParams,
-  S3HeadObjectParams,
-  S3HeadObjectResponse
-} from './modules/storage'
+// ============================================================================
+// Advanced: Storage Module (requires Filecoin/IPFS/S3 infrastructure)
+// Available via direct import if needed
+// ============================================================================
+// export { StorageModule, S3Module } from './modules/storage'
+// export type {
+//   UploadResult,
+//   DataPointer,
+//   Pin,
+//   PinFilters,
+//   CelestiaReceipt,
+//   S3PutObjectParams,
+//   S3GetObjectParams,
+//   S3GetObjectResponse,
+//   S3DeleteObjectParams,
+//   S3ListObjectsParams,
+//   S3HeadObjectParams,
+//   S3HeadObjectResponse
+// } from './modules/storage'
 
-// Storage Adapters (Advanced Multi-Backend Support)
-export {
-  IStorageAdapter,
-  BaseStorageAdapter,
-  UnsupportedOperationError,
-  FilecoinAdapter,
-  MultiTierAdapter,
-  AdapterFactory
-} from './modules/storage'
-export type { AdapterFactoryConfig } from './modules/storage'
+// ============================================================================
+// Advanced: Storage Adapters (requires infrastructure setup)
+// ============================================================================
+// export {
+//   IStorageAdapter,
+//   BaseStorageAdapter,
+//   UnsupportedOperationError,
+//   FilecoinAdapter,
+//   MultiTierAdapter,
+//   AdapterFactory
+// } from './modules/storage'
+// export type { AdapterFactoryConfig } from './modules/storage'
 
-// Universal Capability Modules
-export { AnalyticsModule } from './modules/analytics'
-export type {
-  KPIOptions,
-  KPIResult,
-  KPISummary,
-  TrendOptions,
-  TrendDataPoint,
-  TrendResult,
-  LeaderboardOptions,
-  LeaderboardEntry,
-  LeaderboardResult,
-  GrowthMetricsOptions,
-  GrowthMetric,
-  GrowthMetricsResult,
-  TimeSeriesOptions,
-  TimeSeriesResult,
-  ComparativeAnalysisOptions,
-  ComparativeResult
-} from './modules/analytics'
+// ============================================================================
+// Advanced: Capability Modules (require backend API — not yet available)
+// These modules will be enabled in a future release.
+// ============================================================================
+// export { AnalyticsModule } from './modules/analytics'
+// export type {
+//   KPIOptions,
+//   KPIResult,
+//   KPISummary,
+//   TrendOptions,
+//   TrendDataPoint,
+//   TrendResult,
+//   LeaderboardOptions,
+//   LeaderboardEntry,
+//   LeaderboardResult,
+//   GrowthMetricsOptions,
+//   GrowthMetric,
+//   GrowthMetricsResult,
+//   TimeSeriesOptions,
+//   TimeSeriesResult,
+//   ComparativeAnalysisOptions,
+//   ComparativeResult
+// } from './modules/analytics'
 
-export { NotificationsModule } from './modules/notifications'
-export type {
-  NotificationType,
-  NotificationPriority,
-  NotificationStatus,
-  SendNotificationOptions,
-  NotificationAttachment,
-  NotificationResult,
-  NotificationPreferences,
-  NotificationHistoryOptions,
-  NotificationHistoryEntry,
-  NotificationHistoryResult,
-  ScheduleNotificationOptions,
-  ScheduledNotification,
-  AlertRule,
-  AlertCondition,
-  AlertRuleResult,
-  NotificationTemplate
-} from './modules/notifications'
+// export { NotificationsModule } from './modules/notifications'
+// export type {
+//   NotificationType,
+//   NotificationPriority,
+//   NotificationStatus,
+//   SendNotificationOptions,
+//   NotificationAttachment,
+//   NotificationResult,
+//   NotificationPreferences,
+//   NotificationHistoryOptions,
+//   NotificationHistoryEntry,
+//   NotificationHistoryResult,
+//   ScheduleNotificationOptions,
+//   ScheduledNotification,
+//   AlertRule,
+//   AlertCondition,
+//   AlertRuleResult,
+//   NotificationTemplate
+// } from './modules/notifications'
 
-export { ExportModule } from './modules/export'
-export type {
-  ExportFormat,
-  ReportFormat,
-  ExportOptions,
-  ExportResult,
-  CSVExportOptions,
-  JSONExportOptions,
-  ReportOptions,
-  ReportResult,
-  DownloadOptions,
-  BulkExportOptions,
-  BulkExportResult,
-  ExportTemplate,
-  ScheduledExportOptions,
-  ScheduledExport
-} from './modules/export'
+// export { ExportModule } from './modules/export'
+// export type {
+//   ExportFormat,
+//   ReportFormat,
+//   ExportOptions,
+//   ExportResult,
+//   CSVExportOptions,
+//   JSONExportOptions,
+//   ReportOptions,
+//   ReportResult,
+//   DownloadOptions,
+//   BulkExportOptions,
+//   BulkExportResult,
+//   ExportTemplate,
+//   ScheduledExportOptions,
+//   ScheduledExport
+// } from './modules/export'
 
-export { CacheModule } from './modules/cache'
-export type {
-  CacheOptions,
-  CacheEntry,
-  CacheStats,
-  CacheBatchOperation,
-  CacheBatchResult,
-  CachePattern
-} from './modules/cache'
+// export { CacheModule } from './modules/cache'
+// export type {
+//   CacheOptions,
+//   CacheEntry,
+//   CacheStats,
+//   CacheBatchOperation,
+//   CacheBatchResult,
+//   CachePattern
+// } from './modules/cache'
 
-export { MonitoringModule, TraceContext, SpanContext } from './modules/monitoring'
-export type {
-  HealthStatus,
-  MetricType,
-  HealthCheckResult,
-  Metric,
-  RecordMetricOptions,
-  QueryMetricsOptions,
-  MetricSeries,
-  Trace,
-  Span,
-  LogEntry,
-  ErrorReport,
-  PerformanceMetrics,
-  Alert
-} from './modules/monitoring'
+// export { MonitoringModule, TraceContext, SpanContext } from './modules/monitoring'
+// export type {
+//   HealthStatus,
+//   MetricType,
+//   HealthCheckResult,
+//   Metric,
+//   RecordMetricOptions,
+//   QueryMetricsOptions,
+//   MetricSeries,
+//   Trace,
+//   Span,
+//   LogEntry,
+//   ErrorReport,
+//   PerformanceMetrics,
+//   Alert
+// } from './modules/monitoring'
 
-export { ForecastingModule } from './modules/forecasting'
-export type {
-  TimeInterval,
-  ForecastModel,
-  AnomalySensitivity,
-  AnomalyType,
-  EvaluationMetric,
-  PredictOptions,
-  AnomalyDetectionOptions,
-  TrendAnalysisOptions,
-  ScenarioSimulationOptions,
-  TrainModelOptions,
-  EvaluateModelOptions,
-  ForecastPoint,
-  ForecastResult,
-  Anomaly,
-  AnomalyDetectionResult,
-  TrendComponent,
-  TrendAnalysisResult,
-  ScenarioResult,
-  TrainedModel,
-  EvaluationResult
-} from './modules/forecasting'
+// export { ForecastingModule } from './modules/forecasting'
+// export type {
+//   TimeInterval,
+//   ForecastModel,
+//   AnomalySensitivity,
+//   AnomalyType,
+//   EvaluationMetric,
+//   PredictOptions,
+//   AnomalyDetectionOptions,
+//   TrendAnalysisOptions,
+//   ScenarioSimulationOptions,
+//   TrainModelOptions,
+//   EvaluateModelOptions,
+//   ForecastPoint,
+//   ForecastResult,
+//   Anomaly,
+//   AnomalyDetectionResult,
+//   TrendComponent,
+//   TrendAnalysisResult,
+//   ScenarioResult,
+//   TrainedModel,
+//   EvaluationResult
+// } from './modules/forecasting'
 
-export { WebhooksModule } from './modules/webhooks'
-export type {
-  WebhookStatus,
-  DeliveryStatus,
-  HttpMethod,
-  RetryStrategy,
-  RegisterWebhookOptions,
-  UpdateWebhookOptions,
-  ListWebhooksOptions,
-  TestWebhookOptions,
-  GetLogsOptions,
-  DeliverEventOptions,
-  Webhook,
-  DeliveryLog,
-  AvailableEvent,
-  WebhookStats,
-  TestDeliveryResult
-} from './modules/webhooks'
+// export { WebhooksModule } from './modules/webhooks'
+// export type {
+//   WebhookStatus,
+//   DeliveryStatus,
+//   HttpMethod,
+//   RetryStrategy,
+//   RegisterWebhookOptions,
+//   UpdateWebhookOptions,
+//   ListWebhooksOptions,
+//   TestWebhookOptions,
+//   GetLogsOptions,
+//   DeliverEventOptions,
+//   Webhook,
+//   DeliveryLog,
+//   AvailableEvent,
+//   WebhookStats,
+//   TestDeliveryResult
+// } from './modules/webhooks'
 
 // ============================================================================
 // Advanced: Contract ABIs
-// Available via direct import: import MerchantRegistryABI from '@varity/sdk/contracts/abis/iso/MerchantRegistry.json'
+// Available via direct import: import MerchantRegistryABI from '@varity-labs/sdk/contracts/abis/iso/MerchantRegistry.json'
 // ============================================================================
 // export { default as MerchantRegistryABI } from './contracts/abis/iso/MerchantRegistry.json'
 // export { default as TransactionVaultABI } from './contracts/abis/iso/TransactionVault.json'
@@ -294,7 +309,7 @@ export type {
 
 // ============================================================================
 // Advanced: Thirdweb Integration
-// Available via direct import: import { ThirdwebWrapper } from '@varity/sdk/thirdweb'
+// Available via direct import: import { ThirdwebWrapper } from '@varity-labs/sdk/thirdweb'
 // ============================================================================
 // export {
 //   ThirdwebWrapper,
@@ -366,7 +381,7 @@ export type {
 
 // ============================================================================
 // Advanced: Blockchain & Chain Configuration
-// Available via direct import: import { ChainRegistry } from '@varity/sdk/chains'
+// Available via direct import: import { ChainRegistry } from '@varity-labs/sdk/chains'
 // ============================================================================
 // export {
 //   ChainRegistry,
@@ -400,7 +415,7 @@ export type {
 
 // ============================================================================
 // Advanced: Blockchain Module
-// Available via direct import: import { BlockchainService } from '@varity/sdk/blockchain'
+// Available via direct import: import { BlockchainService } from '@varity-labs/sdk/blockchain'
 // ============================================================================
 // export {
 //   BlockchainService,
@@ -418,7 +433,7 @@ export type {
 
 // ============================================================================
 // Advanced: Gas Tracking Module
-// Available via direct import: import { trackGasUsage } from '@varity/sdk/tracking'
+// Available via direct import: import { trackGasUsage } from '@varity-labs/sdk/tracking'
 // ============================================================================
 // export {
 //   trackGasUsage,
@@ -444,7 +459,7 @@ export type {
 //   GasExportOptions,
 // } from './tracking'
 
-// Database Module (NEW - Zero-Config Database API)
+// Database Module — Zero-Config Database API
 export {
   Database,
   db,
@@ -459,4 +474,4 @@ export type {
 
 // Version
 export const VERSION = '2.0.0-alpha.1'
-export const SDK_VERSION = '2.0.0-alpha.1' // Multi-chain support + thirdweb Engine integration + Blockchain module
+export const SDK_VERSION = '2.0.0-alpha.1'

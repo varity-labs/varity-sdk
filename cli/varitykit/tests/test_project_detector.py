@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from varietykit.core.project_detector import ProjectDetectionError, ProjectDetector
+from varitykit.core.project_detector import ProjectDetectionError, ProjectDetector
 
 
 class TestProjectDetector:

@@ -20,25 +20,40 @@ const queryClient = new QueryClient({
 });
 
 /**
+ * Privy chain configuration format (matches Privy's expected structure)
+ */
+interface PrivyChainConfig {
+  id: number;
+  name: string;
+  network: string;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
+  rpcUrls: {
+    default: { http: string[] };
+    public: { http: string[] };
+  };
+  blockExplorers?: Record<string, { name: string; url: string }>;
+  testnet?: boolean;
+}
+
+/**
  * Convert thirdweb Chain to Privy Chain format
  */
-function toPrivyChain(chain: Chain): PrivyChain {
+function toPrivyChain(chain: Chain): PrivyChainConfig {
   return {
     id: chain.id,
     name: chain.name || `Chain ${chain.id}`,
-    network: chain.network || `chain-${chain.id}`,
-    nativeCurrency: chain.nativeCurrency || {
+    network: `chain-${chain.id}`,
+    nativeCurrency: {
       name: 'Ether',
       symbol: 'ETH',
       decimals: 18,
     },
-    rpcUrls: chain.rpcUrls || {
+    rpcUrls: {
       default: { http: [chain.rpc] },
       public: { http: [chain.rpc] },
     },
-    blockExplorers: chain.blockExplorers,
     testnet: chain.testnet,
-  } as PrivyChain;
+  };
 }
 
 export interface PrivyStackProps {
@@ -89,32 +104,28 @@ export interface PrivyStackProps {
 }
 
 /**
- * PrivyStack - All-in-one provider for Privy + thirdweb + Varity L3
+ * PrivyStack - All-in-one authentication and provider setup for Varity apps
  *
  * This component combines all necessary providers in the correct order:
- * 1. QueryClientProvider - For React Query (required by Privy)
- * 2. PrivyProvider - Authentication (email, social, wallet)
+ * 1. QueryClientProvider - For React Query (data fetching)
+ * 2. PrivyProvider - Authentication (email, social login)
  * 3. PrivyReadyGate - Prevents blank screen during initialization
- * 4. ThirdwebProvider - Wallet management and contracts
- * 5. WalletSyncProvider - Syncs Privy embedded wallets with thirdweb
  *
  * **Production Pattern**: Extracted from generic-template-dashboard production deployment
  *
  * **Key Features**:
  * - No blank screen during initialization (PrivyReadyGate)
- * - Seamless wallet sync between Privy and thirdweb
- * - Support for email/social login (embedded wallets)
- * - Support for external wallets (MetaMask, WalletConnect, etc.)
- * - Optimized for Varity L3 by default
+ * - Zero-config with shared development credentials
+ * - Support for email/social login
+ * - Professional loading and timeout screens
+ * - Optimized for Varity by default
  *
  * **Stack Order** (critical - do not change):
  * ```
  * QueryClientProvider         # React Query for data fetching
  *   └─ PrivyProvider           # Authentication layer
  *       └─ PrivyReadyGate       # Loading state management
- *           └─ ThirdwebProvider # Blockchain operations
- *               └─ WalletSyncProvider # Wallet synchronization
- *                   └─ YourApp       # Your application
+ *           └─ YourApp          # Your application
  * ```
  *
  * @example Zero-config setup (uses shared dev credentials)
@@ -212,12 +223,12 @@ export function PrivyStack({
     );
   }, [appId, thirdwebClientId]);
 
-  // Use Varity L3 Testnet as default chain if none provided
-  const supportedChains = React.useMemo((): PrivyChain[] => {
+  // Use Varity default chain if none provided
+  const supportedChains = React.useMemo((): PrivyChainConfig[] => {
     if (chains && chains.length > 0) {
       return chains.map(toPrivyChain);
     }
-    // Default to Varity L3 Testnet
+    // Default Varity chain configuration
     return [
       {
         id: 33529,
@@ -243,7 +254,7 @@ export function PrivyStack({
           },
         },
         testnet: true,
-      } as PrivyChain,
+      },
     ];
   }, [chains]);
 
@@ -258,8 +269,8 @@ export function PrivyStack({
             accentColor: (appearance.accentColor || '#2563EB') as `#${string}`,
             logo: appearance.logo,
           },
-          supportedChains,
-          defaultChain: supportedChains[0],
+          supportedChains: supportedChains as any,
+          defaultChain: supportedChains[0] as any,
         }}
       >
         <PrivyReadyGate>

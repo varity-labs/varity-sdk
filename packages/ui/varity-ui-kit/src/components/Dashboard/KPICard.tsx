@@ -71,9 +71,9 @@ export function KPICard({
   const baseStyles = 'rounded-lg transition-all duration-200';
 
   const variantStyles = {
-    default: 'bg-white border border-gray-200 shadow-sm',
-    outlined: 'bg-transparent border-2 border-gray-300',
-    filled: 'bg-gray-50 border border-gray-100',
+    default: 'bg-white border border-gray-200 shadow-sm hover:shadow-md',
+    outlined: 'bg-transparent border-2 border-gray-300 hover:shadow-sm',
+    filled: 'bg-gray-50 border border-gray-100 hover:shadow-sm',
   };
 
   const sizeStyles = {
@@ -89,8 +89,8 @@ export function KPICard({
   };
 
   const trendColors = {
-    up: 'text-green-600 bg-green-50',
-    down: 'text-red-600 bg-red-50',
+    up: 'text-emerald-600 bg-emerald-50',
+    down: 'text-rose-600 bg-rose-50',
     neutral: 'text-gray-600 bg-gray-100',
   };
 

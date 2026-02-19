@@ -7,7 +7,7 @@ This module provides functionality to:
 3. Rollback to previous deployments
 4. Query deployment status
 
-Storage location: ~/.varietykit/deployments/
+Storage location: ~/.varitykit/deployments/
 Manifest format: v1.0 (Phase 1) and v2.0 (Phase 2)
 """
 
@@ -47,10 +47,10 @@ class DeploymentHistory:
         Initialize deployment history manager.
 
         Args:
-            storage_path: Custom storage path (default: ~/.varietykit/deployments)
+            storage_path: Custom storage path (default: ~/.varitykit/deployments)
         """
         if storage_path is None:
-            self.storage_path = Path.home() / ".varietykit" / "deployments"
+            self.storage_path = Path.home() / ".varitykit" / "deployments"
         else:
             self.storage_path = Path(storage_path)
 

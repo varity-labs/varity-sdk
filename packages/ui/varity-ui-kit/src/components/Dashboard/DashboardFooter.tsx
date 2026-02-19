@@ -106,7 +106,7 @@ export const DashboardFooter: React.FC<DashboardFooterProps> = ({
             Powered by
           </span>
           <a
-            href="https://varity.com?utm_source=dashboard&utm_medium=footer"
+            href="https://developer.store.varity.so"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -115,17 +115,41 @@ export const DashboardFooter: React.FC<DashboardFooterProps> = ({
               fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '6px'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.textDecoration = 'underline'
+              e.currentTarget.style.opacity = '0.8'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.textDecoration = 'none'
+              e.currentTarget.style.opacity = '1'
             }}
           >
-            <span style={{ fontSize: '16px' }}>🚀</span>
-            Varity
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 64 64"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ display: 'block' }}
+            >
+              <defs>
+                <linearGradient id="varity-ft-f1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#5EEAD4"/><stop offset="100%" stopColor="#0D9488"/>
+                </linearGradient>
+                <linearGradient id="varity-ft-f2" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#60A5FA"/><stop offset="100%" stopColor="#1D4ED8"/>
+                </linearGradient>
+                <linearGradient id="varity-ft-f4" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#14B8A6"/><stop offset="100%" stopColor="#2DD4BF"/>
+                </linearGradient>
+              </defs>
+              <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#varity-ft-f4)"/>
+              <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#varity-ft-f1)"/>
+              <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#varity-ft-f2)"/>
+              <path d="M8 36 L32 58 L20 58 Z" fill="url(#varity-ft-f1)" opacity="0.7"/>
+              <path d="M56 36 L44 58 L32 58 Z" fill="url(#varity-ft-f2)" opacity="0.7"/>
+              <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
+            </svg>
+            <span>Varity</span>
           </a>
         </div>
       )}

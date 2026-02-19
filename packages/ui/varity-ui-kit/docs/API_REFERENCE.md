@@ -18,7 +18,7 @@ npm install @varity/ui-kit
 import { VarityClient } from '@varity/ui-kit'
 
 const client = new VarityClient({
-  apiEndpoint: 'https://api.varity.io',  // Required
+  apiEndpoint: 'https://api.varity.so',  // Required
   apiKey: 'your-api-key',                // Required
   timeout: 30000                          // Optional (default: 30000ms)
 })
@@ -532,7 +532,7 @@ try {
 
 ```bash
 # .env file
-VARITY_API_ENDPOINT=https://api.varity.io
+VARITY_API_ENDPOINT=https://api.varity.so
 VARITY_API_KEY=your-api-key
 ```
 
@@ -547,9 +547,9 @@ const client = new VarityClient({
 
 ## Support
 
-- **Documentation**: https://docs.varity.com
+- **Documentation**: https://docs.varity.so
 - **Discord**: https://discord.gg/varity
-- **Email**: support@varity.com
+- **Email**: support@varity.so
 - **GitHub**: https://github.com/varity/ui-kit
 
 ---

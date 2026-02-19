@@ -502,7 +502,7 @@ MIT License - see LICENSE file for details
 For issues and questions:
 
 - GitHub Issues: [varity/packages/varity-s3-gateway](https://github.com/varity/packages/varity-s3-gateway/issues)
-- Documentation: [Varity SDK Documentation](https://docs.varity.io)
+- Documentation: [Varity SDK Documentation](https://docs.varity.so)
 
 ## Roadmap
 

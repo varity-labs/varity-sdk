@@ -386,7 +386,7 @@ import { SIWEProvider, SIWEButton, useSIWE } from '@varity/ui-kit';
 
 function App() {
   return (
-    <SIWEProvider apiUrl="https://api.varity.io">
+    <SIWEProvider apiUrl="https://api.varity.so">
       <SIWEButton>Sign In with Wallet</SIWEButton>
     </SIWEProvider>
   );
@@ -529,7 +529,7 @@ function FundWallet() {
 
 - **Privy Documentation**: https://docs.privy.io/
 - **Privy Dashboard**: https://dashboard.privy.io/
-- **Varity Documentation**: https://docs.varity.io/
+- **Varity Documentation**: https://docs.varity.so/
 - **Example App**: `examples/privy-complete-onboarding.tsx`
 
 ---

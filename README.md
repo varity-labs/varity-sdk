@@ -1,307 +1,386 @@
-# Varity SDK
+<p align="center">
+  <img src="https://varity.so/logo.svg" alt="Varity" width="120" />
+</p>
 
-> The Operating System for Web3 - Build ANY real-world app on decentralized infrastructure
+<h1 align="center">Varity SDK</h1>
 
-Varity SDK is the complete open-source toolkit for deploying production applications on Varity L3 (Arbitrum Orbit rollup, Chain ID 33529). One command to deploy, complete thirdweb integration, and seamless cloud migration with 70-85% cost savings vs AWS.
+<p align="center">
+  <strong>Build, deploy, and monetize production apps — 70% cheaper than AWS</strong>
+</p>
 
-**Current Status:** 🚀 **Alpha Released (2.0.0-alpha.1)** - Core packages complete, ready for comprehensive testing
+<p align="center">
+  Auth, database, storage, and payments included. One command to deploy. Zero configuration.
+</p>
 
-## Vision: The OS for Web3
+<p align="center">
+  <a href="https://www.npmjs.com/package/@varity-labs/sdk"><img src="https://img.shields.io/npm/v/@varity-labs/sdk" alt="npm" /></a>
+  <a href="https://pypi.org/project/varitykit/"><img src="https://img.shields.io/pypi/v/varitykit" alt="PyPI" /></a>
+  <a href="https://github.com/varity-labs/varity-sdk/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
+  <a href="https://discord.gg/varity"><img src="https://img.shields.io/badge/discord-join-7289DA" alt="Discord" /></a>
+  <a href="https://github.com/varity-labs/varity-sdk/stargazers"><img src="https://img.shields.io/github/stars/varity-labs/varity-sdk?style=flat" alt="Stars" /></a>
+</p>
 
-Varity is building the operating system for Web3 - aggregating all crypto projects together so developers can build ANY application on decentralized infrastructure with plug-and-play access to blockchains, DePin networks, privacy tools, and more.
+<p align="center">
+  <a href="https://docs.varity.so">Documentation</a> ·
+  <a href="https://docs.varity.so/getting-started/quickstart">Quick Start</a> ·
+  <a href="https://store.varity.so">App Store</a> ·
+  <a href="https://discord.gg/varity">Discord</a>
+</p>
 
-Just as traditional operating systems provide unified access to hardware, Varity provides unified access to Web3 infrastructure.
+<p align="center">
+  <code>npx create-varity-app my-app</code>
+</p>
 
-### Three Strategic Pillars
+<p align="center">
+  <img src=".github/terminal-demo.svg" alt="Deploy an app with Varity in 60 seconds" width="700" />
+</p>
 
-1. **Vibe Coding Integration** - Make Varity the default deployment target for AI coding tools (92% of US developers use AI tools daily)
-2. **Varity Store** - Cross-chain decentralized app marketplace with open-source LLMs, rivaling ChatGPT Store
-3. **Developer-First Ecosystem** - Open-source packages (MIT), cost savings, provable privacy, no vendor lock-in
-
-## 🎉 What's New in Alpha 1 (2.0.0-alpha.1)
-
-### ✅ Core Packages Complete & Published
-
-Three packages are now **production-ready** and available on npm with `@alpha` tag:
-
-- **@varity/sdk** - Complete Web3 SDK with multi-chain support and full thirdweb integration
-- **@varity/ui-kit** - 108+ React components including on-ramp widgets and smart wallets
-- **@varity/types** - Comprehensive TypeScript definitions
-
-### 🔗 Multi-Chain Architecture (Varity L3 Focus for MVP)
-
-**Implemented (in packages):**
-- ChainRegistry with intelligent chain selection
-- Varity L3 Testnet (Chain ID 33529) - **PRIMARY DEPLOYMENT TARGET**
-- Arbitrum (Sepolia + Mainnet) - infrastructure ready
-- Base (Sepolia + Mainnet) - infrastructure ready
-
-**MVP Deployment Strategy:**
-- **Varity L3 ONLY** for initial launch (testnet)
-- Multi-chain capability exists in packages but not exposed until revenue model finalized
-- Developers build "real world apps" and deploy exclusively to Varity L3 Arbitrum rollup
-
-### ⚡ Complete thirdweb Integration
-
-All 7 thirdweb infrastructure components integrated:
-
-1. **Engine** - Production transaction management (replaces custom queue)
-2. **Nebula AI** - Natural language blockchain interactions
-3. **Storage** - IPFS/Arweave decentralized storage
-4. **Bridge** - Cross-chain asset transfers
-5. **Gateway** - Production RPC infrastructure
-6. **x402** - API monetization (70/30 revenue split)
-7. **Smart Wallets** - ERC-4337 gasless transactions
-
-### 💳 On-Ramp & Payment Infrastructure
-
-- **OnrampWidget** - Credit card to USDC conversion (thirdweb Pay)
-- **BuyUSDCButton** - Simple purchase integration
-- Support: Credit/Debit Card, Apple Pay, Google Pay
-- Seamless UX (users don't realize everything is on-chain)
-
-## Quick Start
-
-```bash
-# Install alpha packages
-npm install @varity/sdk@alpha @varity/ui-kit@alpha
-
-# Initialize Varity SDK
-import { createVaritySDK, varityL3Testnet } from '@varity/sdk';
-
-const sdk = createVaritySDK({
-  network: 'testnet',
-  thirdwebClientId: 'your-client-id'
-});
-
-// Deploy to Varity L3
-const contract = await sdk.deployContract({
-  chain: varityL3Testnet,
-  contractType: 'nft-collection'
-});
-```
-
-## Varity L3 Network (Testnet)
-
-| Property | Value |
-|----------|-------|
-| Chain ID | 33529 |
-| RPC | https://rpc-varity-testnet-rroe52pwjp.t.conduit.xyz |
-| Explorer | https://explorer-varity-testnet-rroe52pwjp.t.conduit.xyz |
-| Native Token | Bridged USDC (6 decimals) |
-| Framework | Arbitrum Orbit |
-| Data Availability | Celestia |
-
-### 🔧 Installed Infrastructure Apps (Conduit Marketplace)
-
-The following 6 apps are installed on Varity L3 and **must be verified** before production launch:
-
-1. **Conduit Bundler** - ERC-4337 account abstraction bundler
-   - Status: Installed ✅ | Integration: Pending ⏳
-   - Required for: SmartWalletProvider, gasless transactions
-
-2. **thirdweb** - Chain abstraction and developer tools
-   - Status: Installed ✅ | Integration: Complete ✅
-   - All 7 thirdweb features integrated in packages
-
-3. **Privy** - Authentication (email, social, wallet)
-   - Status: Installed ✅ | Integration: Pending ⏳
-   - Required for: User authentication in dashboards
-
-4. **ZeroDev** - Smart wallet infrastructure
-   - Status: Installed ✅ | Integration: Pending ⏳
-   - Alternative to Conduit Bundler for account abstraction
-
-5. **Decent** - Cross-chain bridging
-   - Status: Installed ✅ | Integration: Pending ⏳
-   - Required for: Bridging assets to Varity L3
-
-6. **Superbridge** - Optimistic rollup bridging
-   - Status: Installed ✅ | Integration: Pending ⏳
-   - Required for: L1 ↔ L2 asset transfers
-
-**Next Step:** Comprehensive integration testing of all 6 apps with @varity packages before open-source release.
-
-## Package Status
-
-### ✅ Complete (Alpha Released)
-
-| Package | Version | Status | Documentation |
-|---------|---------|--------|---------------|
-| **@varity/sdk** | 2.0.0-alpha.1 | ✅ Published | [README](packages/core/varity-sdk/README.md) |
-| **@varity/ui-kit** | 2.0.0-alpha.1 | ✅ Published | [README](packages/ui/varity-ui-kit/README.md) |
-| **@varity/types** | 2.0.0-alpha.1 | ✅ Published | [README](packages/core/varity-types/README.md) |
-
-### 🔄 In Progress (Post-Alpha)
-
-| Package | Completion | Priority | Notes |
-|---------|------------|----------|-------|
-| @varity/client-js | 85% | High | API client for JavaScript |
-| @varity/api-server | 90% | Medium | Backend API framework |
-| @varity/core-backend | 70% | Medium | Business logic services |
-| @varity/migrate | 90% | Low | Cloud migration tools |
-| @varity/s3-gateway | 85% | Low | S3-compatible API |
-| @varity/gcs-gateway | 88% | Low | GCS-compatible API |
-
-### ⏳ Deferred (Month 2+)
-
-| Package | Completion | Timeline |
-|---------|------------|----------|
-| @varity/client-python | 60% | Month 2 |
-| @varity/client-go | 40% | Month 2 |
-| @varity/monitoring | 88% | Month 2 |
+---
 
 ## Why Varity?
 
-### Cost Savings vs AWS
+Most platforms make you stitch together auth, database, storage, payments, and hosting yourself. Varity includes everything in the box.
 
-| Scenario | AWS | Varity | Savings |
-|----------|-----|--------|---------|
-| 100 users + AI | $2,800/mo | ~$800/mo | ~70% |
-| Storage (1TB) | $230/mo | $23/mo | 90% |
-| Compute | $500/mo | $150/mo | 70% |
-| Database | $300/mo | $50/mo | 83% |
+| | AWS | Vercel | Supabase + Vercel | **Varity** |
+|---|---|---|---|---|
+| **Time to deploy** | 30+ min | 5 min | 10 min | **60 seconds** |
+| **Auth included** | No | No | Yes | **Yes** |
+| **Database included** | No | No | Yes | **Yes** |
+| **Storage included** | No | No | Yes | **Yes** |
+| **Payments included** | No | No | No | **Yes** |
+| **App Store listing** | No | No | No | **Yes** |
+| **Cost (100 users + AI)** | ~$2,800/mo | ~$400/mo | ~$350/mo | **~$800/mo** |
 
-### Developer Experience
+You build. You deploy. Users find your app. You get paid. That's it.
 
-- **One command deploy**: `varietykit deploy run` (coming in CLI v2)
-- **Zero config**: Works out of the box
-- **Varity L3 native**: Optimized for Arbitrum Orbit rollup
-- **AI-first**: Built for vibe coding tools (Cursor, v0, Bolt)
+## Quick Start
 
-### Technology Stack
-
-- **thirdweb v5** - Function-based chain abstraction (ALL features integrated)
-- **Privy** - Email/social/wallet authentication (installed on Varity L3)
-- **Akash Network** - Decentralized compute
-- **Filecoin/IPFS** - Decentralized storage (via thirdweb Storage)
-- **Lit Protocol** - Wallet-based encryption
-
-## Installation
+### Option 1: npx (recommended)
 
 ```bash
-# Core SDK with multi-chain support
-npm install @varity/sdk@alpha
-
-# React UI components (on-ramp, smart wallets, dashboards)
-npm install @varity/ui-kit@alpha
-
-# TypeScript types
-npm install @varity/types@alpha
-
-# All at once
-npm install @varity/sdk@alpha @varity/ui-kit@alpha @varity/types@alpha
+npx create-varity-app my-app
+cd my-app
+npm run dev
 ```
 
-## Example: Deploy on Varity L3
+### Option 2: CLI
 
-```typescript
-import { createVaritySDK, varityL3Testnet, EngineClient } from '@varity/sdk';
-import { OnrampWidget, SmartWalletProvider } from '@varity/ui-kit';
+```bash
+pip install varitykit
+varitykit init my-app
+cd my-app
+npm install
+npm run dev
+```
 
-// Initialize SDK
-const sdk = createVaritySDK({
-  network: 'testnet',
-  thirdwebClientId: process.env.THIRDWEB_CLIENT_ID
-});
+### Deploy
 
-// Use thirdweb Engine for production transactions
-const engine = new EngineClient({
-  engineUrl: 'https://engine.thirdweb.com',
-  accessToken: process.env.ENGINE_ACCESS_TOKEN,
-  backendWallet: process.env.BACKEND_WALLET
-});
+```bash
+pip install varitykit   # if not already installed
+varitykit app deploy
+# => Live at https://my-app.varity.app
+```
 
-// Deploy contract to Varity L3
-const contract = await sdk.deployContract({
-  chain: varityL3Testnet,
-  contractType: 'marketplace',
-  name: 'My Marketplace'
-});
+**3 commands from zero to production.**
 
-// React: Add on-ramp for credit card purchases
+## What You Get Out of the Box
+
+### Authentication (email, Google, GitHub — zero setup)
+
+```tsx
+import { PrivyStack, PrivyLoginButton, usePrivy } from '@varity-labs/ui-kit';
+
 function App() {
   return (
-    <SmartWalletProvider config={{ chain: varityL3Testnet, gasless: true }}>
-      <OnrampWidget
-        walletAddress={user.address}
-        clientId={process.env.THIRDWEB_CLIENT_ID}
-        defaultAmount={100}
-        onComplete={(purchase) => console.log('Purchased:', purchase)}
-      />
-    </SmartWalletProvider>
+    <PrivyStack appId={process.env.NEXT_PUBLIC_VARITY_APP_ID}>
+      <PrivyLoginButton />
+    </PrivyStack>
   );
 }
 ```
 
-## Next Steps (Pre-Launch Testing)
+Users can sign in with email (magic link), Google, GitHub, Discord, and more. No auth logic to write. No password hashing. No session management.
 
-### Critical Path to Open Source Release
+### Database (zero-config, instant)
 
-1. **✅ Core Packages Complete** (January 18, 2026)
-   - @varity/sdk, @varity/ui-kit, @varity/types published to npm@alpha
+```typescript
+import { db } from '@varity-labs/sdk';
 
-2. **⏳ Integration Testing** (Week of January 19, 2026)
-   - Test all 6 Conduit marketplace apps with @varity packages
-   - Verify Conduit Bundler + ZeroDev (account abstraction)
-   - Verify Privy authentication flows
-   - Verify Decent + Superbridge (bridging to Varity L3)
-   - End-to-end testing: on-ramp → smart wallet → contract deployment
+// Create a collection
+const posts = db.collection('posts');
 
-3. **⏳ Example App Testing** (Week of January 26, 2026)
-   - Rebuild generic-template-dashboard using ONLY @varity packages
-   - Deploy example app to Varity L3 testnet
-   - Document 100% package usage
+// Add a document (returns the document with id and timestamps)
+const post = await posts.add({ title: 'Hello World', author: userId });
 
-4. **⏳ Documentation & Launch** (Week of February 2, 2026)
-   - Complete API documentation
-   - Create video tutorials
-   - Write migration guide (AWS → Varity)
-   - Open-source on GitHub (MIT License)
-   - Announce on Twitter, Discord, dev forums
+// Get all documents (with optional pagination and ordering)
+const allPosts = await posts.get();
+const recent = await posts.get({ limit: 10, orderBy: '-created_at' });
 
-## Revenue Model (To Be Finalized)
+// Update by ID
+await posts.update(post.id, { title: 'Updated Title' });
 
-**Current Status:** Multi-chain infrastructure implemented in packages, but NOT exposed in MVP
+// Delete by ID
+await posts.delete(post.id);
+```
 
-**Why?** Need to finalize business model before enabling multi-chain deployments:
-- How do we monetize deployments to other chains?
-- Do we charge per-chain or flat fee?
-- What's the pricing for Varity L3 vs other chains?
+Works out of the box. No database setup, no API keys, no configuration.
 
-**Decision:** MVP launch focuses exclusively on Varity L3 until revenue model is determined.
+### Payments (monetize your app instantly)
+
+```tsx
+import { PaymentWidget } from '@varity-labs/ui-kit';
+
+<PaymentWidget
+  amount={49.99}
+  currency="USD"
+  onSuccess={(payment) => grantAccess(payment.userId)}
+/>
+```
+
+Users pay with credit card or Apple Pay. You receive revenue automatically. Varity handles all payment processing.
+
+### 19 Production-Ready UI Components
+
+```tsx
+import {
+  DashboardLayout,
+  DataTable,
+  KPICard,
+  ConfirmDialog,
+  CommandPalette,
+  ToastProvider,
+  useToast,
+  Button,
+  Toggle,
+  Avatar,
+} from '@varity-labs/ui-kit';
+```
+
+Dashboard layouts, data tables, analytics cards, modals, form components, and more. All accessible (WCAG 2.1) and compatible with Next.js static export.
+
+## Packages
+
+| Package | Description | Install |
+|---------|-------------|---------|
+| **[@varity-labs/sdk](packages/core/varity-sdk/)** | Core SDK — database, credentials, zero-config development | `npm i @varity-labs/sdk` |
+| **[@varity-labs/ui-kit](packages/ui/varity-ui-kit/)** | 19 React components — auth, dashboards, payments, data tables | `npm i @varity-labs/ui-kit` |
+| **[@varity-labs/types](packages/core/varity-types/)** | TypeScript type definitions for all Varity interfaces | `npm i @varity-labs/types` |
+| **[create-varity-app](packages/cli/create-varity-app/)** | Scaffold a new app in one command | `npx create-varity-app` |
+| **[varitykit](cli/)** | CLI — init, deploy, manage apps | `pip install varitykit` |
+| **[@varity-labs/mcp](packages/cli/varity-mcp/)** | MCP Server — use Varity from Cursor, Claude Code, and 10+ AI tools | `npx @varity-labs/mcp` |
+
+## Works with Your AI Tools
+
+Varity works inside **Cursor**, **Claude Code**, **VS Code Copilot**, **ChatGPT**, **Windsurf**, and 8+ AI coding tools via the [Model Context Protocol](https://modelcontextprotocol.io).
+
+Say **"deploy this to Varity"** in your AI editor and your app is live. Zero commands.
+
+<details>
+<summary><strong>Cursor</strong> — add to <code>.cursor/mcp.json</code></summary>
+
+```json
+{
+  "mcpServers": {
+    "varity": {
+      "command": "npx",
+      "args": ["@varity-labs/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Claude Code</strong></summary>
+
+```bash
+claude mcp add varity -- npx @varity-labs/mcp
+```
+
+</details>
+
+<details>
+<summary><strong>VS Code with Copilot</strong></summary>
+
+Command Palette → **MCP: Add Server** → Command (stdio) → `npx @varity-labs/mcp`
+
+</details>
+
+<details>
+<summary><strong>Any MCP-compatible client</strong></summary>
+
+```json
+{
+  "mcpServers": {
+    "varity": {
+      "command": "npx",
+      "args": ["@varity-labs/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+**7 AI-powered tools:** search docs, calculate costs, create apps, deploy, check status, read logs, submit to App Store — all from natural language.
+
+## Templates
+
+### SaaS Starter (Production-Ready)
+
+```bash
+varitykit init my-saas --template saas-starter
+```
+
+Includes:
+- Landing page with animations and social proof
+- Authentication (login, signup, protected routes)
+- Dashboard with sidebar navigation
+- Settings page with theme customization
+- Data tables with CSV export
+- Toast notifications
+- Command palette (Cmd+K)
+- Mobile-responsive layout
+- 4 color theme presets
+
+Built with Next.js 15, Tailwind CSS, and TypeScript.
+
+## CLI Reference
+
+```bash
+varitykit doctor              # Check your environment
+varitykit init <name>         # Create a new app
+varitykit app deploy          # Deploy your app
+varitykit app deploy --submit-to-store   # Deploy and list on the Varity App Store
+```
+
+[Full CLI documentation →](https://docs.varity.so/cli/overview)
+
+## Deploy and Earn
+
+Every app deployed through Varity can be listed on the **[Varity App Store](https://store.varity.so)** — a marketplace where users discover and pay for apps.
+
+**Revenue split: 90% to you, 10% to Varity.**
+
+```bash
+# Deploy and submit to the App Store in one command
+varitykit app deploy --submit-to-store
+```
+
+Set your price. Users pay with credit card. You get paid monthly. No Stripe setup, no payment pages, no invoicing.
+
+## Cost Comparison
+
+| What You're Running | AWS | Varity | You Save |
+|---------------------|-----|--------|----------|
+| SaaS app (100 users) | ~$2,800/mo | ~$800/mo | **~70%** |
+| Storage (1 TB) | ~$230/mo | ~$23/mo | **~90%** |
+| Compute | ~$500/mo | ~$150/mo | **~70%** |
+| Database | ~$300/mo | ~$50/mo | **~83%** |
+
+Cost savings come from decentralized infrastructure providers that compete on price instead of charging cloud premiums.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Your App (Next.js, React, any framework)           │
+├─────────────────────────────────────────────────────┤
+│  @varity-labs/ui-kit    │  @varity-labs/sdk         │
+│  - Auth components      │  - Database               │
+│  - Payment widgets      │  - Credentials            │
+│  - Dashboard layouts    │  - Payments               │
+│  - 19 components        │  - Zero-config dev        │
+├─────────────────────────────────────────────────────┤
+│  varitykit CLI                                      │
+│  - Init / Deploy / Manage / Submit to Store         │
+├─────────────────────────────────────────────────────┤
+│  Infrastructure (fully managed — you never touch)   │
+│  - Hosting    - Auth     - Database    - Storage    │
+└─────────────────────────────────────────────────────┘
+```
 
 ## Documentation
 
-- **SDK Reference**: [packages/core/varity-sdk/README.md](packages/core/varity-sdk/README.md)
-- **UI Kit Components**: [packages/ui/varity-ui-kit/README.md](packages/ui/varity-ui-kit/README.md)
-- **Type Definitions**: [packages/core/varity-types/README.md](packages/core/varity-types/README.md)
-- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
-- **Technical Guide**: [CLAUDE.md](CLAUDE.md) (for AI assistants)
+| Resource | Link |
+|----------|------|
+| Full Documentation | [docs.varity.so](https://docs.varity.so) |
+| Quick Start (5 min) | [Getting Started](https://docs.varity.so/getting-started/quickstart) |
+| Next.js Guide | [Next.js Quick Start](https://docs.varity.so/getting-started/quickstart-nextjs) |
+| Auth Guide | [Authentication](https://docs.varity.so/build/auth/quickstart) |
+| Database Guide | [Database Quick Start](https://docs.varity.so/build/databases/quickstart) |
+| Storage Guide | [Storage Quick Start](https://docs.varity.so/build/storage/quickstart) |
+| Payments Guide | [Payments Quick Start](https://docs.varity.so/build/payments/quickstart) |
+| CLI Reference | [CLI Overview](https://docs.varity.so/cli/overview) |
+
+## Community
+
+- **Discord** — [discord.gg/varity](https://discord.gg/varity) — ask questions, share what you're building, get help
+- **GitHub Issues** — bug reports and feature requests
+- **Twitter/X** — [@VarityLabs](https://twitter.com/VarityLabs)
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions from everyone. Whether it's a bug fix, a new component, improved docs, or a feature request — we appreciate it.
 
-**Before contributing:**
-1. Read the [CLAUDE.md](CLAUDE.md) technical reference
-2. Check [CHANGELOG.md](CHANGELOG.md) for recent changes
-3. Review open issues on GitHub
+```bash
+# Clone the repo
+git clone https://github.com/varity-labs/varity-sdk.git
+cd varity-sdk
 
-## Community & Support
+# Install dependencies
+pnpm install
 
-- **Documentation**: https://docs.varity.ai (coming soon)
-- **Discord**: https://discord.gg/varity (coming soon)
-- **Twitter**: https://twitter.com/VarityLabs (coming soon)
-- **GitHub Issues**: https://github.com/varity-labs/varity-sdk/issues (after open-source)
-- **Email**: support@varity.ai
+# Build all packages
+pnpm build
+
+# Run tests
+pnpm test
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+## Built with Varity
+
+Add a badge to your project's README:
+
+**Built with Varity** (for apps using the SDK):
+
+```markdown
+[![Built with Varity](https://raw.githubusercontent.com/varity-labs/varity-sdk/main/.github/badges/built-with-varity.svg)](https://varity.so)
+```
+
+[![Built with Varity](https://raw.githubusercontent.com/varity-labs/varity-sdk/main/.github/badges/built-with-varity.svg)](https://varity.so)
+
+**Deployed on Varity** (for apps hosted on Varity):
+
+```markdown
+[![Deployed on Varity](https://raw.githubusercontent.com/varity-labs/varity-sdk/main/.github/badges/deployed-on-varity.svg)](https://varity.so)
+```
+
+[![Deployed on Varity](https://raw.githubusercontent.com/varity-labs/varity-sdk/main/.github/badges/deployed-on-varity.svg)](https://varity.so)
+
+**Shields.io fallback** (works without hosting the repo):
+
+```markdown
+[![Built with Varity](https://img.shields.io/badge/built%20with-Varity-7C3AED)](https://varity.so)
+```
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details.
-
-**Powered by Varity** - making Web3 infrastructure accessible to every developer.
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Status**: 🧪 Alpha Testing (2.0.0-alpha.1) - Not yet open-sourced. Comprehensive testing in progress.
+<p align="center">
+  <strong>Build faster. Deploy cheaper. Get paid.</strong>
+</p>
+
+<p align="center">
+  <a href="https://docs.varity.so/getting-started/quickstart">Get started in 5 minutes →</a>
+</p>
+
+<p align="center">
+  If Varity helps you build, consider giving us a star — it helps others find the project.
+</p>

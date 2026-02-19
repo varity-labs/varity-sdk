@@ -99,7 +99,7 @@ class ManifestGenerator:
             "memory_size": memory_size,
             "storage_size": storage_size,
             "env_vars": env_vars or {},
-            "project_name": project_info.project_type,
+            "project_name": project_info.name,
             "framework": project_info.framework_version,
         }
 

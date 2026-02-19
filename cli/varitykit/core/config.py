@@ -90,7 +90,7 @@ class VarityConfig:
 class ConfigManager:
     """Manages VarityKit configuration"""
 
-    CONFIG_FILENAME = ".varietykit.toml"
+    CONFIG_FILENAME = ".varitykit.toml"
     DEFAULT_CONFIG_DIR = Path.home() / ".varity"
 
     def __init__(self, config_path: Optional[Path] = None):
@@ -99,7 +99,7 @@ class ConfigManager:
 
     def find_config_file(self, start_path: Optional[Path] = None) -> Optional[Path]:
         """
-        Find .varietykit.toml file by walking up directory tree
+        Find .varitykit.toml file by walking up directory tree
         Similar to how git finds .git directory
         """
         if start_path is None:

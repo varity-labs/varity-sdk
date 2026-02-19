@@ -17,37 +17,20 @@ from rich.table import Table
 @click.pass_context
 def contract(ctx):
     """
-    Interact with deployed smart contracts
+    Interact with platform contracts (advanced - internal use)
 
-    Commands for calling contract methods, sending transactions,
-    and monitoring contract events.
-
-    \b
-    Quick Start:
-      varietykit contract call <address> <method> [args]
-      varietykit contract send <address> <method> [args]
-      varietykit contract events <address> [--watch]
-
-    \b
-    Examples:
-      # Read-only call
-      varietykit contract call 0x123... balanceOf 0xabc...
-
-      # Send transaction
-      varietykit contract send 0x123... transfer 0xabc... 100
-
-      # Watch events
-      varietykit contract events 0x123... --watch
+    This is an advanced command for internal use.
+    For deploying apps, use: varitykit app deploy
 
       # Query past events
-      varietykit contract events 0x123... --from-block 1000
+      varitykit contract events 0x123... --from-block 1000
     """
     pass
 
 
 def get_deployed_contracts(network: str = None) -> list:
     """Get list of deployed contracts from deployment history"""
-    deployments_dir = Path.cwd() / ".varietykit" / "deployments"
+    deployments_dir = Path.cwd() / ".varitykit" / "deployments"
 
     if not deployments_dir.exists():
         return []
@@ -116,19 +99,19 @@ def call(ctx, address, method, args, network, abi, value, gas_limit):
     \b
     Examples:
       # Get balance
-      varietykit contract call 0x123... balanceOf 0xabc...
+      varitykit contract call 0x123... balanceOf 0xabc...
 
       # Get token name
-      varietykit contract call 0x123... name
+      varitykit contract call 0x123... name
 
       # Multi-argument call
-      varietykit contract call 0x123... allowance 0xowner... 0xspender...
+      varitykit contract call 0x123... allowance 0xowner... 0xspender...
 
       # Use specific network
-      varietykit contract call 0x123... totalSupply --network sepolia
+      varitykit contract call 0x123... totalSupply --network sepolia
 
       # Provide custom ABI
-      varietykit contract call 0x123... customMethod arg1 --abi ./MyContract.json
+      varitykit contract call 0x123... customMethod arg1 --abi ./MyContract.json
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -210,7 +193,7 @@ def call(ctx, address, method, args, network, abi, value, gas_limit):
                     Panel.fit(
                         "[bold yellow]Contract not found in deployments[/bold yellow]\n\n"
                         "Provide ABI with --abi flag:\n"
-                        "  varietykit contract call <address> <method> --abi ./Contract.json",
+                        "  varitykit contract call <address> <method> --abi ./Contract.json",
                         border_style="yellow",
                     )
                 )
@@ -334,19 +317,19 @@ def send(
     \b
     Examples:
       # Transfer tokens
-      varietykit contract send 0x123... transfer 0xrecipient... 100
+      varitykit contract send 0x123... transfer 0xrecipient... 100
 
       # Approve spending
-      varietykit contract send 0x123... approve 0xspender... 1000
+      varitykit contract send 0x123... approve 0xspender... 1000
 
       # Send ETH with transaction
-      varietykit contract send 0x123... deposit --value 1ether
+      varitykit contract send 0x123... deposit --value 1ether
 
       # Custom gas limit
-      varietykit contract send 0x123... complexMethod arg1 --gas-limit 500000
+      varitykit contract send 0x123... complexMethod arg1 --gas-limit 500000
 
       # Use specific wallet
-      varietykit contract send 0x123... transfer 0xabc... 50 --from 0xmywallet...
+      varitykit contract send 0x123... transfer 0xabc... 50 --from 0xmywallet...
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -602,19 +585,19 @@ def events(ctx, address, network, abi, event, from_block, to_block, watch, limit
     \b
     Examples:
       # Get recent events
-      varietykit contract events 0x123...
+      varitykit contract events 0x123...
 
       # Watch for new events in real-time
-      varietykit contract events 0x123... --watch
+      varitykit contract events 0x123... --watch
 
       # Query specific event type
-      varietykit contract events 0x123... --event Transfer
+      varitykit contract events 0x123... --event Transfer
 
       # Query historical events
-      varietykit contract events 0x123... --from-block 1000 --to-block 2000
+      varitykit contract events 0x123... --from-block 1000 --to-block 2000
 
       # Limit number of results
-      varietykit contract events 0x123... --limit 50
+      varitykit contract events 0x123... --limit 50
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -859,7 +842,7 @@ def list(ctx, network):
     if not contracts:
         console.print("[yellow]No deployed contracts found[/yellow]")
         console.print("\nDeploy contracts with:")
-        console.print("  [cyan]varietykit deploy run[/cyan]\n")
+        console.print("  [cyan]varitykit deploy run[/cyan]\n")
         return
 
     table = Table(

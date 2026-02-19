@@ -2,7 +2,7 @@
  * Wallet Authentication Hook
  *
  * Provides wallet-based authentication with session management.
- * Integrates with Privy for seamless Web3 UX and backend session tokens.
+ * Integrates with Privy for seamless authentication and backend session tokens.
  *
  * This hook handles:
  * - Wallet signature authentication

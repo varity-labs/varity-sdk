@@ -20,52 +20,29 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 from rich.table import Table
-from varietykit.core.contract_verifier import ContractVerifier
-from varietykit.core.deployment_tracker import DeploymentStatus, DeploymentTracker
-from varietykit.core.gas_estimator import GasEstimator
+from varitykit.core.contract_verifier import ContractVerifier
+from varitykit.core.deployment_tracker import DeploymentStatus, DeploymentTracker
+from varitykit.core.gas_estimator import GasEstimator
 
 # Import SDK modules
-from varietykit.core.sdk_wrapper import SDKWrapperError, VaritySDKWrapper
+from varitykit.core.sdk_wrapper import SDKWrapperError, VaritySDKWrapper
 
 
 @click.group()
 @click.pass_context
 def deploy(ctx):
     """
-    Deploy and manage smart contracts
+    Deploy infrastructure (advanced - internal use)
 
-    Automates contract deployment to local, testnet, and mainnet networks
-    with state management, verification, and rollback capabilities.
-
-    \b
-    Features:
-    • Multi-network deployment (local/testnet/mainnet)
-    • Automatic contract verification on block explorers
-    • Deployment state tracking and history
-    • Rollback to previous deployments
-    • Interactive deployment wizard
-    • Gas estimation and optimization
-
-    \b
-    Quick Start:
-      varietykit deploy --network local      # Deploy to LocalNet
-      varietykit deploy --network testnet    # Deploy to Sepolia testnet
-      varietykit deploy status               # Check deployment status
-      varietykit deploy list                 # List all deployments
-
-    \b
-    Networks:
-      • local    - LocalDePin network (Chain ID: 421614)
-      • varity   - Varity L3 testnet (Chain ID: 33529) [DEFAULT]
-      • sepolia  - Arbitrum Sepolia testnet
-      • mainnet  - Arbitrum One mainnet
+    This is an advanced command for internal use.
+    For deploying apps, use: varitykit app deploy
     """
     pass
 
 
 def get_deployments_dir() -> Path:
     """Get or create deployments directory"""
-    deployments_dir = Path.cwd() / ".varietykit" / "deployments"
+    deployments_dir = Path.cwd() / ".varitykit" / "deployments"
     deployments_dir.mkdir(parents=True, exist_ok=True)
     return deployments_dir
 
@@ -127,10 +104,10 @@ def run(ctx, network, verify, interactive, dry_run, gas_limit):
 
     \b
     Examples:
-      varietykit deploy run --network local
-      varietykit deploy run --network testnet --verify
-      varietykit deploy run --interactive
-      varietykit deploy run --dry-run --network mainnet
+      varitykit deploy run --network local
+      varitykit deploy run --network testnet --verify
+      varitykit deploy run --interactive
+      varitykit deploy run --dry-run --network mainnet
 
     \b
     Before Deploying:
@@ -140,10 +117,10 @@ def run(ctx, network, verify, interactive, dry_run, gas_limit):
          - ARBISCAN_API_KEY (for verification)
 
       2. Check wallet balance:
-         varietykit task wallet balance --network <network>
+         varitykit task wallet balance --network <network>
 
       3. Run dry-run first:
-         varietykit deploy run --dry-run --network <network>
+         varitykit deploy run --dry-run --network <network>
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -409,7 +386,7 @@ def run(ctx, network, verify, interactive, dry_run, gas_limit):
                     f"Deployment ID: {deployment_id}\n\n"
                     f"[bold]Explorer:[/bold] {blockchain_config.explorer_url}\n\n"
                     f"View deployment status:\n"
-                    f"  varietykit deploy status --network {network}",
+                    f"  varitykit deploy status --network {network}",
                     border_style="green",
                 )
             )
@@ -457,7 +434,7 @@ def status(ctx, network):
         console.print(
             Panel.fit(
                 "[bold yellow]No deployments found[/bold yellow]\n"
-                "Deploy contracts with: varietykit deploy run",
+                "Deploy contracts with: varitykit deploy run",
                 border_style="yellow",
             )
         )

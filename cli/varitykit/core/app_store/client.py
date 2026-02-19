@@ -136,6 +136,8 @@ class AppStoreClient:
             print(f"📝 Submitting app to Varity App Store...")
             print(f"   Name: {metadata.name}")
             print(f"   Category: {metadata.category}")
+            print(f"   Tier: {metadata.tier}")
+            print(f"   Services: {metadata.services if metadata.services else 'none'}")
             print(f"   Chain ID: {metadata.chain_id}")
 
             # Submit transaction via Node.js bridge (uses thirdweb SDK)
@@ -353,18 +355,22 @@ async function submitApp() {{
             address: '{self.contract_address}'
         }});
 
-        // Prepare contract call
+        // Prepare contract call - matches register_app in VarityAppRegistry Stylus contract
         const transaction = prepareContractCall({{
             contract,
-            method: 'function submitApp(string name, string description, string appUrl, string logoUrl, string githubUrl, string category, string[] screenshots) returns (uint64)',
+            method: 'function register_app(string name, string description, string app_url, string logo_url, string category, uint64 chain_id, bool built_with_varity, string github_url, string[] screenshot_urls, string tier, string services) returns (uint64)',
             params: [
                 {json.dumps(contract_params['name'])},
                 {json.dumps(contract_params['description'])},
                 {json.dumps(contract_params['appUrl'])},
                 {json.dumps(contract_params['logoUrl'])},
-                {json.dumps(contract_params['githubUrl'])},
                 {json.dumps(contract_params['category'])},
-                {json.dumps(contract_params['screenshots'])}
+                BigInt({contract_params['chainId']}),
+                true,
+                {json.dumps(contract_params['githubUrl'])},
+                {json.dumps(contract_params['screenshots'])},
+                {json.dumps(contract_params['tier'])},
+                {json.dumps(contract_params['services'])}
             ]
         }});
 

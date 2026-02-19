@@ -1,5 +1,5 @@
 """
-TestNet dispenser command - fund wallets with test ETH
+Test network funding command (advanced - internal use)
 """
 
 import time
@@ -21,10 +21,10 @@ from rich.table import Table
 @click.pass_context
 def fund(ctx, address, network, amount):
     """
-    Fund wallet with test ETH from faucets
+    Fund test account (advanced - internal use)
 
-    Automatically requests test ETH from public faucets for development.
-    Supports Arbitrum Sepolia and local networks.
+    This is an advanced command for internal use.
+    For deploying apps, use: varitykit app deploy
 
     \b
     Faucet Sources:
@@ -34,10 +34,10 @@ def fund(ctx, address, network, amount):
 
     \b
     Examples:
-      varietykit fund                      # Fund default wallet on Sepolia
-      varietykit fund --address 0x123...   # Fund specific address
-      varietykit fund --network local      # Fund on local network
-      varietykit fund --amount 0.5         # Request 0.5 ETH
+      varitykit fund                      # Fund default wallet on Sepolia
+      varitykit fund --address 0x123...   # Fund specific address
+      varitykit fund --network local      # Fund on local network
+      varitykit fund --amount 0.5         # Request 0.5 ETH
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -55,7 +55,7 @@ def fund(ctx, address, network, amount):
         console.print(
             Panel.fit(
                 "[bold red]No wallet address specified[/bold red]\n"
-                "Create a wallet first with: varietykit task wallet create\n"
+                "Create a wallet first with: varitykit task wallet create\n"
                 "Or specify address with: --address 0x...",
                 border_style="red",
             )
@@ -92,7 +92,7 @@ def fund_local_network(ctx, address, amount, console, logger):
             console.print(
                 Panel.fit(
                     "[bold red]Cannot connect to local network[/bold red]\n"
-                    "Start LocalDePin with: varietykit localdepin start",
+                    "Start LocalDePin with: varitykit localdepin start",
                     border_style="red",
                 )
             )
@@ -241,7 +241,7 @@ def fund_sepolia_network(ctx, address, amount, console, logger):
         console.print("[green]✓ Opened browser[/green]\n")
 
     console.print(
-        "[dim]Tip: Use 'varietykit task wallet balance --network sepolia' to check balance[/dim]\n"
+        "[dim]Tip: Use 'varitykit task wallet balance --network sepolia' to check balance[/dim]\n"
     )
 
     logger.info(f"Displayed faucet info for {address}")

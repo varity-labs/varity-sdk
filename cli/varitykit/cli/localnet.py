@@ -36,15 +36,15 @@ def localnet(ctx):
 
     \b
     Quick Start:
-      varietykit localnet start    # Start entire network
-      varietykit localnet status   # Check if running
-      varietykit localnet stop     # Stop network
-      varietykit localnet reset    # Clear all data and restart
+      varitykit localnet start    # Start entire network
+      varitykit localnet status   # Check if running
+      varitykit localnet stop     # Stop network
+      varitykit localnet reset    # Clear all data and restart
 
     \b
     Pre-funded Test Accounts:
       10 accounts with 10,000-1,000,000 ETH each
-      See: varietykit localnet accounts
+      See: varitykit localnet accounts
     """
     pass
 
@@ -52,7 +52,7 @@ def localnet(ctx):
 def get_localdepin_dir() -> Path:
     """Get the LocalDePin directory path"""
     # Try to find localdepin directory relative to this file
-    cli_dir = Path(__file__).parent.parent.parent  # Go up to varietykit-cli/
+    cli_dir = Path(__file__).parent.parent.parent  # Go up to varitykit-cli/
     localdepin_dir = cli_dir / "localdepin"
 
     if not localdepin_dir.exists():
@@ -157,7 +157,7 @@ def stop(ctx):
     Stops all running services while preserving data volumes.
     Your blockchain state, IPFS data, and database will be retained.
 
-    To completely reset the network, use 'varietykit localnet reset'
+    To completely reset the network, use 'varitykit localnet reset'
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -258,10 +258,10 @@ def logs(ctx, follow, service, tail):
 
     \b
     Examples:
-      varietykit localnet logs                    # Show all logs
-      varietykit localnet logs -f                 # Follow all logs
-      varietykit localnet logs -s arbitrum-node   # Specific service
-      varietykit localnet logs -f -s ipfs-node    # Follow specific service
+      varitykit localnet logs                    # Show all logs
+      varitykit localnet logs -f                 # Follow all logs
+      varitykit localnet logs -s arbitrum-node   # Specific service
+      varitykit localnet logs -f -s ipfs-node    # Follow specific service
 
     \b
     Available services:
@@ -273,7 +273,7 @@ def logs(ctx, follow, service, tail):
       • pinata-mock      - Pinata mock API
       • akash-simulator  - Akash mock compute
       • varity-api-local - Varity API server
-      • varietykit-explorer - Block explorer
+      • varitykit-explorer - Block explorer
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -476,13 +476,13 @@ def snapshot(ctx, name):
     Create a snapshot of current network state
 
     Saves the current blockchain state, database, and IPFS data
-    so you can restore it later with 'varietykit localnet restore'
+    so you can restore it later with 'varitykit localnet restore'
 
     \b
     Example:
-      varietykit localnet snapshot --name my-test-state
+      varitykit localnet snapshot --name my-test-state
       # Make changes, test things
-      varietykit localnet restore --name my-test-state
+      varitykit localnet restore --name my-test-state
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -644,7 +644,7 @@ def restore(ctx, name, confirm):
         console.print(
             Panel.fit(
                 f"[bold red]Snapshot '{name}' not found[/bold red]\n"
-                "Use 'varietykit localnet snapshot --name <name>' to create one",
+                "Use 'varitykit localnet snapshot --name <name>' to create one",
                 border_style="red",
             )
         )

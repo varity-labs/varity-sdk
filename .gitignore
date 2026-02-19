@@ -88,3 +88,5 @@ __pycache__/
 *.backup
 *.bak
 *.tmp
+.cursor/
+cli/varitykit_old/

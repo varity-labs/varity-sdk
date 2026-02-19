@@ -84,7 +84,7 @@ class DeploymentTracker:
         self.w3 = Web3(Web3.HTTPProvider(self.blockchain_config.rpc_url))
 
         # State file location
-        self.state_dir = Path.home() / ".varietykit" / "deployments" / network
+        self.state_dir = Path.home() / ".varitykit" / "deployments" / network
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.state_file = self.state_dir / f"{deployment_id}.json"
 
@@ -413,7 +413,7 @@ class DeploymentTracker:
         Returns:
             List of deployment IDs
         """
-        state_dir = Path.home() / ".varietykit" / "deployments" / network
+        state_dir = Path.home() / ".varitykit" / "deployments" / network
 
         if not state_dir.exists():
             return []

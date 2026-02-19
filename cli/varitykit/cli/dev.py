@@ -37,10 +37,10 @@ def dev(ctx, project, api_only, frontend_only, port):
 
     \b
     Examples:
-      varietykit dev                      # Start both API + marketing website
-      varietykit dev -p iso-dashboard     # Start both API + ISO dashboard
-      varietykit dev --api-only           # Start only API server
-      varietykit dev --frontend-only      # Start only frontend
+      varitykit dev                      # Start both API + marketing website
+      varitykit dev -p iso-dashboard     # Start both API + ISO dashboard
+      varitykit dev --api-only           # Start only API server
+      varitykit dev --frontend-only      # Start only frontend
 
     \b
     Default URLs:
@@ -62,7 +62,7 @@ def dev(ctx, project, api_only, frontend_only, port):
     api_server_path = varity_root / "packages" / "varity-api-server"
     marketing_path = varity_root / "marketing-website"
     iso_dashboard_path = varity_root / "iso-dashboard-mvp"
-    docs_path = varity_root / "varietykit-docs"
+    docs_path = varity_root / "varitykit-docs"
 
     # Validate paths exist
     if not api_only and not api_server_path.exists():

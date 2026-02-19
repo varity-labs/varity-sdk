@@ -10,7 +10,7 @@
 export interface DatabaseConfig {
   /**
    * URL of the Varity DB proxy service
-   * @default 'https://db-proxy.varity.so' or process.env.VITE_VARITY_DB_PROXY_URL
+   * @default 'http://provider.akashprovid.com:31782' or process.env.VITE_VARITY_DB_PROXY_URL
    */
   proxyUrl?: string;
 

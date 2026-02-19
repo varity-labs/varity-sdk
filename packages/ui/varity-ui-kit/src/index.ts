@@ -7,44 +7,78 @@
  * @packageDocumentation
  */
 
-// Core
-export { VarityClient } from './core/VarityClient'
-export type { VarityClientConfig } from './core/VarityClient'
-export { HTTPClient } from './utils/http'
-export type { HTTPResponse, HTTPClientConfig } from './utils/http'
-
-// Module Clients
-export { AuthClient } from './modules/auth'
-export { StorageClient } from './modules/storage'
-export { ComputeClient } from './modules/compute'
-export { ZKClient } from './modules/zk'
-export { AnalyticsClient } from './modules/analytics'
-export { NotificationsClient } from './modules/notifications'
-export { ExportClient } from './modules/export'
-export { CacheClient } from './modules/cache'
-export { MonitoringClient } from './modules/monitoring'
-export { ForecastingClient } from './modules/forecasting'
-export { WebhooksClient } from './modules/webhooks'
-export { OracleClient } from './modules/oracle'
-export { TemplateDeploymentClient } from './modules/templates'
-
-// Module Types
-export type * from './modules/auth'
-export type * from './modules/storage'
-export type * from './modules/compute'
-export type * from './modules/zk'
-export type * from './modules/analytics'
-export type * from './modules/notifications'
-export type * from './modules/export'
-export type * from './modules/cache'
-export type * from './modules/monitoring'
-export type * from './modules/forecasting'
-export type * from './modules/webhooks'
-export type * from './modules/oracle'
-export type * from './modules/templates'
+// ============================================================================
+// Advanced: API Client (requires backend API — not yet available)
+// These module clients will be enabled in a future release.
+// ============================================================================
+// export { VarityClient } from './core/VarityClient'
+// export type { VarityClientConfig } from './core/VarityClient'
+// export { HTTPClient } from './utils/http'
+// export type { HTTPResponse, HTTPClientConfig } from './utils/http'
+// export { AuthClient } from './modules/auth'
+// export { StorageClient } from './modules/storage'
+// export { ComputeClient } from './modules/compute'
+// export { ZKClient } from './modules/zk'
+// export { AnalyticsClient } from './modules/analytics'
+// export { NotificationsClient } from './modules/notifications'
+// export { ExportClient } from './modules/export'
+// export { CacheClient } from './modules/cache'
+// export { MonitoringClient } from './modules/monitoring'
+// export { ForecastingClient } from './modules/forecasting'
+// export { WebhooksClient } from './modules/webhooks'
+// export { OracleClient } from './modules/oracle'
+// export { TemplateDeploymentClient } from './modules/templates'
+// export type * from './modules/auth'
+// export type * from './modules/storage'
+// export type * from './modules/compute'
+// export type * from './modules/zk'
+// export type * from './modules/analytics'
+// export type * from './modules/notifications'
+// export type * from './modules/export'
+// export type * from './modules/cache'
+// export type * from './modules/monitoring'
+// export type * from './modules/forecasting'
+// export type * from './modules/webhooks'
+// export type * from './modules/oracle'
+// export type * from './modules/templates'
 
 // React Components
 export * from './components'
+
+// Form Components (direct exports for convenience)
+export { Button } from './components/Form/Button'
+export { Input } from './components/Form/Input'
+export { Textarea } from './components/Form/Textarea'
+export { Select } from './components/Form/Select'
+export { Toggle } from './components/Form/Toggle'
+export { Checkbox } from './components/Form/Checkbox'
+export { RadioGroup } from './components/Form/RadioGroup'
+
+// Overlay Components (direct exports for convenience)
+export { Dialog } from './components/Overlay/Dialog'
+export { ConfirmDialog } from './components/Overlay/ConfirmDialog'
+export { DropdownMenu } from './components/Overlay/DropdownMenu'
+
+// Feedback Components (direct exports for convenience)
+export { ToastProvider, type ToastContextValue } from './components/Feedback/ToastProvider'
+export { useToast } from './components/Feedback/useToast'
+export type { Toast, ToastType } from './components/Feedback/Toast'
+export { Skeleton } from './components/Feedback/Skeleton'
+
+// Display Components (direct exports for convenience)
+export {
+  Badge,
+  PriorityBadge,
+  ProjectStatusBadge,
+  TaskStatusBadge,
+  RoleBadge
+} from './components/Display/Badge'
+export { Avatar, AvatarGroup } from './components/Display/Avatar'
+export { ProgressBar } from './components/Display/ProgressBar'
+
+// Navigation Components (direct exports for convenience)
+export { CommandPalette } from './components/Navigation/CommandPalette'
+export { Breadcrumb } from './components/Navigation/Breadcrumb'
 
 // ============================================================================
 // Advanced: In-App Wallet Components
