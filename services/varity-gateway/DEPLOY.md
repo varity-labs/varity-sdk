@@ -75,7 +75,7 @@ env:
   - DB_PROXY_TOKEN=<paste from Step 1>
   - GATEWAY_API_KEY=<generate: openssl rand -hex 32>
   - BASE_DOMAIN=varity.app
-  - IPFS_BACKEND=ipfscdn.io
+  - IPFS_BACKEND=ipfs.dweb.link
   - CACHE_TTL=300
 ```
 

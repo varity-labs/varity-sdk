@@ -43,9 +43,10 @@ function isValidCid(cid: string): boolean {
   return /^Qm[A-Za-z0-9]{44}$/.test(cid) || /^bafy[a-z2-7]{55,}$/.test(cid);
 }
 
-// Check subdomain availability
+// Check subdomain availability (with optional ownership context)
 registrationRouter.get('/api/domains/check/:name', verifyApiKey, async (req: Request, res: Response) => {
   const name = (req.params.name as string).toLowerCase();
+  const ownerId = req.query.ownerId as string | undefined;
 
   if (RESERVED_SUBDOMAINS.has(name)) {
     res.json({ available: false, reason: 'reserved' });
@@ -59,17 +60,58 @@ registrationRouter.get('/api/domains/check/:name', verifyApiKey, async (req: Req
 
   try {
     const domains = await fetchAllDomains();
-    const exists = domains.some((d) => d.subdomain === name);
-    res.json({ available: !exists, reason: exists ? 'taken' : null });
+    const existing = domains.find((d) => d.subdomain === name);
+
+    if (!existing) {
+      res.json({ available: true, reason: null });
+      return;
+    }
+
+    // If caller provided ownerId, check if they own it (redeploy is OK)
+    const ownedByCaller = ownerId && existing.ownerId === ownerId;
+    res.json({
+      available: false,
+      reason: ownedByCaller ? 'owned_by_you' : 'taken',
+      ownedByYou: ownedByCaller || false,
+    });
   } catch (err) {
     console.error('[registration] check error:', err);
     res.status(500).json({ error: 'Internal error checking domain' });
   }
 });
 
+// List domains owned by a specific developer
+registrationRouter.get('/api/domains/mine', verifyApiKey, async (req: Request, res: Response) => {
+  const ownerId = req.query.ownerId as string | undefined;
+
+  if (!ownerId) {
+    res.status(400).json({ error: 'ownerId query parameter is required' });
+    return;
+  }
+
+  try {
+    const domains = await fetchAllDomains();
+    const owned = domains
+      .filter((d) => d.ownerId === ownerId)
+      .map((d) => ({
+        subdomain: d.subdomain,
+        url: `https://${config.gateway.baseDomain}/${d.subdomain}`,
+        cid: d.cid,
+        appName: d.appName,
+        createdAt: d.createdAt,
+        updatedAt: d.updatedAt,
+      }));
+
+    res.json({ domains: owned, count: owned.length });
+  } catch (err) {
+    console.error('[registration] list error:', err);
+    res.status(500).json({ error: 'Internal error listing domains' });
+  }
+});
+
 // Register a new subdomain
 registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Request, res: Response) => {
-  const { subdomain, cid, appName } = req.body;
+  const { subdomain, cid, appName, ownerId } = req.body;
 
   if (!subdomain || !cid) {
     res.status(400).json({ error: 'subdomain and cid are required' });
@@ -108,6 +150,7 @@ registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Reque
       subdomain: name,
       cid,
       appName: appName || name,
+      ownerId: ownerId || null,
       registeredBy: 'cli',
       createdAt: new Date().toISOString(),
     };
@@ -132,7 +175,7 @@ registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Reque
     const result = await addRes.json() as { success?: boolean; data?: { id: string } };
     invalidateCache(name);
 
-    console.log(`[registration] Registered: ${config.gateway.baseDomain}/${name}`);
+    console.log(`[registration] Registered: ${config.gateway.baseDomain}/${name} (owner: ${ownerId || 'none'})`);
     res.status(201).json({
       subdomain: name,
       url: `https://${config.gateway.baseDomain}/${name}`,
@@ -147,7 +190,7 @@ registrationRouter.post('/api/domains/register', verifyApiKey, async (req: Reque
 
 // Update an existing subdomain's CID (redeployment)
 registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res: Response) => {
-  const { subdomain, cid } = req.body;
+  const { subdomain, cid, ownerId } = req.body;
 
   if (!subdomain || !cid) {
     res.status(400).json({ error: 'subdomain and cid are required' });
@@ -171,12 +214,18 @@ registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request,
       return;
     }
 
+    // Ownership check: if the domain has an owner, only that owner can update it
+    if (existing.ownerId && ownerId !== existing.ownerId) {
+      res.status(403).json({ error: 'You do not own this domain.' });
+      return;
+    }
+
     // Update — DB Proxy route: PUT /db/:collection/update/:id
-    // Body is stored as full JSONB replacement
     const updatedRecord = {
       subdomain: name,
       cid,
       appName: existing.appName || name,
+      ownerId: ownerId || existing.ownerId || null,
       registeredBy: 'cli',
       createdAt: existing.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -200,7 +249,7 @@ registrationRouter.put('/api/domains/update', verifyApiKey, async (req: Request,
 
     invalidateCache(name);
 
-    console.log(`[registration] Updated: ${config.gateway.baseDomain}/${name}`);
+    console.log(`[registration] Updated: ${config.gateway.baseDomain}/${name} (owner: ${ownerId || existing.ownerId || 'none'})`);
     res.json({
       subdomain: name,
       url: `https://${config.gateway.baseDomain}/${name}`,
