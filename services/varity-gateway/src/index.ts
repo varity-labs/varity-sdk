@@ -91,6 +91,19 @@ app.use(registrationRouter);
 // Safe content types that can be served inline; everything else forces download
 const SAFE_CONTENT_TYPES = /^(text\/(html|css|plain|javascript)|application\/(javascript|json|pdf)|image\/|audio\/|video\/|font\/)/;
 
+/**
+ * Rewrite absolute asset paths in HTML so they resolve under the app prefix.
+ * e.g. href="/logo.svg" → href="/saas-template/logo.svg"
+ *      src="/_next/..."  → src="/saas-template/_next/..."
+ * Skips protocol-relative URLs (//), full URLs (https://), and anchors (#).
+ */
+function rewriteHtmlPaths(html: string, appName: string): string {
+  const prefix = `/${appName}`;
+  return html
+    .replace(/(href|src|action)="\/(?!\/)/g, `$1="${prefix}/`)
+    .replace(/(href|src|action)='\/(?!\/)/g, `$1='${prefix}/`);
+}
+
 // Shared IPFS proxy logic
 async function proxyIpfs(appName: string, assetPath: string, res: express.Response): Promise<void> {
   const cid = await resolveDomain(appName);
@@ -115,7 +128,8 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
           res.type('html');
           res.set('Cache-Control', 'public, max-age=60');
           const body = await fallbackRes.arrayBuffer();
-          res.send(Buffer.from(body));
+          const html = rewriteHtmlPaths(Buffer.from(body).toString('utf-8'), appName);
+          res.send(html);
           return;
         }
       }
@@ -137,7 +151,15 @@ async function proxyIpfs(appName: string, assetPath: string, res: express.Respon
     res.set('Cache-Control', isAsset ? 'public, max-age=31536000, immutable' : 'public, max-age=60');
 
     const body = await ipfsRes.arrayBuffer();
-    res.send(Buffer.from(body));
+
+    // Rewrite asset paths in HTML responses so they resolve under /{appName}/
+    const isHtml = contentType.includes('text/html');
+    if (isHtml) {
+      const html = rewriteHtmlPaths(Buffer.from(body).toString('utf-8'), appName);
+      res.send(html);
+    } else {
+      res.send(Buffer.from(body));
+    }
   } catch (err) {
     console.error(`[proxy] Failed to fetch ${ipfsUrl}:`, err);
     res.status(502).send('Failed to fetch content');
