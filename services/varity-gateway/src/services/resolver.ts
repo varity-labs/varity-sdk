@@ -1,6 +1,6 @@
 import NodeCache from 'node-cache';
-import { config, DB_COLLECTION } from './config';
-import { DomainRecord } from './types';
+import { config, DB_COLLECTION } from '../config';
+import { DomainRecord } from '../types';
 
 const cache = new NodeCache({
   stdTTL: config.cache.ttlSeconds,
@@ -9,8 +9,11 @@ const cache = new NodeCache({
 });
 
 /**
- * Fetch all domain records from DB Proxy.
- * DB Proxy has no `where` filter, so we always get the full list.
+ * Fetch all domain records from the DB Proxy.
+ *
+ * The DB Proxy has no `WHERE` filter, so every call returns the full
+ * collection. Results are cached in-memory by `resolveDomain` to
+ * avoid repeated round-trips.
  */
 export async function fetchAllDomains(): Promise<DomainRecord[]> {
   const url = `${config.dbProxy.url}/db/${DB_COLLECTION}/get`;
@@ -21,16 +24,17 @@ export async function fetchAllDomains(): Promise<DomainRecord[]> {
 
   if (!res.ok) throw new Error(`DB Proxy returned ${res.status}`);
 
-  const data = await res.json() as { success?: boolean; data?: DomainRecord[] };
+  const data = (await res.json()) as { success?: boolean; data?: DomainRecord[] };
   if (!data.success || !data.data) return [];
   return data.data;
 }
 
 /**
- * Resolve a subdomain to a CID.
- * Checks in-memory cache first, then queries DB Proxy.
+ * Resolve a subdomain to an IPFS CID.
  *
- * The cache makes this fast — only one DB hit per TTL period per cache miss.
+ * Checks the in-memory cache first, then queries the DB Proxy on
+ * cache miss. When the DB is queried, all returned records are cached
+ * to speed up subsequent lookups within the TTL window.
  */
 export async function resolveDomain(subdomain: string): Promise<string | null> {
   const cached = cache.get<string>(subdomain);
@@ -38,11 +42,10 @@ export async function resolveDomain(subdomain: string): Promise<string | null> {
 
   try {
     const domains = await fetchAllDomains();
-
     const record = domains.find((r) => r.subdomain === subdomain);
     if (!record) return null;
 
-    // Cache all returned records to speed up subsequent lookups
+    // Cache every record from the response
     for (const r of domains) {
       if (r.subdomain && r.cid) {
         cache.set(r.subdomain, r.cid);
@@ -56,10 +59,17 @@ export async function resolveDomain(subdomain: string): Promise<string | null> {
   }
 }
 
+/**
+ * Invalidate a single subdomain from the cache.
+ * Called after domain registration or update.
+ */
 export function invalidateCache(subdomain: string): void {
   cache.del(subdomain);
 }
 
+/**
+ * Return cache hit/miss statistics (exposed on non-production health check).
+ */
 export function getCacheStats() {
   return cache.getStats();
 }

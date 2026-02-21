@@ -4,17 +4,21 @@ const IPFS_IO_GATEWAY = 'https://ipfs.io/ipfs';
 
 /**
  * Build the full IPFS URL for an asset.
- * CIDv0 (Qm...) can't be used as a subdomain, so we use path-based gateway.
- * CIDv1 (bafy...) uses the subdomain-based backend (e.g. ipfscdn.io).
+ *
+ * CIDv0 (`Qm...`) cannot be used as a subdomain, so it falls back to
+ * the path-based `ipfs.io` gateway. CIDv1 (`bafy...`) uses the
+ * configured subdomain-style backend (e.g. `dweb.link`).
  */
-export function buildIpfsUrl(cid: string, safePath: string, ipfsBackend: string): string {
+export function buildIpfsUrl(cid: string, assetPath: string, ipfsBackend: string): string {
   if (cid.startsWith('Qm')) {
-    return `${IPFS_IO_GATEWAY}/${cid}/${safePath}`;
+    return `${IPFS_IO_GATEWAY}/${cid}/${assetPath}`;
   }
-  return `https://${cid}.${ipfsBackend}/${safePath}`;
+  return `https://${cid}.${ipfsBackend}/${assetPath}`;
 }
 
-/** Build the IPFS URL for index.html (SPA fallback). */
+/**
+ * Build the IPFS URL for `/index.html` (used for SPA fallback).
+ */
 export function buildIpfsIndexUrl(cid: string, ipfsBackend: string): string {
   if (cid.startsWith('Qm')) {
     return `${IPFS_IO_GATEWAY}/${cid}/index.html`;
@@ -22,7 +26,9 @@ export function buildIpfsIndexUrl(cid: string, ipfsBackend: string): string {
   return `https://${cid}.${ipfsBackend}/index.html`;
 }
 
-/** Build a base IPFS URL (no path) for the /resolve endpoint. */
+/**
+ * Build a base IPFS URL (no path) for the `/resolve` debug endpoint.
+ */
 export function buildIpfsBaseUrl(cid: string, ipfsBackend: string): string {
   if (cid.startsWith('Qm')) {
     return `${IPFS_IO_GATEWAY}/${cid}`;
@@ -31,9 +37,10 @@ export function buildIpfsBaseUrl(cid: string, ipfsBackend: string): string {
 }
 
 /**
- * Sanitize a URL path to prevent traversal attacks.
- * Uses path.posix.normalize to collapse sequences like `....//` and `..%2F`,
- * then rejects any remaining `..` segments.
+ * Sanitize a URL path to prevent directory traversal attacks.
+ *
+ * Uses `path.posix.normalize` to collapse sequences like `....//` and
+ * `..%2F`, then rejects any remaining `..` segments.
  */
 export function sanitizePath(raw: string): string {
   const decoded = decodeURIComponent(raw);

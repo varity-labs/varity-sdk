@@ -1,3 +1,7 @@
+/**
+ * Static 404 HTML page served when a requested app name has no matching
+ * domain record. Styled to match the Varity brand.
+ */
 export const notFoundHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,25 +20,10 @@ export const notFoundHtml = `<!DOCTYPE html>
       min-height: 100vh;
       padding: 2rem;
     }
-    .container {
-      text-align: center;
-      max-width: 480px;
-    }
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: #fff;
-    }
-    p {
-      color: #a3a3a3;
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
-    a {
-      color: #818cf8;
-      text-decoration: none;
-    }
+    .container { text-align: center; max-width: 480px; }
+    h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
+    p { color: #a3a3a3; line-height: 1.6; margin-bottom: 1.5rem; }
+    a { color: #818cf8; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .code { font-size: 4rem; font-weight: 700; color: #374151; margin-bottom: 1rem; }
   </style>
