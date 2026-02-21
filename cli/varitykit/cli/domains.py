@@ -41,18 +41,16 @@ def list_domains():
 
     table = Table(title=f"Your Domains ({len(result)})")
     table.add_column("Subdomain", style="cyan", no_wrap=True)
-    table.add_column("URL", style="blue")
+    table.add_column("App URL", style="blue")
+    table.add_column("Share Card", style="magenta")
     table.add_column("App Name", style="green")
-    table.add_column("CID", style="dim", max_width=20)
 
     for domain in result:
         subdomain = domain.get("subdomain", "—")
         url = f"https://varity.app/{subdomain}"
+        card = f"https://varity.app/card/{subdomain}"
         app_name = domain.get("appName", "—")
-        cid = domain.get("cid", "—")
-        if len(cid) > 16:
-            cid = cid[:8] + "..." + cid[-4:]
-        table.add_row(subdomain, url, app_name, cid)
+        table.add_row(subdomain, url, card, app_name)
 
     console.print("\n")
     console.print(table)

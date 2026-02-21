@@ -479,7 +479,7 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
             if not subdomain:
                 subdomain = app_name.lower().replace(" ", "-")
             card_url = f"https://varity.app/card/{subdomain}"
-            image_url = f"https://varity.app/card/{subdomain}/image.svg"
+            image_url = f"https://varity.app/card/{subdomain}/image.png"
 
         # Share your deployment
         share_text = "[bold magenta]Share Your Deployment![/bold magenta]\n\n"
@@ -844,10 +844,17 @@ def info(ctx, deployment_id):
         # Add custom domain section if present
         custom_domain = deployment.get("custom_domain", {})
         if custom_domain:
+            sub = custom_domain.get('subdomain', '')
             info_text += f"""
 [bold]Custom Domain[/bold]
-[cyan]Domain:[/cyan] varity.app/{custom_domain.get('subdomain', 'N/A')}
+[cyan]Domain:[/cyan] varity.app/{sub or 'N/A'}
 [cyan]URL:[/cyan] {custom_domain.get('url', 'N/A')}
+"""
+            if sub:
+                info_text += f"""
+[bold]Share[/bold]
+[cyan]Card Page:[/cyan]  https://varity.app/card/{sub}
+[cyan]Card Image:[/cyan] https://varity.app/card/{sub}/image.png
 """
 
         console.print("\n")
