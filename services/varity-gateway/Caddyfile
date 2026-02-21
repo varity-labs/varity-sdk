@@ -1,6 +1,7 @@
 {
 	http_port 8081
 	https_port 8443
+	email admin@varity.so
 }
 
 {$BASE_DOMAIN:varity.app} {
