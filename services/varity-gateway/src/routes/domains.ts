@@ -5,9 +5,6 @@ import { verifyApiKey } from '../middleware/auth';
 
 export const domainsRouter = Router();
 
-// All domain management routes require API key auth
-domainsRouter.use(verifyApiKey);
-
 // ---------------------------------------------------------------------------
 // Validation helpers
 // ---------------------------------------------------------------------------
@@ -26,7 +23,7 @@ function isValidCid(cid: string): boolean {
 // GET /api/domains/check/:name — Check subdomain availability
 // ---------------------------------------------------------------------------
 
-domainsRouter.get('/api/domains/check/:name', async (req: Request, res: Response) => {
+domainsRouter.get('/api/domains/check/:name', verifyApiKey, async (req: Request, res: Response) => {
   const name = (req.params.name as string).toLowerCase();
   const ownerId = req.query.ownerId as string | undefined;
 
@@ -65,7 +62,7 @@ domainsRouter.get('/api/domains/check/:name', async (req: Request, res: Response
 // GET /api/domains/mine?ownerId=<address> — List domains owned by developer
 // ---------------------------------------------------------------------------
 
-domainsRouter.get('/api/domains/mine', async (req: Request, res: Response) => {
+domainsRouter.get('/api/domains/mine', verifyApiKey, async (req: Request, res: Response) => {
   const ownerId = req.query.ownerId as string | undefined;
 
   if (!ownerId) {
@@ -97,7 +94,7 @@ domainsRouter.get('/api/domains/mine', async (req: Request, res: Response) => {
 // POST /api/domains/register — Register a new subdomain
 // ---------------------------------------------------------------------------
 
-domainsRouter.post('/api/domains/register', async (req: Request, res: Response) => {
+domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, res: Response) => {
   const { subdomain, cid, appName, ownerId } = req.body;
 
   if (!subdomain || !cid) {
@@ -177,7 +174,7 @@ domainsRouter.post('/api/domains/register', async (req: Request, res: Response) 
 // PUT /api/domains/update — Update an existing subdomain's CID (redeploy)
 // ---------------------------------------------------------------------------
 
-domainsRouter.put('/api/domains/update', async (req: Request, res: Response) => {
+domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res: Response) => {
   const { subdomain, cid, ownerId } = req.body;
 
   if (!subdomain || !cid) {
