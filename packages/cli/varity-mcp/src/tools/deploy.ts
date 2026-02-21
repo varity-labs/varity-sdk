@@ -116,7 +116,7 @@ export function registerDeployTool(server: McpServer): void {
             share_card: cardUrl || undefined,
             share_image: cardUrl ? `${cardUrl}/image.png` : undefined,
             infrastructure: {
-              hosting: "Varity (decentralized)",
+              hosting: "Varity (global)",
               database: "PostgreSQL (Varity DB Proxy)",
               auth: "Privy (Varity Credential Proxy)",
             },
