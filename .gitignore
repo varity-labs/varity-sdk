@@ -68,6 +68,7 @@ apps/
 services/*
 !services/varity-gateway/
 !services/varity-db-proxy/
+!services/varity-credential-proxy/
 
 # Tools (separate repos)
 tools/
