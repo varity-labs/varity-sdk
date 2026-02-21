@@ -12,6 +12,12 @@ FROM node:20-slim
 LABEL org.opencontainers.image.source="https://github.com/varity-labs/varity-sdk"
 WORKDIR /app
 
+# Fonts for sharp SVG→PNG rendering (deployment card images)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fonts-liberation fonts-dejavu-core fontconfig \
+  && fc-cache -f \
+  && rm -rf /var/lib/apt/lists/*
+
 # Copy Caddy binary from official image (avoids fragile curl installs)
 COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 

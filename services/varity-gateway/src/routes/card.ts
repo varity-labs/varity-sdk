@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import sharp from 'sharp';
 import { config } from '../config';
 import { resolveDomainRecord } from '../services/resolver';
 import { cardHtml, cardSvg } from '../templates/card';
@@ -28,10 +29,42 @@ cardRouter.get('/card/:appName', async (req, res) => {
 });
 
 /**
+ * GET /card/:appName/image.png
+ *
+ * Serves a PNG card image (1200x630) used as og:image.
+ * Twitter, LinkedIn, and Discord all require PNG/JPEG — SVG won't render.
+ * Generated from SVG via sharp.
+ */
+cardRouter.get('/card/:appName/image.png', async (req, res) => {
+  const appName = req.params.appName.toLowerCase();
+  const record = await resolveDomainRecord(appName);
+
+  if (!record) {
+    res.status(404).send('Not found');
+    return;
+  }
+
+  try {
+    const svg = cardSvg(record, config.gateway.baseDomain);
+    const png = await sharp(Buffer.from(svg))
+      .resize(1200, 630)
+      .png()
+      .toBuffer();
+
+    res.type('image/png');
+    res.set('Cache-Control', 'public, max-age=3600'); // 1 hour cache
+    res.send(png);
+  } catch (err) {
+    console.error(`[card] Failed to generate PNG for ${appName}:`, err);
+    res.status(500).send('Failed to generate image');
+  }
+});
+
+/**
  * GET /card/:appName/image.svg
  *
- * Serves an SVG card image (1200x630) suitable for og:image.
- * Also downloadable by developers for social media posts.
+ * Serves the raw SVG card image (1200x630).
+ * Downloadable by developers for presentations, blog posts, etc.
  */
 cardRouter.get('/card/:appName/image.svg', async (req, res) => {
   const appName = req.params.appName.toLowerCase();

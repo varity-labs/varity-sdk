@@ -8,7 +8,7 @@ import { DomainRecord } from '../types';
  */
 export function cardHtml(record: DomainRecord, baseDomain: string): string {
   const appUrl = `https://${baseDomain}/${record.subdomain}`;
-  const imageUrl = `https://${baseDomain}/card/${record.subdomain}/image.svg`;
+  const imageUrl = `https://${baseDomain}/card/${record.subdomain}/image.png`;
   const deployDate = formatDate(record.createdAt);
   const displayName = record.appName || record.subdomain;
 
@@ -243,34 +243,34 @@ export function cardSvg(record: DomainRecord, baseDomain: string): string {
 
   <!-- Logo -->
   <rect x="100" y="100" width="56" height="56" rx="14" fill="url(#accent)"/>
-  <text x="128" y="138" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">V</text>
+  <text x="128" y="138" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">V</text>
 
   <!-- Brand name -->
-  <text x="172" y="137" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="600" fill="#a78bfa">Varity</text>
+  <text x="172" y="137" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="24" font-weight="600" fill="#a78bfa">Varity</text>
 
   <!-- App name -->
-  <text x="100" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="52" font-weight="700" fill="#ffffff">${esc(name)}</text>
+  <text x="100" y="240" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="52" font-weight="700" fill="#ffffff">${esc(name)}</text>
 
   <!-- App URL -->
-  <text x="100" y="290" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" fill="#818cf8">${esc(appUrl)}</text>
+  <text x="100" y="290" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="22" fill="#818cf8">${esc(appUrl)}</text>
 
   <!-- Live badge -->
-  <rect x="100" y="330" width="80" height="32" rx="16" fill="rgba(124, 58, 237, 0.15)" stroke="rgba(124, 58, 237, 0.3)" stroke-width="1"/>
+  <rect x="100" y="330" width="80" height="32" rx="16" fill="#7c3aed" fill-opacity="0.15" stroke="#7c3aed" stroke-opacity="0.3" stroke-width="1"/>
   <circle cx="120" cy="346" r="4" fill="#22c55e"/>
-  <text x="148" y="352" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#a78bfa" text-anchor="middle">Live</text>
+  <text x="148" y="352" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#a78bfa" text-anchor="middle">Live</text>
 
   <!-- Meta info -->
-  <text x="100" y="420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">DEPLOYED</text>
-  <text x="100" y="445" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#d4d4d8">${deployDate}</text>
+  <text x="100" y="420" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">DEPLOYED</text>
+  <text x="100" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">${deployDate}</text>
 
-  <text x="350" y="420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">PLATFORM</text>
-  <text x="350" y="445" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#d4d4d8">Varity</text>
+  <text x="350" y="420" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">PLATFORM</text>
+  <text x="350" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">Varity</text>
 
-  <text x="600" y="420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">HOSTING</text>
-  <text x="600" y="445" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#d4d4d8">Decentralized</text>
+  <text x="600" y="420" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">HOSTING</text>
+  <text x="600" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">Decentralized</text>
 
   <!-- Bottom tagline -->
-  <text x="100" y="530" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#52525b">Built and deployed with Varity — Auth, database, and payments included.</text>
+  <text x="100" y="530" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#52525b">Built and deployed with Varity — Auth, database, and payments included.</text>
 
   <!-- Accent line -->
   <rect x="60" y="570" width="1080" height="3" rx="1.5" fill="url(#accent)" opacity="0.4"/>

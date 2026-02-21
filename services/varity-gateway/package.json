@@ -1,6 +1,6 @@
 {
   "name": "varity-gateway",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "license": "MIT",
   "description": "Custom domain gateway for Varity apps — maps varity.app/{name} to IPFS content",
@@ -11,15 +11,17 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
     "express": "4.20.0",
     "node-cache": "^5.1.2",
-    "cors": "^2.8.6",
-    "dotenv": "^17.2.3"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/node": "^22.0.0",
+    "@types/sharp": "^0.31.1",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
