@@ -10,7 +10,7 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
   const appUrl = `https://${baseDomain}/${record.subdomain}`;
   const imageUrl = `https://${baseDomain}/card/${record.subdomain}/image.png`;
   const deployDate = formatDate(record.createdAt);
-  const displayName = record.appName || record.subdomain;
+  const displayName = record.appName || titleCase(record.subdomain);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -27,6 +27,7 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
   <meta property="og:image" content="${imageUrl}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:site_name" content="Varity">
 
   <!-- Twitter Card -->
@@ -180,7 +181,7 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
         </div>
         <div class="meta-item">
           <div class="meta-label">Hosting</div>
-          <div class="meta-value">Decentralized</div>
+          <div class="meta-value">Global</div>
         </div>
       </div>
 
@@ -192,6 +193,7 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
 
     <div class="actions">
       <a class="btn btn-primary" href="${appUrl}">Visit App</a>
+      <a class="btn btn-secondary" href="${imageUrl}" download="${record.subdomain}-card.png">Download Card</a>
       <a class="btn btn-secondary" href="https://varity.so">Build Your Own</a>
     </div>
 
@@ -211,7 +213,7 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
  */
 export function cardSvg(record: DomainRecord, baseDomain: string): string {
   const appUrl = `https://${baseDomain}/${record.subdomain}`;
-  const displayName = record.appName || record.subdomain;
+  const displayName = record.appName || titleCase(record.subdomain);
   const deployDate = formatDate(record.createdAt);
 
   // Truncate long names
@@ -267,7 +269,7 @@ export function cardSvg(record: DomainRecord, baseDomain: string): string {
   <text x="350" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">Varity</text>
 
   <text x="600" y="420" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">HOSTING</text>
-  <text x="600" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">Decentralized</text>
+  <text x="600" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">Global</text>
 
   <!-- Bottom tagline -->
   <text x="100" y="530" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#52525b">Built and deployed with Varity — Auth, database, and payments included.</text>
@@ -288,6 +290,13 @@ function esc(str: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function titleCase(slug: string): string {
+  return slug
+    .split(/[-_]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 function formatDate(iso: string | undefined): string {
