@@ -171,6 +171,11 @@ class DeploymentOrchestrator:
             IPFSUploadError: If IPFS upload fails
             DeploymentError: For other deployment failures
         """
+        from varitykit.services.gateway_client import (
+            register_domain, sanitize_subdomain,
+            check_availability, get_deploy_key, GatewayError,
+        )
+
         try:
             self._log("🚀 Starting deployment...")
 
@@ -196,6 +201,31 @@ class DeploymentOrchestrator:
                 self._log("   Optimizing for static hosting...")
                 modified = rewrite_paths_for_static_hosting(build_artifacts.output_dir)
                 self._log(f"   Rewrote {modified} files for portable paths")
+
+            # Step 2.7: Check domain availability BEFORE uploading (fail fast)
+            subdomain = None
+            owner_id = None
+            if hosting != "akash":
+                try:
+                    subdomain = sanitize_subdomain(custom_name or project_info.name)
+                    owner_id = get_deploy_key()
+
+                    availability = check_availability(subdomain, owner_id=owner_id)
+                    if not availability.get("available") and not availability.get("ownedByYou"):
+                        reason = availability.get("reason", "taken")
+                        if reason == "reserved":
+                            raise GatewayError(
+                                f'"{subdomain}" is reserved. Use --name to pick a different name.'
+                            )
+                        raise GatewayError(
+                            f'"{subdomain}" is taken by another developer. '
+                            f"Use --name to pick a different name."
+                        )
+                    self._log(f"   Domain varity.app/{subdomain} ✓")
+                except GatewayError:
+                    raise
+                except Exception:
+                    pass  # Gateway unreachable — proceed, registration will fail later if needed
 
             # Step 3: Deploy based on hosting type
             frontend_url = ""
@@ -232,16 +262,20 @@ class DeploymentOrchestrator:
                 thirdweb_url = ipfs_result.thirdweb_url
                 self._log(f"   URL: {frontend_url}")
 
-            # Step 3.5: Register custom domain
+            # Step 3.5: Register custom domain (needs CID from upload)
             custom_domain_url = None
-            if cid and hosting != "akash":
+            if cid and subdomain and hosting != "akash":
                 try:
-                    from varitykit.services.gateway_client import register_domain, sanitize_subdomain
-                    subdomain = sanitize_subdomain(custom_name or project_info.name)
-                    register_domain(subdomain, cid)
+                    register_domain(subdomain, cid, app_name=project_info.name, owner_id=owner_id)
                     custom_domain_url = f"https://varity.app/{subdomain}"
                     frontend_url = custom_domain_url
                     self._log(f"   🌐 {custom_domain_url}")
+
+                    if not owner_id:
+                        self._log("   💡 Tip: Run 'varitykit login' to protect your domains.")
+                except GatewayError as e:
+                    self._log(f"   ❌ {e}")
+                    raise DeploymentError(str(e))
                 except Exception as e:
                     self._log(f"   ⚠️ Custom domain unavailable: {e}")
 
@@ -249,6 +283,14 @@ class DeploymentOrchestrator:
             manifest = self._create_manifest(
                 project_info, build_artifacts, ipfs_result, network, hosting, akash_result
             )
+
+            # Store custom domain info in manifest
+            if custom_domain_url and subdomain:
+                manifest["custom_domain"] = {
+                    "subdomain": subdomain,
+                    "url": custom_domain_url,
+                    "owner_id": owner_id,
+                }
 
             # Step 5: Save deployment metadata
             deployment_id = self._save_deployment(manifest)

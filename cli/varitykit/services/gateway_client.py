@@ -14,7 +14,9 @@ import re
 import json
 import urllib.request
 import urllib.error
-from typing import Optional, Dict
+import urllib.parse
+from pathlib import Path
+from typing import Optional, Dict, List
 
 
 class GatewayError(Exception):
@@ -33,6 +35,50 @@ GATEWAY_API_KEY = os.getenv(
     "VARITY_GATEWAY_API_KEY",
     "17b2902f4974e9a41a06059777e50a86a235432f39780742309c62b1b5da3311"
 )
+
+# Config file path
+CONFIG_PATH = Path.home() / ".varitykit" / "config.json"
+
+
+def get_deploy_key() -> Optional[str]:
+    """
+    Read the developer's deploy key from ~/.varitykit/config.json.
+
+    Returns:
+        Deploy key string, or None if not configured.
+    """
+    if not CONFIG_PATH.exists():
+        return None
+
+    try:
+        with open(CONFIG_PATH, "r") as f:
+            config = json.load(f)
+        return config.get("deploy_key")
+    except (json.JSONDecodeError, IOError):
+        return None
+
+
+def save_deploy_key(deploy_key: str) -> None:
+    """
+    Save deploy key to ~/.varitykit/config.json.
+
+    Args:
+        deploy_key: The deploy key from the developer portal.
+    """
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    config = {}
+    if CONFIG_PATH.exists():
+        try:
+            with open(CONFIG_PATH, "r") as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            config = {}
+
+    config["deploy_key"] = deploy_key
+
+    with open(CONFIG_PATH, "w") as f:
+        json.dump(config, f, indent=2)
 
 
 def sanitize_subdomain(name: str) -> str:
@@ -83,21 +129,29 @@ def sanitize_subdomain(name: str) -> str:
     return subdomain
 
 
-def check_availability(subdomain: str, gateway_url: Optional[str] = None) -> Dict:
+def check_availability(
+    subdomain: str,
+    owner_id: Optional[str] = None,
+    gateway_url: Optional[str] = None,
+) -> Dict:
     """
     Check if a subdomain is available.
 
     Args:
         subdomain: Subdomain to check
+        owner_id: Developer's deploy key (enables 'owned_by_you' detection)
         gateway_url: Override gateway URL
 
     Returns:
-        Dict with 'available' (bool) and optional 'reason' (str)
+        Dict with 'available' (bool), optional 'reason' (str), optional 'ownedByYou' (bool)
 
     Raises:
         GatewayError: If check fails
     """
-    url = f"{gateway_url or GATEWAY_URL}/api/domains/check/{subdomain}"
+    base = gateway_url or GATEWAY_URL
+    url = f"{base}/api/domains/check/{subdomain}"
+    if owner_id:
+        url += f"?ownerId={urllib.parse.quote(owner_id)}"
 
     try:
         req = urllib.request.Request(
@@ -128,6 +182,7 @@ def register_domain(
     subdomain: str,
     cid: str,
     app_name: Optional[str] = None,
+    owner_id: Optional[str] = None,
     gateway_url: Optional[str] = None,
 ) -> Dict:
     """
@@ -140,6 +195,7 @@ def register_domain(
         subdomain: Subdomain to register
         cid: IPFS CID to map to
         app_name: Human-readable app name
+        owner_id: Developer's deploy key (ties domain to developer)
         gateway_url: Override gateway URL
 
     Returns:
@@ -149,11 +205,14 @@ def register_domain(
         GatewayError: If registration fails
     """
     base = gateway_url or GATEWAY_URL
-    payload = json.dumps({
+    body = {
         "subdomain": subdomain,
         "cid": cid,
         "appName": app_name or subdomain,
-    }).encode()
+    }
+    if owner_id:
+        body["ownerId"] = owner_id
+    payload = json.dumps(body).encode()
 
     headers = {
         "Authorization": f"Bearer {GATEWAY_API_KEY}",
@@ -175,7 +234,7 @@ def register_domain(
     except urllib.error.HTTPError as e:
         if e.code == 409:
             # Already registered — update CID (redeployment)
-            return _update_domain(subdomain, cid, base, headers)
+            return _update_domain(subdomain, cid, base, headers, owner_id)
         elif e.code == 401:
             raise GatewayError("Authentication failed with Varity gateway service.")
         elif e.code == 400:
@@ -201,9 +260,14 @@ def register_domain(
         raise GatewayError(f"Unexpected error registering domain: {e}")
 
 
-def _update_domain(subdomain: str, cid: str, base: str, headers: dict) -> Dict:
+def _update_domain(
+    subdomain: str, cid: str, base: str, headers: dict, owner_id: Optional[str] = None
+) -> Dict:
     """Update an existing domain mapping (internal helper for redeployments)."""
-    payload = json.dumps({"subdomain": subdomain, "cid": cid}).encode()
+    body = {"subdomain": subdomain, "cid": cid}
+    if owner_id:
+        body["ownerId"] = owner_id
+    payload = json.dumps(body).encode()
 
     try:
         req = urllib.request.Request(
@@ -217,7 +281,46 @@ def _update_domain(subdomain: str, cid: str, base: str, headers: dict) -> Dict:
             return json.loads(response.read().decode())
 
     except urllib.error.HTTPError as e:
+        if e.code == 403:
+            raise GatewayError(
+                "This domain is owned by another developer. "
+                "Use a different name with --name."
+            )
         raise GatewayError(f"Failed to update domain: HTTP {e.code}")
 
     except Exception as e:
         raise GatewayError(f"Failed to update domain: {e}")
+
+
+def list_my_domains(owner_id: str, gateway_url: Optional[str] = None) -> List[Dict]:
+    """
+    List all domains owned by a developer.
+
+    Args:
+        owner_id: Developer's deploy key
+        gateway_url: Override gateway URL
+
+    Returns:
+        List of domain dicts with subdomain, url, cid, appName, etc.
+
+    Raises:
+        GatewayError: If request fails
+    """
+    base = gateway_url or GATEWAY_URL
+    url = f"{base}/api/domains/mine?ownerId={urllib.parse.quote(owner_id)}"
+
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {GATEWAY_API_KEY}"}
+        )
+
+        with urllib.request.urlopen(req, timeout=10) as response:
+            result = json.loads(response.read().decode())
+            return result.get("domains", [])
+
+    except urllib.error.HTTPError as e:
+        raise GatewayError(f"Gateway returned HTTP {e.code}")
+
+    except Exception as e:
+        raise GatewayError(f"Failed to list domains: {e}")

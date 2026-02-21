@@ -197,7 +197,7 @@ def app():
 @click.option(
     "--name",
     default=None,
-    help="Custom subdomain for {name}.varity.app",
+    help="Custom app name for varity.app/{name}",
 )
 @click.option(
     "--path",
@@ -425,6 +425,12 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
 
         console.print(Panel.fit(deployment_text, border_style="green"))
 
+        # Show login tip if deploying without a deploy key
+        if result.custom_domain:
+            from varitykit.services.gateway_client import get_deploy_key
+            if not get_deploy_key():
+                console.print("\n  [yellow]Tip:[/yellow] Run [bold]varitykit login[/bold] to protect your domain from being claimed by others.")
+
         console.print("="*60)
 
         # Next steps
@@ -621,6 +627,7 @@ def list(ctx, network, limit):
         table.add_column("Network", style="green")
         table.add_column("Type", style="yellow")
         table.add_column("Frontend URL", style="blue", overflow="fold")
+        table.add_column("Domain", style="green", no_wrap=True)
         table.add_column("Deployed", style="magenta")
 
         for dep in deployments:
@@ -657,7 +664,10 @@ def list(ctx, network, limit):
                 except Exception:
                     pass
 
-            table.add_row(deployment_id, dep_network, deployment_type, frontend_url, timestamp)
+            # Custom domain
+            domain = dep.get("custom_domain", {}).get("url", "—")
+
+            table.add_row(deployment_id, dep_network, deployment_type, frontend_url, domain, timestamp)
 
         console.print("\n")
         console.print(table)
@@ -798,6 +808,15 @@ def info(ctx, deployment_id):
 [cyan]App ID:[/cyan] {app_store_id}
 [cyan]Status:[/cyan] {app_store_status}
 [cyan]URL:[/cyan] {app_store_url}
+"""
+
+        # Add custom domain section if present
+        custom_domain = deployment.get("custom_domain", {})
+        if custom_domain:
+            info_text += f"""
+[bold]Custom Domain[/bold]
+[cyan]Domain:[/cyan] varity.app/{custom_domain.get('subdomain', 'N/A')}
+[cyan]URL:[/cyan] {custom_domain.get('url', 'N/A')}
 """
 
         console.print("\n")

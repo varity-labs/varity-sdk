@@ -59,15 +59,20 @@ from varitykit.cli.migrate import migrate
 from varitykit.cli.task import task
 from varitykit.cli.template import template
 from varitykit.cli.thirdweb import thirdweb
+from varitykit.cli.auth import auth, login
+from varitykit.cli.domains import domains
 from varitykit.commands.app_deploy import app
 
 # Core commands (visible to all developers)
+cli.add_command(login)  # varitykit login (top-level shortcut)
+cli.add_command(auth)   # varitykit auth {login,logout,status}
 cli.add_command(doctor)
 cli.add_command(init)
 cli.add_command(app)
 cli.add_command(dev)
 cli.add_command(template)
 cli.add_command(marketplace)
+cli.add_command(domains)
 
 # Utility commands
 cli.add_command(bootstrap)
