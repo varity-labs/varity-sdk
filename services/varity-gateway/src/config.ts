@@ -33,7 +33,7 @@ export const RESERVED_SUBDOMAINS = new Set([
   'www', 'api', 'admin', 'store', 'docs', 'developer',
   'status', 'blog', 'help', 'support', 'mail', 'app',
   'dashboard', 'console', 'gateway', 'cdn', 'static',
-  'health', 'resolve', 'tls-check', 'mx', 'ftp', 'ssh',
+  'health', 'resolve', 'tls-check', 'mx', 'ftp', 'ssh', 'card',
 ]);
 
 export const DB_COLLECTION = 'domains';

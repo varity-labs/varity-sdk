@@ -60,6 +60,20 @@ export async function resolveDomain(subdomain: string): Promise<string | null> {
 }
 
 /**
+ * Resolve a subdomain to its full domain record.
+ * Used by the card route to display deployment metadata.
+ */
+export async function resolveDomainRecord(subdomain: string): Promise<DomainRecord | null> {
+  try {
+    const domains = await fetchAllDomains();
+    return domains.find((r) => r.subdomain === subdomain) || null;
+  } catch (err) {
+    console.error(`[resolver] Failed to resolve record "${subdomain}":`, err);
+    return null;
+  }
+}
+
+/**
  * Invalidate a single subdomain from the cache.
  * Called after domain registration or update.
  */

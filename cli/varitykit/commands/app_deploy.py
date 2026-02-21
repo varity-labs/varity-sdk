@@ -189,10 +189,16 @@ def app():
     "--submit-to-store", is_flag=True, help="Auto-submit to Varity App Store"
 )
 @click.option(
+    "--chain",
+    default=None,
+    help="Target chain: varity-l3 (default), avax-l1",
+    type=click.Choice(["varity-l3", "avax-l1"], case_sensitive=False),
+)
+@click.option(
     "--tier",
     default=None,
-    help="Infrastructure tier: free, starter ($49/mo), growth ($99/mo), enterprise ($199/mo)",
-    type=click.Choice(["free", "starter", "growth", "enterprise"], case_sensitive=False),
+    help="Infrastructure tier: free, starter ($49/mo), growth ($99/mo), enterprise ($499/mo), scale ($1499/mo)",
+    type=click.Choice(["free", "starter", "growth", "enterprise", "scale"], case_sensitive=False),
 )
 @click.option(
     "--name",
@@ -206,7 +212,7 @@ def app():
     type=click.Path(exists=True),
 )
 @click.pass_context
-def deploy(ctx, hosting, submit_to_store, tier, name, path):
+def deploy(ctx, hosting, chain, submit_to_store, tier, name, path):
     """
     Deploy your application.
 
@@ -242,12 +248,19 @@ def deploy(ctx, hosting, submit_to_store, tier, name, path):
     logger = ctx.obj["logger"]
     network = "varity"
 
+    # Resolve chain
+    from varitykit.commands.chains import CHAIN_CONFIGS, DEFAULT_CHAIN
+    selected_chain = chain or DEFAULT_CHAIN
+    chain_config = CHAIN_CONFIGS.get(selected_chain, CHAIN_CONFIGS[DEFAULT_CHAIN])
+
     try:
         # Show banner
+        chain_label = chain_config["name"]
         console.print(
             Panel.fit(
-                "[bold blue]Varity App Deployment[/bold blue]\n"
-                "Deploy your app in seconds",
+                f"[bold blue]Varity App Deployment[/bold blue]\n"
+                f"Deploy your app in seconds\n"
+                f"[dim]Chain: {chain_label} ({selected_chain})[/dim]",
                 border_style="blue",
             )
         )
@@ -458,12 +471,25 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
         build_time = result.manifest.get("build", {}).get("time_seconds", 0)
         build_size = result.manifest.get("build", {}).get("size_mb", 0)
 
+        # Shareable deployment card URL
+        card_url = ""
+        image_url = ""
+        if result.custom_domain:
+            subdomain = result.custom_domain.rstrip("/").split("/")[-1] if "/" in str(result.custom_domain) else ""
+            if not subdomain:
+                subdomain = app_name.lower().replace(" ", "-")
+            card_url = f"https://varity.app/card/{subdomain}"
+            image_url = f"https://varity.app/card/{subdomain}/image.svg"
+
         # Share your deployment
         share_text = "[bold magenta]Share Your Deployment![/bold magenta]\n\n"
+        if card_url:
+            share_text += f"[bold]Deployment Card:[/bold] {card_url}\n"
+            share_text += f"[bold]Card Image:[/bold]     {image_url}\n\n"
         share_text += "[bold]Twitter/X:[/bold]\n"
         share_text += f'  Just deployed {app_name} on @VarityLabs in under 60 seconds!\n'
         share_text += f'  70% cheaper than AWS, zero config required.\n'
-        share_text += f'  Check it out: {result.frontend_url}\n'
+        share_text += f'  Check it out: {card_url or result.frontend_url}\n'
         share_text += f'  #BuildWithVarity #ShippingFast\n\n'
         share_text += "[bold]LinkedIn:[/bold]\n"
         share_text += f'  Excited to share — I just deployed {app_name} using Varity,\n'
@@ -471,23 +497,28 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
         share_text += f'  - 60-second deploy from CLI\n'
         share_text += f'  - Auth, database, storage included\n'
         share_text += f'  - No Docker, no config files\n'
-        share_text += f'  Live: {result.frontend_url}\n'
+        share_text += f'  Live: {card_url or result.frontend_url}\n'
         share_text += f'  #WebDevelopment #CloudComputing\n\n'
         share_text += "[bold]Discord/Slack:[/bold]\n"
         share_text += f'  Shipped {app_name} on Varity!\n'
-        share_text += f'  {result.frontend_url}\n'
+        share_text += f'  {card_url or result.frontend_url}\n'
         share_text += f'  Build: {build_time:.1f}s | Framework: {framework} | Size: {build_size:.1f}MB'
         console.print(Panel.fit(share_text, border_style="magenta"))
         console.print()
 
-        # Generate deployment badge
+        # Generate deployment badge + README snippet
         try:
             from varitykit.utils.badge_generator import save_badge
             badge_path = save_badge(result.deployment_id, app_name)
             badge_text = "[bold]README Badge[/bold]\n\n"
             badge_text += f"  Add this to your README.md:\n\n"
-            badge_text += f"  [![Deployed on Varity]({badge_path})]({result.frontend_url})\n\n"
-            badge_text += f"  [dim]Badge saved to: {badge_path}[/dim]"
+            if card_url:
+                badge_text += f"  [![Deployed on Varity]({image_url})]({card_url})\n\n"
+                badge_text += f"  [dim]Hosted card: {card_url}[/dim]\n"
+                badge_text += f"  [dim]Card image:  {image_url}[/dim]\n"
+            else:
+                badge_text += f"  [![Deployed on Varity]({badge_path})]({result.frontend_url})\n\n"
+            badge_text += f"  [dim]Local badge:  {badge_path}[/dim]"
             console.print(Panel.fit(badge_text, border_style="blue"))
             console.print()
         except Exception as e:

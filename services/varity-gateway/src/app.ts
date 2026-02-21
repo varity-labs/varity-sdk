@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './routes/health';
 import { domainsRouter } from './routes/domains';
+import { cardRouter } from './routes/card';
 import { proxyRouter } from './routes/proxy';
 
 const ALLOWED_ORIGINS = [
@@ -34,6 +35,7 @@ app.use(express.json());
 
 app.use(healthRouter);
 app.use(domainsRouter);
+app.use(cardRouter);
 app.use(proxyRouter);
 
 export { app };
