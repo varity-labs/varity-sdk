@@ -8,9 +8,14 @@ import { DomainRecord } from '../types';
  */
 export function cardHtml(record: DomainRecord, baseDomain: string): string {
   const appUrl = `https://${baseDomain}/${record.subdomain}`;
+  const cardUrl = `https://${baseDomain}/card/${record.subdomain}`;
   const imageUrl = `https://${baseDomain}/card/${record.subdomain}/image.png`;
   const deployDate = formatDate(record.createdAt);
   const displayName = record.appName || titleCase(record.subdomain);
+
+  const tweetText = encodeURIComponent(`Just deployed ${displayName} on @VarityLabs! 70% cheaper than AWS, zero config required.`);
+  const twitterShareUrl = `https://x.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(cardUrl)}`;
+  const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cardUrl)}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -192,15 +197,18 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
     </div>
 
     <div class="actions">
-      <a class="btn btn-primary" href="${appUrl}">Visit App</a>
+      <a class="btn btn-primary" href="${twitterShareUrl}" target="_blank" rel="noopener">Share on X</a>
+      <a class="btn btn-primary" href="${linkedinShareUrl}" target="_blank" rel="noopener" style="background:#0a66c2">Share on LinkedIn</a>
+    </div>
+    <div class="actions" style="margin-top:0.75rem">
+      <a class="btn btn-secondary" href="${appUrl}">Visit App</a>
       <a class="btn btn-secondary" href="${imageUrl}" download="${record.subdomain}-card.png">Download Card</a>
-      <a class="btn btn-secondary" href="https://varity.so">Build Your Own</a>
     </div>
 
     <br>
     <div class="footer">
-      <p>Built and deployed with <a href="https://varity.so">Varity</a></p>
-      <p>Auth, database, and payments included. 70% cheaper than AWS.</p>
+      <p>Built and deployed with <a href="https://varity.so">Varity</a> — 70% cheaper than AWS.</p>
+      <p><a href="https://varity.so">Build your own app</a></p>
     </div>
   </div>
 </body>

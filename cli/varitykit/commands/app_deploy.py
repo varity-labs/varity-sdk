@@ -455,74 +455,35 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
         console.print(Panel.fit(next_steps, border_style="cyan"))
         console.print()
 
-        # Get project metadata for share templates
-        app_name = project_path.name
-        try:
-            import json as _json_share
-            pkg_path = project_path / "package.json"
-            if pkg_path.exists():
-                with open(pkg_path, "r", encoding="utf-8") as f:
-                    pkg = _json_share.load(f)
-                    app_name = pkg.get("name", app_name)
-        except Exception:
-            pass
-
-        framework = result.manifest.get("project", {}).get("type", "unknown")
-        build_time = result.manifest.get("build", {}).get("time_seconds", 0)
-        build_size = result.manifest.get("build", {}).get("size_mb", 0)
-
-        # Shareable deployment card URL
+        # Open deployment card in browser — the first thing the developer sees
+        # The card page has share buttons (X, LinkedIn), download, and "Visit App"
         card_url = ""
-        image_url = ""
         if result.custom_domain:
+            app_name = project_path.name
+            try:
+                import json as _json_share
+                pkg_path = project_path / "package.json"
+                if pkg_path.exists():
+                    with open(pkg_path, "r", encoding="utf-8") as f:
+                        pkg = _json_share.load(f)
+                        app_name = pkg.get("name", app_name)
+            except Exception:
+                pass
+
             subdomain = result.custom_domain.rstrip("/").split("/")[-1] if "/" in str(result.custom_domain) else ""
             if not subdomain:
                 subdomain = app_name.lower().replace(" ", "-")
             card_url = f"https://varity.app/card/{subdomain}"
-            image_url = f"https://varity.app/card/{subdomain}/image.png"
 
-        # Share your deployment
-        share_text = "[bold magenta]Share Your Deployment![/bold magenta]\n\n"
-        if card_url:
-            share_text += f"[bold]Deployment Card:[/bold] {card_url}\n"
-            share_text += f"[bold]Card Image:[/bold]     {image_url}\n\n"
-        share_text += "[bold]Twitter/X:[/bold]\n"
-        share_text += f'  Just deployed {app_name} on @VarityLabs in under 60 seconds!\n'
-        share_text += f'  70% cheaper than AWS, zero config required.\n'
-        share_text += f'  Check it out: {card_url or result.frontend_url}\n'
-        share_text += f'  #BuildWithVarity #ShippingFast\n\n'
-        share_text += "[bold]LinkedIn:[/bold]\n"
-        share_text += f'  Excited to share — I just deployed {app_name} using Varity,\n'
-        share_text += f'  a zero-config platform that\'s 70% cheaper than AWS.\n'
-        share_text += f'  - 60-second deploy from CLI\n'
-        share_text += f'  - Auth, database, storage included\n'
-        share_text += f'  - No Docker, no config files\n'
-        share_text += f'  Live: {card_url or result.frontend_url}\n'
-        share_text += f'  #WebDevelopment #CloudComputing\n\n'
-        share_text += "[bold]Discord/Slack:[/bold]\n"
-        share_text += f'  Shipped {app_name} on Varity!\n'
-        share_text += f'  {card_url or result.frontend_url}\n'
-        share_text += f'  Build: {build_time:.1f}s | Framework: {framework} | Size: {build_size:.1f}MB'
-        console.print(Panel.fit(share_text, border_style="magenta"))
-        console.print()
-
-        # Generate deployment badge + README snippet
-        try:
-            from varitykit.utils.badge_generator import save_badge
-            badge_path = save_badge(result.deployment_id, app_name)
-            badge_text = "[bold]README Badge[/bold]\n\n"
-            badge_text += f"  Add this to your README.md:\n\n"
-            if card_url:
-                badge_text += f"  [![Deployed on Varity]({image_url})]({card_url})\n\n"
-                badge_text += f"  [dim]Hosted card: {card_url}[/dim]\n"
-                badge_text += f"  [dim]Card image:  {image_url}[/dim]\n"
-            else:
-                badge_text += f"  [![Deployed on Varity]({badge_path})]({result.frontend_url})\n\n"
-            badge_text += f"  [dim]Local badge:  {badge_path}[/dim]"
-            console.print(Panel.fit(badge_text, border_style="blue"))
+            import webbrowser
             console.print()
-        except Exception as e:
-            logger.debug(f"Badge generation failed: {e}")
+            console.print("  [bold magenta]Opening your deployment card...[/bold magenta]")
+            console.print(f"  Share it on X, LinkedIn, or download the image.")
+            console.print()
+            try:
+                webbrowser.open(card_url)
+            except Exception:
+                console.print(f"  [dim]Card: {card_url}[/dim]")
 
         # Open developer portal for app store submission
         if submit_to_store:
@@ -851,11 +812,7 @@ def info(ctx, deployment_id):
 [cyan]URL:[/cyan] {custom_domain.get('url', 'N/A')}
 """
             if sub:
-                info_text += f"""
-[bold]Share[/bold]
-[cyan]Card Page:[/cyan]  https://varity.app/card/{sub}
-[cyan]Card Image:[/cyan] https://varity.app/card/{sub}/image.png
-"""
+                info_text += f"[cyan]Card:[/cyan] https://varity.app/card/{sub}\n"
 
         console.print("\n")
         console.print(

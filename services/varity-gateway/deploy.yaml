@@ -7,7 +7,7 @@ endpoints:
 
 services:
   gateway:
-    image: ghcr.io/varity-labs/varity-gateway:1.4.3
+    image: ghcr.io/varity-labs/varity-gateway:1.4.4
     expose:
       - port: 8081
         as: 80
