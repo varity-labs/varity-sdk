@@ -3,6 +3,7 @@ export interface DomainRecord {
   subdomain: string;
   cid: string;
   appName: string;
+  tagline?: string;
   ownerId?: string;
   registeredBy: string;
   createdAt: string;

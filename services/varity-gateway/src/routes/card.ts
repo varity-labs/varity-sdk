@@ -2,7 +2,7 @@ import { Router } from 'express';
 import sharp from 'sharp';
 import { config } from '../config';
 import { resolveDomainRecord } from '../services/resolver';
-import { cardHtml, cardSvg } from '../templates/card';
+import { cardHtml, cardSvg, cardSvgDev, cardSvgUser } from '../templates/card';
 import { notFoundHtml } from '../templates/not-found';
 
 export const cardRouter = Router();
@@ -11,8 +11,7 @@ export const cardRouter = Router();
  * GET /card/:appName
  *
  * Serves a shareable deployment card HTML page with OG meta tags.
- * When shared on Twitter/LinkedIn, crawlers read the OG tags and
- * render a rich preview card.
+ * Shows both developer and user cards with share buttons.
  */
 cardRouter.get('/card/:appName', async (req, res) => {
   const appName = req.params.appName.toLowerCase();
@@ -31,9 +30,7 @@ cardRouter.get('/card/:appName', async (req, res) => {
 /**
  * GET /card/:appName/image.png
  *
- * Serves a PNG card image (1200x630) used as og:image.
- * Twitter, LinkedIn, and Discord all require PNG/JPEG — SVG won't render.
- * Generated from SVG via sharp.
+ * Default OG image (user card). Used by Twitter, LinkedIn, Discord crawlers.
  */
 cardRouter.get('/card/:appName/image.png', async (req, res) => {
   const appName = req.params.appName.toLowerCase();
@@ -61,10 +58,71 @@ cardRouter.get('/card/:appName/image.png', async (req, res) => {
 });
 
 /**
+ * GET /card/:appName/image-dev.png
+ *
+ * Developer card — "I just shipped" editorial layout.
+ * Left accent bar, app name + "is live.", deploy time.
+ */
+cardRouter.get('/card/:appName/image-dev.png', async (req, res) => {
+  const appName = req.params.appName.toLowerCase();
+  const record = await resolveDomainRecord(appName);
+
+  if (!record) {
+    res.status(404).send('Not found');
+    return;
+  }
+
+  try {
+    const svg = cardSvgDev(record, config.gateway.baseDomain);
+    const png = await sharp(Buffer.from(svg))
+      .resize(1200, 630)
+      .png()
+      .toBuffer();
+
+    res.type('image/png');
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.send(png);
+  } catch (err) {
+    console.error(`[card] Failed to generate dev PNG for ${appName}:`, err);
+    res.status(500).send('Failed to generate image');
+  }
+});
+
+/**
+ * GET /card/:appName/image-user.png
+ *
+ * User card — centered app showcase.
+ * App name, tagline, developer attribution.
+ */
+cardRouter.get('/card/:appName/image-user.png', async (req, res) => {
+  const appName = req.params.appName.toLowerCase();
+  const record = await resolveDomainRecord(appName);
+
+  if (!record) {
+    res.status(404).send('Not found');
+    return;
+  }
+
+  try {
+    const svg = cardSvgUser(record, config.gateway.baseDomain);
+    const png = await sharp(Buffer.from(svg))
+      .resize(1200, 630)
+      .png()
+      .toBuffer();
+
+    res.type('image/png');
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.send(png);
+  } catch (err) {
+    console.error(`[card] Failed to generate user PNG for ${appName}:`, err);
+    res.status(500).send('Failed to generate image');
+  }
+});
+
+/**
  * GET /card/:appName/image.svg
  *
- * Serves the raw SVG card image (1200x630).
- * Downloadable by developers for presentations, blog posts, etc.
+ * Raw SVG card (user card). For developers to use in presentations, etc.
  */
 cardRouter.get('/card/:appName/image.svg', async (req, res) => {
   const appName = req.params.appName.toLowerCase();
@@ -76,6 +134,6 @@ cardRouter.get('/card/:appName/image.svg', async (req, res) => {
   }
 
   res.type('image/svg+xml');
-  res.set('Cache-Control', 'public, max-age=3600'); // 1 hour cache
+  res.set('Cache-Control', 'public, max-age=3600');
   res.send(cardSvg(record, config.gateway.baseDomain));
 });

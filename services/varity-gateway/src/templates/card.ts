@@ -1,21 +1,329 @@
 import { DomainRecord } from '../types';
+import { FONT_CSS } from './font-css';
 
-/**
- * Generate a shareable deployment card HTML page with OG meta tags.
- *
- * When shared on Twitter/LinkedIn, the OG tags create a rich preview card
- * showing the app name, live URL, and Varity branding.
- */
+// ---------------------------------------------------------------------------
+// Brand constants (mirrors deployment-cards-dev/shared/brand.js)
+// ---------------------------------------------------------------------------
+
+const colors = {
+  bg:             '#030712',
+  foreground:     '#F8FAFC',
+  foregroundMuted: '#94A3B8',
+  foregroundDim:  '#64748B',
+  brand500:       '#14B8A6',
+  brand400:       '#2DD4BF',
+  brand600:       '#0D9488',
+  blue400:        '#3B82F6',
+  purple400:      '#A855F7',
+  border:         '#1E293B',
+};
+
+const fonts = {
+  display: "Cabinet Grotesk, sans-serif",
+  body:    "Satoshi, sans-serif",
+  mono:    "JetBrains Mono, monospace",
+};
+
+// ---------------------------------------------------------------------------
+// Developer Card SVG — App name hero with ghost terminal texture
+// ---------------------------------------------------------------------------
+
+export function cardSvgDev(record: DomainRecord, _baseDomain: string): string {
+  const displayName = record.appName || titleCase(record.subdomain);
+  const subdomain = record.subdomain || 'my-app';
+  const appUrl = `${esc(subdomain)}.varity.app`;
+
+  // Truncate long app names
+  const truncName = displayName.length > 28
+    ? displayName.slice(0, 26) + '...'
+    : displayName;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <style>${FONT_CSS}</style>
+
+    <!-- Background gradient (deep space) -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#030712"/>
+      <stop offset="50%" stop-color="#0a1628"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+
+    <!-- Accent gradient -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="50%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+
+    <!-- Logo gradients -->
+    <linearGradient id="logoFacet1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5EEAD4"/><stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+    <linearGradient id="logoFacet2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="logoFacet4" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14B8A6"/><stop offset="100%" stop-color="#2DD4BF"/>
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Grid pattern -->
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#ffffff" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.03">
+    <rect width="1200" height="630" fill="url(#grid)"/>
+  </g>
+
+  <!-- Decorative orbs -->
+  <ellipse cx="200" cy="150" rx="300" ry="200" fill="#14B8A6" opacity="0.05" filter="url(#glow)"/>
+  <ellipse cx="1000" cy="500" rx="350" ry="250" fill="#3B82F6" opacity="0.05" filter="url(#glow)"/>
+
+  <!-- 1px border for dark-mode feed visibility -->
+  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#1E293B" stroke-width="1"/>
+
+  <!-- Top accent line (4px) -->
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accentGradient)"/>
+
+  <!-- Ghost terminal lines as background texture (8% opacity) -->
+  <g opacity="0.08" font-family="${fonts.mono}" font-size="13" fill="#94A3B8">
+    <text x="80" y="100">$ varitykit deploy</text>
+    <text x="80" y="124">Analyzing your app...</text>
+    <text x="80" y="148">  &#x2713; Detected: Next.js application</text>
+    <text x="80" y="172">  &#x2713; Setting up: Auth, payments, storage</text>
+    <text x="80" y="196">  &#x2713; Optimizing for production</text>
+    <text x="80" y="244">Deploying to Varity...</text>
+    <text x="80" y="268">  &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588; 100%</text>
+    <text x="660" y="100">&#x2705; Live at: https://${appUrl}</text>
+    <text x="660" y="124">Monthly cost: $49/mo</text>
+    <text x="660" y="172">$ varitykit status</text>
+    <text x="660" y="196">  App: ${esc(displayName)}</text>
+    <text x="660" y="220">  Status: healthy</text>
+    <text x="660" y="244">  Uptime: 99.9%</text>
+    <text x="80" y="520">$ _</text>
+    <text x="660" y="520">  Requests: 12,847 today</text>
+  </g>
+
+  <!-- Varity wordmark top-left with crystal logo -->
+  <g transform="translate(48, 40)">
+    <g transform="scale(0.375)">
+      <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#logoFacet4)"/>
+      <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#logoFacet1)"/>
+      <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#logoFacet2)"/>
+      <path d="M8 36 L32 58 L20 58 Z" fill="url(#logoFacet1)" opacity="0.7"/>
+      <path d="M56 36 L44 58 L32 58 Z" fill="url(#logoFacet2)" opacity="0.7"/>
+      <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
+    </g>
+    <text x="30" y="18" font-family="${fonts.body}" font-size="18" font-weight="700" fill="#94A3B8">Varity</text>
+  </g>
+
+  <!-- HERO CONTENT (centered) -->
+  <g transform="translate(600, 280)">
+    <!-- App name — THE HERO (52px, white, extrabold) -->
+    <text x="0" y="0" font-family="${fonts.display}" font-size="52" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="-1">
+      ${esc(truncName)}
+    </text>
+
+    <!-- "is live." in teal (40px) -->
+    <text x="0" y="52" font-family="${fonts.display}" font-size="40" font-weight="700" fill="#2DD4BF" text-anchor="middle" letter-spacing="-0.5">
+      is live.
+    </text>
+
+    <!-- Proof metrics line (22px, muted) -->
+    <text x="0" y="100" font-family="${fonts.body}" font-size="22" font-weight="500" fill="#64748B" text-anchor="middle">
+      Deployed in under 60s &#xB7; 70% cheaper than AWS
+    </text>
+  </g>
+
+  <!-- Bottom bar: app URL left, varity.so right -->
+  <text x="48" y="600" font-family="${fonts.body}" font-size="16" font-weight="500" fill="#475569">${appUrl}</text>
+  <text x="1152" y="600" font-family="${fonts.body}" font-size="16" font-weight="500" fill="#475569" text-anchor="end">varity.so</text>
+
+  <!-- Bottom accent line (4px) -->
+  <rect x="0" y="626" width="1200" height="4" fill="url(#accentGradient)"/>
+</svg>`;
+}
+
+// ---------------------------------------------------------------------------
+// User Card SVG — App-centric with tagline and CTA pill
+// ---------------------------------------------------------------------------
+
+export function cardSvgUser(record: DomainRecord, _baseDomain: string): string {
+  const displayName = record.appName || titleCase(record.subdomain);
+  const tagline = record.tagline || 'Built and deployed on Varity';
+
+  // Truncate long names/taglines
+  const truncName = displayName.length > 28
+    ? displayName.slice(0, 26) + '...'
+    : displayName;
+
+  const truncTagline = tagline.length > 60
+    ? tagline.slice(0, 58) + '...'
+    : tagline;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <style>${FONT_CSS}</style>
+
+    <!-- Background gradient (deep space) -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#030712"/>
+      <stop offset="50%" stop-color="#0a1628"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+
+    <!-- Accent gradient -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="50%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+
+    <!-- Logo gradients -->
+    <linearGradient id="logoFacet1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5EEAD4"/><stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+    <linearGradient id="logoFacet2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="logoFacet4" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14B8A6"/><stop offset="100%" stop-color="#2DD4BF"/>
+    </linearGradient>
+
+    <!-- CTA pill gradient -->
+    <linearGradient id="ctaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Grid pattern -->
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#ffffff" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.03">
+    <rect width="1200" height="630" fill="url(#grid)"/>
+  </g>
+
+  <!-- Decorative orbs -->
+  <ellipse cx="200" cy="150" rx="300" ry="200" fill="#14B8A6" opacity="0.05" filter="url(#glow)"/>
+  <ellipse cx="1000" cy="500" rx="350" ry="250" fill="#3B82F6" opacity="0.05" filter="url(#glow)"/>
+
+  <!-- 1px border for dark-mode feed visibility -->
+  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#1E293B" stroke-width="1"/>
+
+  <!-- Top accent line (4px) -->
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accentGradient)"/>
+
+  <!-- HERO CONTENT (centered) -->
+  <g transform="translate(600, 200)">
+    <!-- Crystal logo 48px centered -->
+    <g transform="translate(-24, -80) scale(0.75)">
+      <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#logoFacet4)"/>
+      <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#logoFacet1)"/>
+      <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#logoFacet2)"/>
+      <path d="M8 36 L32 58 L20 58 Z" fill="url(#logoFacet1)" opacity="0.7"/>
+      <path d="M56 36 L44 58 L32 58 Z" fill="url(#logoFacet2)" opacity="0.7"/>
+      <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
+    </g>
+
+    <!-- App name — THE HERO (56px, white, extrabold) -->
+    <text x="0" y="10" font-family="${fonts.display}" font-size="56" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="-1">
+      ${esc(truncName)}
+    </text>
+
+    <!-- Tagline (26px, muted) -->
+    <text x="0" y="56" font-family="${fonts.body}" font-size="26" font-weight="400" fill="#94A3B8" text-anchor="middle">
+      ${esc(truncTagline)}
+    </text>
+
+    <!-- CTA pill "button" -->
+    <rect x="-120" y="84" width="240" height="48" rx="24" fill="url(#ctaGradient)"/>
+    <text x="0" y="115" font-family="${fonts.body}" font-size="18" font-weight="700" fill="#030712" text-anchor="middle">
+      Try it on Varity
+    </text>
+  </g>
+
+  <!-- "Available on Varity" badge bottom-center -->
+  <g transform="translate(502, 560)">
+    <g transform="translate(0, -14) scale(0.25)">
+      <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#logoFacet4)"/>
+      <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#logoFacet1)"/>
+      <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#logoFacet2)"/>
+      <path d="M8 36 L32 58 L20 58 Z" fill="url(#logoFacet1)" opacity="0.7"/>
+      <path d="M56 36 L44 58 L32 58 Z" fill="url(#logoFacet2)" opacity="0.7"/>
+      <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
+    </g>
+    <text x="24" y="0" font-family="${fonts.body}" font-size="16" font-weight="500" fill="#64748B">
+      Available on Varity
+    </text>
+  </g>
+
+  <!-- Bottom accent line (4px) -->
+  <rect x="0" y="626" width="1200" height="4" fill="url(#accentGradient)"/>
+</svg>`;
+}
+
+// ---------------------------------------------------------------------------
+// Default card SVG (user card — used for og:image)
+// ---------------------------------------------------------------------------
+
+export function cardSvg(record: DomainRecord, baseDomain: string): string {
+  return cardSvgUser(record, baseDomain);
+}
+
+// ---------------------------------------------------------------------------
+// Card HTML page — shareable page with OG tags and both cards
+// ---------------------------------------------------------------------------
+
 export function cardHtml(record: DomainRecord, baseDomain: string): string {
   const appUrl = `https://${baseDomain}/${record.subdomain}`;
+  const storeUrl = `https://store.varity.so/${record.subdomain}`;
   const cardUrl = `https://${baseDomain}/card/${record.subdomain}`;
   const imageUrl = `https://${baseDomain}/card/${record.subdomain}/image.png`;
-  const deployDate = formatDate(record.createdAt);
+  const imageDevUrl = `https://${baseDomain}/card/${record.subdomain}/image-dev.png`;
+  const imageUserUrl = `https://${baseDomain}/card/${record.subdomain}/image-user.png`;
   const displayName = record.appName || titleCase(record.subdomain);
+  const tagline = record.tagline || 'Built and deployed on Varity';
 
-  const tweetText = encodeURIComponent(`Just deployed ${displayName} on @VarityLabs! 70% cheaper than AWS, zero config required.`);
-  const twitterShareUrl = `https://x.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(cardUrl)}`;
-  const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cardUrl)}`;
+  // Developer share tweet
+  const devTweetText = encodeURIComponent(`${displayName} is live! Built and deployed with @VarityLabs \u{1F680}\n\n${appUrl}`);
+  const devTwitterUrl = `https://x.com/intent/tweet?text=${devTweetText}`;
+  const devLinkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cardUrl)}`;
+
+  // User share tweet
+  const userTweetText = encodeURIComponent(`Check out ${displayName} \u2014 ${tagline}\n\n${storeUrl}`);
+  const userTwitterUrl = `https://x.com/intent/tweet?text=${userTweetText}`;
+  const userLinkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(storeUrl)}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -27,8 +335,8 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="${esc(displayName)} — Deployed on Varity">
-  <meta property="og:description" content="Built and deployed in under 60 seconds. 70% cheaper than AWS, with auth, database, and payments included.">
-  <meta property="og:url" content="${appUrl}">
+  <meta property="og:description" content="${esc(tagline)}. Built and deployed in under 60 seconds. 70% cheaper than AWS.">
+  <meta property="og:url" content="${cardUrl}">
   <meta property="og:image" content="${imageUrl}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -38,176 +346,181 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${esc(displayName)} — Deployed on Varity">
-  <meta name="twitter:description" content="Built and deployed in under 60 seconds. 70% cheaper than AWS.">
+  <meta name="twitter:description" content="${esc(tagline)}. Built and deployed in under 60 seconds. 70% cheaper than AWS.">
   <meta name="twitter:image" content="${imageUrl}">
   <meta name="twitter:site" content="@VarityLabs">
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #09090b;
-      color: #fafafa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: ${colors.bg};
+      color: ${colors.foreground};
       min-height: 100vh;
-      padding: 2rem;
+      padding: 3rem 1.5rem;
     }
-    .page { max-width: 640px; width: 100%; }
 
-    .card {
-      background: linear-gradient(135deg, #18181b 0%, #1e1b2e 100%);
-      border: 1px solid #27272a;
-      border-radius: 16px;
-      padding: 2.5rem;
-      margin-bottom: 2rem;
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
     }
-    .card-header {
+
+    .header {
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 2rem;
-    }
-    .logo {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #7c3aed, #6d28d9);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: #fff;
-    }
-    .brand { font-size: 1.125rem; font-weight: 600; color: #a78bfa; }
-
-    .app-name {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.5rem;
-      line-height: 1.2;
-    }
-    .app-url {
-      color: #818cf8;
-      text-decoration: none;
-      font-size: 1rem;
-      display: inline-block;
-      margin-bottom: 1.5rem;
-    }
-    .app-url:hover { text-decoration: underline; }
-
-    .meta {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
-    .meta-item { }
-    .meta-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #71717a; margin-bottom: 0.25rem; }
-    .meta-value { font-size: 0.9rem; color: #d4d4d8; }
-
-    .badge {
-      display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: rgba(124, 58, 237, 0.15);
-      border: 1px solid rgba(124, 58, 237, 0.3);
-      border-radius: 999px;
-      padding: 0.375rem 1rem;
-      font-size: 0.8rem;
-      color: #a78bfa;
-      margin-top: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .badge-dot {
-      width: 8px; height: 8px;
-      background: #22c55e;
-      border-radius: 50%;
+    .header svg { width: 22px; height: 22px; }
+    .header span {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: ${colors.foregroundMuted};
+      letter-spacing: -0.2px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.25rem;
+    }
+    h1 .teal { color: ${colors.brand400}; }
+
+    .subtitle {
+      color: ${colors.foregroundDim};
+      font-size: 0.875rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .card-section {
+      margin-bottom: 2rem;
+    }
+    .card-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: ${colors.foregroundDim};
+      margin-bottom: 0.75rem;
+    }
+    .card-img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid ${colors.border};
     }
 
     .actions {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
       flex-wrap: wrap;
     }
+
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      border-radius: 10px;
-      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.8125rem;
       font-weight: 500;
       text-decoration: none;
-      transition: all 0.15s;
+      transition: background 0.15s;
+      cursor: pointer;
+      border: none;
     }
     .btn-primary {
-      background: #7c3aed;
-      color: #fff;
+      background: ${colors.brand500};
+      color: ${colors.bg};
     }
-    .btn-primary:hover { background: #6d28d9; }
+    .btn-primary:hover { background: ${colors.brand400}; }
+    .btn-linkedin {
+      background: #0a66c2;
+      color: white;
+    }
+    .btn-linkedin:hover { background: #0b7ad4; }
     .btn-secondary {
-      background: #27272a;
-      color: #d4d4d8;
-      border: 1px solid #3f3f46;
+      background: transparent;
+      color: ${colors.foregroundMuted};
+      border: 1px solid ${colors.border};
     }
-    .btn-secondary:hover { background: #3f3f46; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+
+    .divider {
+      border: none;
+      border-top: 1px solid ${colors.border};
+      margin: 2rem 0;
+    }
 
     .footer {
       text-align: center;
-      color: #52525b;
-      font-size: 0.8rem;
-      line-height: 1.8;
+      color: ${colors.foregroundDim};
+      font-size: 0.8125rem;
+      line-height: 1.6;
     }
-    .footer a { color: #818cf8; text-decoration: none; }
+    .footer a {
+      color: ${colors.brand500};
+      text-decoration: none;
+    }
     .footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="card">
-      <div class="card-header">
-        <div class="logo">V</div>
-        <span class="brand">Varity</span>
-      </div>
+    <div class="header">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="hF1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#5EEAD4"/><stop offset="100%" stop-color="#0D9488"/></linearGradient>
+          <linearGradient id="hF2" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#1D4ED8"/></linearGradient>
+          <linearGradient id="hF4" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#14B8A6"/><stop offset="100%" stop-color="#2DD4BF"/></linearGradient>
+        </defs>
+        <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#hF4)"/>
+        <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#hF1)"/>
+        <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#hF2)"/>
+        <path d="M8 36 L32 58 L20 58 Z" fill="url(#hF1)" opacity="0.7"/>
+        <path d="M56 36 L44 58 L32 58 Z" fill="url(#hF2)" opacity="0.7"/>
+        <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
+      </svg>
+      <span>Varity</span>
+    </div>
 
-      <h1 class="app-name">${esc(displayName)}</h1>
-      <a class="app-url" href="${appUrl}">${appUrl}</a>
+    <h1>${esc(displayName)} <span class="teal">is live.</span></h1>
+    <p class="subtitle">Share your deployment card on social media</p>
 
-      <div class="meta">
-        <div class="meta-item">
-          <div class="meta-label">Deployed</div>
-          <div class="meta-value">${deployDate}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Platform</div>
-          <div class="meta-value">Varity</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">Hosting</div>
-          <div class="meta-value">Global</div>
-        </div>
-      </div>
-
-      <div class="badge">
-        <span class="badge-dot"></span>
-        Live
+    <!-- Developer Card (primary) -->
+    <div class="card-section">
+      <div class="card-label">Developer Card &mdash; &ldquo;I just shipped&rdquo;</div>
+      <img class="card-img" src="${imageDevUrl}" alt="${esc(displayName)} developer deployment card" width="1200" height="630">
+      <div class="actions">
+        <a class="btn btn-primary" href="${devTwitterUrl}" target="_blank" rel="noopener">Share on X</a>
+        <a class="btn btn-linkedin" href="${devLinkedinUrl}" target="_blank" rel="noopener">Share on LinkedIn</a>
+        <a class="btn btn-secondary" href="${imageDevUrl}" download="${record.subdomain}-dev-card.png">Download PNG</a>
       </div>
     </div>
 
-    <div class="actions">
-      <a class="btn btn-primary" href="${twitterShareUrl}" target="_blank" rel="noopener">Share on X</a>
-      <a class="btn btn-primary" href="${linkedinShareUrl}" target="_blank" rel="noopener" style="background:#0a66c2">Share on LinkedIn</a>
+    <!-- User Card (secondary) -->
+    <div class="card-section">
+      <div class="card-label">User Card &mdash; &ldquo;Check out my app&rdquo;</div>
+      <img class="card-img" src="${imageUserUrl}" alt="${esc(displayName)} user deployment card" width="1200" height="630">
+      <div class="actions">
+        <a class="btn btn-primary" href="${userTwitterUrl}" target="_blank" rel="noopener">Share on X</a>
+        <a class="btn btn-linkedin" href="${userLinkedinUrl}" target="_blank" rel="noopener">Share on LinkedIn</a>
+        <a class="btn btn-secondary" href="${imageUserUrl}" download="${record.subdomain}-user-card.png">Download PNG</a>
+      </div>
     </div>
-    <div class="actions" style="margin-top:0.75rem">
+
+    <div class="actions" style="margin-top:0.5rem">
       <a class="btn btn-secondary" href="${appUrl}">Visit App</a>
-      <a class="btn btn-secondary" href="${imageUrl}" download="${record.subdomain}-card.png">Download Card</a>
+      <a class="btn btn-secondary" href="${storeUrl}">View Store Listing</a>
     </div>
 
-    <br>
+    <hr class="divider">
+
     <div class="footer">
-      <p>Built and deployed with <a href="https://varity.so">Varity</a> — 70% cheaper than AWS.</p>
+      <p>Built and deployed with <a href="https://varity.so">Varity</a> &mdash; 70% cheaper than AWS</p>
       <p><a href="https://varity.so">Build your own app</a></p>
     </div>
   </div>
@@ -215,84 +528,13 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
 </html>`;
 }
 
-/**
- * Generate an SVG deployment card image (1200x630) suitable for OG images
- * and social media sharing.
- */
-export function cardSvg(record: DomainRecord, baseDomain: string): string {
-  const appUrl = `https://${baseDomain}/${record.subdomain}`;
-  const displayName = record.appName || titleCase(record.subdomain);
-  const deployDate = formatDate(record.createdAt);
-
-  // Truncate long names
-  const name = displayName.length > 30 ? displayName.slice(0, 27) + '...' : displayName;
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#09090b"/>
-      <stop offset="100%" style="stop-color:#1e1b2e"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#7c3aed"/>
-      <stop offset="100%" style="stop-color:#a78bfa"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Background -->
-  <rect width="1200" height="630" fill="url(#bg)"/>
-
-  <!-- Subtle grid pattern -->
-  <g opacity="0.03" stroke="#fff" stroke-width="1">
-    ${Array.from({ length: 20 }, (_, i) => `<line x1="${i * 60}" y1="0" x2="${i * 60}" y2="630"/>`).join('\n    ')}
-    ${Array.from({ length: 11 }, (_, i) => `<line x1="0" y1="${i * 60}" x2="1200" y2="${i * 60}"/>`).join('\n    ')}
-  </g>
-
-  <!-- Card border -->
-  <rect x="60" y="60" width="1080" height="510" rx="24" fill="none" stroke="#27272a" stroke-width="1"/>
-
-  <!-- Logo -->
-  <rect x="100" y="100" width="56" height="56" rx="14" fill="url(#accent)"/>
-  <text x="128" y="138" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">V</text>
-
-  <!-- Brand name -->
-  <text x="172" y="137" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="24" font-weight="600" fill="#a78bfa">Varity</text>
-
-  <!-- App name -->
-  <text x="100" y="240" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="52" font-weight="700" fill="#ffffff">${esc(name)}</text>
-
-  <!-- App URL -->
-  <text x="100" y="290" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="22" fill="#818cf8">${esc(appUrl)}</text>
-
-  <!-- Live badge -->
-  <rect x="100" y="330" width="80" height="32" rx="16" fill="#7c3aed" fill-opacity="0.15" stroke="#7c3aed" stroke-opacity="0.3" stroke-width="1"/>
-  <circle cx="120" cy="346" r="4" fill="#22c55e"/>
-  <text x="148" y="352" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="14" fill="#a78bfa" text-anchor="middle">Live</text>
-
-  <!-- Meta info -->
-  <text x="100" y="420" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">DEPLOYED</text>
-  <text x="100" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">${deployDate}</text>
-
-  <text x="350" y="420" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">PLATFORM</text>
-  <text x="350" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">Varity</text>
-
-  <text x="600" y="420" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="13" fill="#71717a" text-transform="uppercase" letter-spacing="1">HOSTING</text>
-  <text x="600" y="445" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="18" fill="#d4d4d8">Global</text>
-
-  <!-- Bottom tagline -->
-  <text x="100" y="530" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="16" fill="#52525b">Built and deployed with Varity — Auth, database, and payments included.</text>
-
-  <!-- Accent line -->
-  <rect x="60" y="570" width="1080" height="3" rx="1.5" fill="url(#accent)" opacity="0.4"/>
-</svg>`;
-}
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function esc(str: string): string {
-  return str
+  if (str == null) return '';
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -305,17 +547,4 @@ function titleCase(slug: string): string {
     .split(/[-_]/)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
-}
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return 'Recently';
-  try {
-    return new Date(iso).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  } catch {
-    return 'Recently';
-  }
 }
