@@ -1,6 +1,7 @@
 {
   "name": "@varity/s3-gateway",
   "version": "1.0.0",
+  "private": true,
   "description": "S3-compatible gateway for Varity storage - drop-in replacement for AWS S3",
   "type": "module",
   "main": "./dist/server.js",

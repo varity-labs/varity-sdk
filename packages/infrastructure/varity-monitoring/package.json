@@ -1,6 +1,7 @@
 {
   "name": "@varity/monitoring",
   "version": "1.0.0",
+  "private": true,
   "description": "Varity infrastructure monitoring and metrics collection",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

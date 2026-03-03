@@ -1,3 +1,0 @@
-export { AnalyticsModule } from './AnalyticsModule';
-export type { KPIOptions, KPIResult, KPISummary, TrendOptions, TrendDataPoint, TrendResult, LeaderboardOptions, LeaderboardEntry, LeaderboardResult, GrowthMetricsOptions, GrowthMetric, GrowthMetricsResult, TimeSeriesOptions, TimeSeriesResult, ComparativeAnalysisOptions, ComparativeResult } from './AnalyticsModule';
-//# sourceMappingURL=index.d.ts.map

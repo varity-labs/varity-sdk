@@ -1,6 +1,7 @@
 {
   "name": "@varity-labs/client-js",
   "version": "2.0.0",
+  "private": true,
   "description": "Comprehensive JavaScript/TypeScript client library for Varity L3 blockchain - Powered by Thirdweb SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

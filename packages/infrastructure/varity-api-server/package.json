@@ -1,6 +1,7 @@
 {
   "name": "varity-api-server",
   "version": "1.0.0",
+  "private": true,
   "description": "Varity API Gateway - Private REST API server",
   "main": "dist/server.js",
   "scripts": {

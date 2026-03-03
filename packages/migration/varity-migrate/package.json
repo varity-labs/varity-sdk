@@ -1,6 +1,7 @@
 {
   "name": "@varity/migrate",
   "version": "1.0.0",
+  "private": true,
   "description": "CLI tool for migrating data from AWS S3 or Google Cloud Storage to Varity",
   "type": "module",
   "main": "./dist/index.cjs",
