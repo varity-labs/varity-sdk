@@ -4,6 +4,7 @@ Credential generation service for Varity apps.
 Generates unique app IDs and JWT tokens for database access.
 """
 import os
+import json
 import secrets
 import datetime
 from typing import Dict, Optional
@@ -18,26 +19,50 @@ except ImportError:
 # JWT secret — must match the DB_PROXY_JWT_SECRET in deploy.yaml
 _JWT_SECRET_ENV = os.environ.get("VARITY_DB_PROXY_JWT_SECRET", "")
 
-# Dev-tier fallback secret (matches DB Proxy dev tier)
-_DEV_JWT_SECRET = "varity-dev-jwt-secret-2026"
-_dev_secret_warned = False
+_jwt_secret_warned = False
+
+
+def _get_jwt_secret_from_config() -> Optional[str]:
+    """Read JWT secret from ~/.varitykit/config.json (set during `varitykit login`)."""
+    from pathlib import Path
+    config_path = Path.home() / ".varitykit" / "config.json"
+    if not config_path.exists():
+        return None
+    try:
+        with open(config_path, "r") as f:
+            config = json.load(f)
+        return config.get("jwt_secret")
+    except (json.JSONDecodeError, IOError):
+        return None
+
 
 def _get_jwt_secret() -> str:
-    """Get JWT secret, falling back to dev-tier secret if not configured."""
-    global _dev_secret_warned
+    """
+    Get JWT secret from (in priority order):
+    1. VARITY_DB_PROXY_JWT_SECRET env var
+    2. ~/.varitykit/config.json (set during `varitykit login`)
+    3. Fails with helpful message
+    """
+    global _jwt_secret_warned
     if _JWT_SECRET_ENV:
         return _JWT_SECRET_ENV
-    # Use dev-tier secret for zero-config development
-    if not _dev_secret_warned:
-        if os.environ.get("VARITYKIT_VERBOSE"):
-            import sys
-            print(
-                "  ⚠️  Using development database credentials. "
-                "Set VARITY_DB_PROXY_JWT_SECRET for production.",
-                file=sys.stderr,
-            )
-        _dev_secret_warned = True
-    return _DEV_JWT_SECRET
+
+    config_secret = _get_jwt_secret_from_config()
+    if config_secret:
+        return config_secret
+
+    if not _jwt_secret_warned:
+        import sys
+        print(
+            "  ⚠️  No database credentials found. "
+            "Run 'varitykit login' or set VARITY_DB_PROXY_JWT_SECRET.",
+            file=sys.stderr,
+        )
+        _jwt_secret_warned = True
+    raise RuntimeError(
+        "JWT secret not configured. Run 'varitykit login' first, "
+        "or set VARITY_DB_PROXY_JWT_SECRET environment variable."
+    )
 
 
 def generate_app_id(prefix: str = "app") -> str:

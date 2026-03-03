@@ -47,10 +47,21 @@ export {
   getBaseExplorerUrl,
 } from './base';
 
+// Avalanche L1
+export {
+  avaxL1,
+  avaxL1Testnet,
+  avaxL1Wagmi,
+  AVAX_L1_CONTRACTS,
+  AVAX_L1_ENDPOINTS,
+  getAvaxL1ExplorerUrl,
+} from './avaxL1';
+
 // Import for re-export
 import { varityL3, varityL3Testnet } from './varityL3';
 import { arbitrum, arbitrumOne, arbitrumSepolia } from './arbitrum';
 import { base, baseSepolia } from './base';
+import { avaxL1, avaxL1Testnet } from './avaxL1';
 
 /**
  * Quick access to common chains
@@ -68,4 +79,8 @@ export const chains = {
   // Base
   baseSepolia,
   base,
+
+  // Avalanche L1
+  avaxL1Testnet,
+  avaxL1,
 };

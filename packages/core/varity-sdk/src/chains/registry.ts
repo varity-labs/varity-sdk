@@ -9,6 +9,7 @@ import { defineChain, type Chain } from 'thirdweb/chains';
 import { varityL3, varityL3Testnet } from './varityL3';
 import { arbitrumSepolia, arbitrum } from './arbitrum';
 import { baseSepolia, base } from './base';
+import { avaxL1Testnet } from './avaxL1';
 
 /**
  * Chain Selection Configuration
@@ -124,6 +125,17 @@ export class ChainRegistry {
       costRating: 3,
       speedRating: 8,
       securityRating: 9,
+    });
+
+    // Avalanche L1 Testnet (sovereign chain on Fluence)
+    this.chains.set(43214, {
+      chain: avaxL1Testnet,
+      averageGasPrice: BigInt(500000000), // 0.5 gwei
+      estimatedTPS: 4500,
+      privacyLevel: 'none',
+      costRating: 2,
+      speedRating: 7,
+      securityRating: 8,
     });
   }
 

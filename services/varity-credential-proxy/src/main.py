@@ -20,7 +20,9 @@ Version: 1.0.0
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends, Request
+from typing import Optional
+
+from fastapi import FastAPI, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -137,7 +139,8 @@ async def health_check():
 @limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_DAY}/day")
 async def get_thirdweb_credentials(
     request: Request,
-    tier: str = Depends(verify_api_key)
+    tier: str = Depends(verify_api_key),
+    chainId: Optional[int] = Query(None, description="Target chain ID (default: Varity L3 33529)")
 ):
     """
     Get Varity's hosting credentials for app deployments
@@ -149,6 +152,10 @@ async def get_thirdweb_credentials(
     - Tracks usage for abuse detection
     - Dev tier only receives public client_id (NO secret key)
 
+    **Multi-chain:**
+    - Pass `chainId` query param for chain-specific credentials
+    - Falls back to default (Varity L3) if chain-specific credentials aren't configured
+
     **Authentication:**
     ```
     Authorization: Bearer <API_KEY>
@@ -158,28 +165,29 @@ async def get_thirdweb_credentials(
     - `secret_key`: Hosting secret key for server-side operations (production/beta only)
     - `client_id`: Hosting client ID for client-side operations
     """
-    if not CredentialConfig.THIRDWEB_SECRET_KEY:
-        logger.error("Hosting secret key not configured!")
+    creds = CredentialConfig.get_thirdweb_credentials(chainId)
+
+    if not creds["secret_key"] and not creds["client_id"]:
+        logger.error("Hosting credentials not configured!")
         return JSONResponse(
             status_code=500,
             content={"detail": "Credentials not configured on server"}
         )
 
     # SECURITY: Dev tier only gets the public client ID, NOT the secret key.
-    # This prevents abuse if the dev key is discovered.
     if tier == "dev":
-        logger.info(f"Providing public credentials only: tier={tier}")
+        logger.info(f"Providing public credentials only: tier={tier}, chainId={chainId}")
         return ThirdwebCredentialsResponse(
             secret_key="",
-            client_id=CredentialConfig.THIRDWEB_CLIENT_ID
+            client_id=creds["client_id"]
         )
 
     # Production and beta tiers get full credentials
-    logger.info(f"Providing full credentials: tier={tier}")
+    logger.info(f"Providing full credentials: tier={tier}, chainId={chainId}")
 
     return ThirdwebCredentialsResponse(
-        secret_key=CredentialConfig.THIRDWEB_SECRET_KEY,
-        client_id=CredentialConfig.THIRDWEB_CLIENT_ID
+        secret_key=creds["secret_key"],
+        client_id=creds["client_id"]
     )
 
 
@@ -189,7 +197,8 @@ async def get_thirdweb_credentials(
 @limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_DAY}/day")
 async def get_privy_credentials(
     request: Request,
-    tier: str = Depends(verify_api_key)
+    tier: str = Depends(verify_api_key),
+    chainId: Optional[int] = Query(None, description="Target chain ID (default: Varity L3 33529)")
 ):
     """
     Get Varity's Privy app ID for authentication
@@ -201,6 +210,10 @@ async def get_privy_credentials(
     - Tracks usage for abuse detection
     - Privy app ID is public by design (safe for all tiers)
 
+    **Multi-chain:**
+    - Pass `chainId` query param for chain-specific Privy app
+    - Falls back to default (Varity L3) if chain-specific app isn't configured
+
     **Authentication:**
     ```
     Authorization: Bearer <API_KEY>
@@ -209,7 +222,9 @@ async def get_privy_credentials(
     **Returns:**
     - `app_id`: Privy application ID
     """
-    if not CredentialConfig.PRIVY_APP_ID:
+    creds = CredentialConfig.get_privy_credentials(chainId)
+
+    if not creds["app_id"]:
         logger.error("Privy app ID not configured!")
         return JSONResponse(
             status_code=500,
@@ -217,10 +232,10 @@ async def get_privy_credentials(
         )
 
     # Privy app ID is public by design — safe for all tiers
-    logger.info(f"Providing Privy credentials: tier={tier}")
+    logger.info(f"Providing Privy credentials: tier={tier}, chainId={chainId}")
 
     return PrivyCredentialsResponse(
-        app_id=CredentialConfig.PRIVY_APP_ID
+        app_id=creds["app_id"]
     )
 
 

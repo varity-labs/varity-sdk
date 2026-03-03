@@ -84,8 +84,17 @@ class ProjectDetector:
             raise ProjectDetectionError(f"Failed to read package.json: {e}")
 
         # Get project name and description from package.json
-        project_name = package_json.get("name", project_path.name)
+        raw_name = package_json.get("name", project_path.name)
+        project_name = raw_name
         project_description = package_json.get("description") or None
+
+        # Resolve display name: varity.displayName > title-cased name
+        varity_config = package_json.get("varity", {})
+        display_name = varity_config.get("displayName")
+        if not display_name:
+            # Strip npm scope (@org/name → name), replace hyphens, title-case
+            clean = raw_name.split("/")[-1] if "/" in raw_name else raw_name
+            display_name = clean.replace("-", " ").replace("_", " ").title()
 
         # Merge dependencies and devDependencies
         dependencies = {
@@ -101,16 +110,16 @@ class ProjectDetector:
 
         # Detect framework
         if "next" in dependencies:
-            return self._detect_nextjs(project_path, project_name, dependencies, package_manager, has_backend, project_description)
+            return self._detect_nextjs(project_path, project_name, dependencies, package_manager, has_backend, project_description, display_name)
 
         elif "react" in dependencies or "react-scripts" in dependencies:
-            return self._detect_react(project_path, project_name, dependencies, package_manager, has_backend, project_description)
+            return self._detect_react(project_path, project_name, dependencies, package_manager, has_backend, project_description, display_name)
 
         elif "vue" in dependencies:
-            return self._detect_vue(project_path, project_name, dependencies, package_manager, has_backend, project_description)
+            return self._detect_vue(project_path, project_name, dependencies, package_manager, has_backend, project_description, display_name)
 
         elif "express" in dependencies or "fastify" in dependencies:
-            return self._detect_nodejs(project_path, project_name, dependencies, package_manager, project_description)
+            return self._detect_nodejs(project_path, project_name, dependencies, package_manager, project_description, display_name)
 
         else:
             dep_list = ", ".join(list(dependencies.keys())[:10])
@@ -121,7 +130,7 @@ class ProjectDetector:
 
     def _detect_nextjs(
         self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool,
-        description: Optional[str] = None,
+        description: Optional[str] = None, display_name: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect Next.js project configuration."""
         # Check if using static export
@@ -134,13 +143,14 @@ class ProjectDetector:
             build_command=f"{package_manager} run build",
             output_dir="out" if is_static_export else ".next",
             package_manager=package_manager,
+            display_name=display_name,
             description=description,
             has_backend=has_backend or not is_static_export,  # Next.js API routes
         )
 
     def _detect_react(
         self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool,
-        description: Optional[str] = None,
+        description: Optional[str] = None, display_name: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect React project configuration (CRA or Vite)."""
         # Check if using Vite
@@ -153,13 +163,14 @@ class ProjectDetector:
             build_command=f"{package_manager} run build",
             output_dir="dist" if is_vite else "build",
             package_manager=package_manager,
+            display_name=display_name,
             description=description,
             has_backend=has_backend,
         )
 
     def _detect_vue(
         self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool,
-        description: Optional[str] = None,
+        description: Optional[str] = None, display_name: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect Vue.js project configuration."""
         return ProjectInfo(
@@ -169,13 +180,14 @@ class ProjectDetector:
             build_command=f"{package_manager} run build",
             output_dir="dist",
             package_manager=package_manager,
+            display_name=display_name,
             description=description,
             has_backend=has_backend,
         )
 
     def _detect_nodejs(
         self, project_path: Path, project_name: str, dependencies: dict, package_manager: str,
-        description: Optional[str] = None,
+        description: Optional[str] = None, display_name: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect Node.js backend project configuration."""
         framework = "express" if "express" in dependencies else "fastify"
@@ -187,6 +199,7 @@ class ProjectDetector:
             build_command="",  # No build needed for plain Node.js
             output_dir=".",
             package_manager=package_manager,
+            display_name=display_name,
             description=description,
             has_backend=True,
         )

@@ -2,8 +2,10 @@
 Authentication commands for VarityKit CLI.
 
 Handles developer identity via deploy keys from the developer portal.
+Login saves deploy key + gateway API key + JWT secret to ~/.varitykit/config.json.
 """
 
+import json
 import click
 from rich.console import Console
 from rich.panel import Panel
@@ -11,9 +13,50 @@ from rich.panel import Panel
 console = Console()
 
 
+def _save_config(data: dict) -> None:
+    """Merge data into ~/.varitykit/config.json."""
+    from varitykit.services.gateway_client import CONFIG_PATH
+
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    config = {}
+    if CONFIG_PATH.exists():
+        try:
+            with open(CONFIG_PATH, "r") as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            config = {}
+
+    config.update(data)
+
+    with open(CONFIG_PATH, "w") as f:
+        json.dump(config, f, indent=2)
+
+
+def _try_decode_deploy_key(raw_key: str) -> dict:
+    """
+    Try to decode a deploy key as base64 JSON containing bundled credentials.
+
+    Format (beta): base64({ deploy_key, gateway_api_key, jwt_secret })
+    Fallback: treat as plain deploy key string.
+
+    Returns:
+        Dict with at least 'deploy_key'. May also contain 'gateway_api_key', 'jwt_secret'.
+    """
+    import base64
+    try:
+        decoded = base64.b64decode(raw_key).decode("utf-8")
+        data = json.loads(decoded)
+        if isinstance(data, dict) and "deploy_key" in data:
+            return data
+    except Exception:
+        pass
+    return {"deploy_key": raw_key}
+
+
 def _do_login():
     """Shared login logic used by both 'varitykit login' and 'varitykit auth login'."""
-    from varitykit.services.gateway_client import save_deploy_key, get_deploy_key
+    from varitykit.services.gateway_client import get_deploy_key
 
     existing = get_deploy_key()
     if existing:
@@ -54,9 +97,22 @@ def _do_login():
         console.print("\n  [red]Invalid deploy key.[/red] It should be at least 10 characters.")
         return
 
-    save_deploy_key(deploy_key)
+    # Decode key — may be base64 JSON with bundled credentials (beta format)
+    creds = _try_decode_deploy_key(deploy_key)
+
+    # Save all credentials to config
+    _save_config(creds)
 
     console.print("\n  [green]Logged in successfully![/green]")
+
+    # Show what was configured
+    saved = ["deploy key"]
+    if "gateway_api_key" in creds:
+        saved.append("gateway key")
+    if "jwt_secret" in creds:
+        saved.append("database credentials")
+
+    console.print(f"  Configured: {', '.join(saved)}")
     console.print("  Your domains are now protected. Run 'varitykit app deploy' to deploy.\n")
 
 
@@ -90,12 +146,12 @@ def logout():
         console.print("\n  Not logged in.\n")
         return
 
-    if click.confirm("  Remove your deploy key from this machine?", default=False):
-        import json
+    if click.confirm("  Remove your credentials from this machine?", default=False):
         try:
             with open(CONFIG_PATH, "r") as f:
                 config = json.load(f)
-            config.pop("deploy_key", None)
+            for key in ["deploy_key", "gateway_api_key", "jwt_secret", "cli_api_key"]:
+                config.pop(key, None)
             with open(CONFIG_PATH, "w") as f:
                 json.dump(config, f, indent=2)
         except Exception:

@@ -268,7 +268,7 @@ class DeploymentOrchestrator:
                 try:
                     register_domain(
                         subdomain, cid,
-                        app_name=project_info.name,
+                        app_name=project_info.display_name or project_info.name,
                         tagline=project_info.description,
                         owner_id=owner_id,
                     )

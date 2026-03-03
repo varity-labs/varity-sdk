@@ -183,9 +183,10 @@ def doctor(ctx, fix, full):
         console.print("\n[bold]Running infrastructure checks...[/bold]")
 
         # Check Varity deployment infrastructure
-        infra_endpoints = {
-            "Varity Hosting": "https://rpc-varity-testnet-rroe52pwjp.t.conduit.xyz",
-        }
+        from varitykit.commands.chains import CHAIN_CONFIGS
+        infra_endpoints = {}
+        for chain_cfg in CHAIN_CONFIGS.values():
+            infra_endpoints[f"{chain_cfg['name']} RPC"] = chain_cfg["rpc_url"]
 
         for name, rpc_url in infra_endpoints.items():
             check_count += 1

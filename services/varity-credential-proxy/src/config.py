@@ -59,14 +59,46 @@ class SecurityConfig:
 
 
 class CredentialConfig:
-    """Varity infrastructure credentials"""
+    """Varity infrastructure credentials — multi-chain aware"""
 
-    # Thirdweb Credentials
+    # Default credentials (Varity L3 — chain 33529)
     THIRDWEB_SECRET_KEY = os.getenv("VARITY_THIRDWEB_SECRET_KEY", "")
     THIRDWEB_CLIENT_ID = os.getenv("VARITY_THIRDWEB_CLIENT_ID", "a35636133eb5ec6f30eb9f4c15fce2f3")
-
-    # Privy Credentials
     PRIVY_APP_ID = os.getenv("VARITY_PRIVY_APP_ID", "cmhwbozxu004fjr0cicfz0tf8")
+
+    # Per-chain credentials — env var pattern: CHAIN_{chainId}_{CREDENTIAL}
+    # Example: CHAIN_43214_PRIVY_APP_ID, CHAIN_43214_THIRDWEB_CLIENT_ID
+    # Falls back to default credentials if chain-specific ones aren't set
+
+    # Default chain ID (Varity L3)
+    DEFAULT_CHAIN_ID = 33529
+
+    @classmethod
+    def get_thirdweb_credentials(cls, chain_id: Optional[int] = None) -> Dict[str, str]:
+        """Get thirdweb credentials for a specific chain (or default)"""
+        if chain_id and chain_id != cls.DEFAULT_CHAIN_ID:
+            chain_secret = os.getenv(f"CHAIN_{chain_id}_THIRDWEB_SECRET_KEY", "")
+            chain_client = os.getenv(f"CHAIN_{chain_id}_THIRDWEB_CLIENT_ID", "")
+            if chain_client:
+                return {
+                    "secret_key": chain_secret,
+                    "client_id": chain_client,
+                }
+        # Fall back to default
+        return {
+            "secret_key": cls.THIRDWEB_SECRET_KEY,
+            "client_id": cls.THIRDWEB_CLIENT_ID,
+        }
+
+    @classmethod
+    def get_privy_credentials(cls, chain_id: Optional[int] = None) -> Dict[str, str]:
+        """Get Privy credentials for a specific chain (or default)"""
+        if chain_id and chain_id != cls.DEFAULT_CHAIN_ID:
+            chain_privy = os.getenv(f"CHAIN_{chain_id}_PRIVY_APP_ID", "")
+            if chain_privy:
+                return {"app_id": chain_privy}
+        # Fall back to default
+        return {"app_id": cls.PRIVY_APP_ID}
 
     @classmethod
     def validate(cls) -> bool:
@@ -96,7 +128,7 @@ class ServiceConfig:
 
     # Service Info
     SERVICE_NAME = "varity-credential-proxy"
-    VERSION = "1.0.4"
+    VERSION = "1.1.0"
 
     # Server Config
     HOST = os.getenv("HOST", "0.0.0.0")

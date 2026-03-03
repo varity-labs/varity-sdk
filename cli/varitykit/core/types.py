@@ -15,7 +15,8 @@ class ProjectInfo:
     Information about a detected project.
 
     Attributes:
-        name: Project name (from package.json or directory name)
+        name: Project name slug (from package.json or directory name)
+        display_name: Human-readable app name for cards (varity.displayName > title-cased name)
         description: Short description (from package.json, used as card tagline)
         project_type: Type of project ('nextjs', 'react', 'vue', 'nodejs', 'python')
         framework_version: Version of the framework (e.g., '14.0.0')
@@ -31,6 +32,7 @@ class ProjectInfo:
     build_command: str
     output_dir: str
     package_manager: str
+    display_name: Optional[str] = None
     description: Optional[str] = None
     has_backend: bool = False
 

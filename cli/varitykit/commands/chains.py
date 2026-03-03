@@ -29,15 +29,25 @@ CHAIN_CONFIGS = {
     "avax-l1": {
         "name": "Varity Avalanche L1 Testnet",
         "chain_id": 43214,
-        "rpc_url": "https://avax-testnet.varity.network/rpc",
-        "explorer_url": "https://avax-testnet.varity.network/explorer",
+        "rpc_url": "http://81.15.150.164:9654/ext/bc/MZqKVUw3VeGVjL3DDgzRwWoKGXxJ4F168GKewvKt6CruzDpAH/rpc",
+        "explorer_url": "http://81.15.150.164:4000",
         "native_token": "USDC",
-        "native_decimals": 6,
+        "native_decimals": 18,
         "type": "Avalanche L1 (Fluence)",
         "privacy": "sovereign",
         "testnet": True,
         "gas_price_gwei": "0.5",
         "block_time_sec": "~2",
+        "contracts": {
+            "entrypoint": "0xA4cD3b0Eb6E5Ab5d8CE4065BcCD70040ADAB1F00",
+            "account_factory": "0xa4DfF80B4a1D748BF28BC4A271eD834689Ea3407",
+            "paymaster": "0xe336d36FacA76840407e6836d26119E1EcE0A2b4",
+            "app_registry": "0x55a4eDd8A2c051079b426E9fbdEe285368824a89",
+            "template_marketplace": "0x8B3BC4270BE2abbB25BC04717830bd1Cc493a461",
+            "template_registry": "0x7B4982e1F7ee384F206417Fb851a1EB143c513F9",
+            "multicall3": "0xE3573540ab8A1C4c754Fd958Dc1db39BBE81b208",
+        },
+        "bundler_url": "http://81.15.150.164:4337",
     },
 }
 
