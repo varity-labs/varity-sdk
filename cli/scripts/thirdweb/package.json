@@ -1,6 +1,7 @@
 {
   "name": "varietykit-thirdweb-scripts",
   "version": "1.0.0",
+  "private": true,
   "description": "Thirdweb SDK helper scripts for VarityKit CLI",
   "type": "module",
   "scripts": {

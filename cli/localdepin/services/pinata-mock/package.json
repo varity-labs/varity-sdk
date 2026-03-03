@@ -1,6 +1,7 @@
 {
   "name": "pinata-mock-server",
   "version": "1.0.0",
+  "private": true,
   "description": "Mock Pinata API server for LocalDePin testing",
   "main": "dist/index.js",
   "scripts": {

@@ -71,12 +71,14 @@ def get_deploy_key() -> Optional[str]:
 
 def save_deploy_key(deploy_key: str) -> None:
     """
-    Save deploy key to ~/.varitykit/config.json.
+    Save deploy key to ~/.varitykit/config.json with restricted permissions.
 
     Args:
         deploy_key: The deploy key from the developer portal.
     """
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Restrict directory to owner-only access (drwx------)
+    os.chmod(CONFIG_PATH.parent, 0o700)
 
     config = {}
     if CONFIG_PATH.exists():
@@ -90,6 +92,9 @@ def save_deploy_key(deploy_key: str) -> None:
 
     with open(CONFIG_PATH, "w") as f:
         json.dump(config, f, indent=2)
+
+    # Restrict config file to owner-only read/write (-rw-------)
+    os.chmod(CONFIG_PATH, 0o600)
 
 
 def sanitize_subdomain(name: str) -> str:

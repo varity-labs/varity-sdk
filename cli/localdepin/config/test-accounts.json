@@ -1,5 +1,14 @@
 [
   {
+    "WARNING": "HARDHAT WELL-KNOWN TEST KEYS - NEVER USE ON MAINNET - THESE KEYS ARE PUBLIC",
+    "name": "WARNING_ENTRY",
+    "address": "0x0000000000000000000000000000000000000000",
+    "privateKey": "DO_NOT_USE_THESE_KEYS_ON_MAINNET",
+    "balance": "0",
+    "role": "warning",
+    "description": "These are Hardhat default test accounts with publicly known private keys. NEVER send real funds to these addresses."
+  },
+  {
     "name": "Developer Account 1",
     "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     "privateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",

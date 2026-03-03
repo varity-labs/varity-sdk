@@ -134,8 +134,24 @@ class ServiceConfig:
     HOST = os.getenv("HOST", "0.0.0.0")
     PORT = int(os.getenv("PORT", 8001))
 
-    # CORS Config (CLI can be anywhere)
-    CORS_ORIGINS = ["*"]
-    CORS_ALLOW_CREDENTIALS = True
+    # CORS Config
+    # SECURITY: Restrict origins to known Varity domains + local dev.
+    # Override in production via CORS_ORIGINS env var (comma-separated).
+    # Credentials disabled — Bearer token auth does not require cookies.
+    _DEFAULT_CORS_ORIGINS = [
+        "https://varity.so",
+        "https://store.varity.so",
+        "https://developer.store.varity.so",
+        "https://docs.varity.so",
+        "https://varity.app",
+        "http://localhost:3000",
+        "http://localhost:3001",
+    ]
+    CORS_ORIGINS = (
+        [o.strip() for o in os.environ["CORS_ORIGINS"].split(",") if o.strip()]
+        if os.environ.get("CORS_ORIGINS")
+        else _DEFAULT_CORS_ORIGINS
+    )
+    CORS_ALLOW_CREDENTIALS = False
     CORS_ALLOW_METHODS = ["GET"]
-    CORS_ALLOW_HEADERS = ["*"]
+    CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]

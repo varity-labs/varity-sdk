@@ -26,6 +26,9 @@ htmlcov/
 .env.development
 .pypirc
 
+# Private keys / sensitive config (use .example files instead)
+**/network.env
+
 # IDE
 .vscode/
 .idea/

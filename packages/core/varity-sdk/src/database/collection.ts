@@ -32,8 +32,16 @@ export class Collection<T = any> {
   constructor(
     private name: string,
     private proxyUrl: string,
-    private appToken: string
+    private appToken: string | Promise<string>
   ) {}
+
+  /**
+   * Resolve the app token (handles both sync string and async Promise<string>).
+   * @internal
+   */
+  private async resolveToken(): Promise<string> {
+    return this.appToken;
+  }
 
   /**
    * Insert a new document into the collection
@@ -53,10 +61,11 @@ export class Collection<T = any> {
    * ```
    */
   async add(data: Partial<T>): Promise<T & Document> {
+    const token = await this.resolveToken();
     const response = await fetch(`${this.proxyUrl}/db/${this.name}/add`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.appToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -101,9 +110,10 @@ export class Collection<T = any> {
     const queryString = params.toString();
     const url = `${this.proxyUrl}/db/${this.name}/get${queryString ? `?${queryString}` : ''}`;
 
+    const token = await this.resolveToken();
     const response = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${this.appToken}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -133,10 +143,11 @@ export class Collection<T = any> {
    * ```
    */
   async update(id: string, data: Partial<T>): Promise<T & Document> {
+    const token = await this.resolveToken();
     const response = await fetch(`${this.proxyUrl}/db/${this.name}/update/${id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${this.appToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -164,10 +175,11 @@ export class Collection<T = any> {
    * ```
    */
   async delete(id: string): Promise<boolean> {
+    const token = await this.resolveToken();
     const response = await fetch(`${this.proxyUrl}/db/${this.name}/delete/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${this.appToken}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 

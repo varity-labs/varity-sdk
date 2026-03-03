@@ -21,6 +21,141 @@
  */
 
 /**
+ * ============================================================================
+ * SECURITY: Dev JWT Secret
+ * ============================================================================
+ *
+ * This secret is INTENTIONALLY public. It is used ONLY for development tokens
+ * that access the shared `app_varity_dev` schema (sandboxed, rate-limited).
+ *
+ * CRITICAL: Production tokens MUST be signed with a DIFFERENT, private secret
+ * managed by the Varity Credential Proxy. The DB Proxy MUST reject tokens
+ * signed with this dev secret when accessed outside the dev schema.
+ *
+ * Why this matters: If the dev token were signed with the same secret as
+ * production tokens, an attacker could brute-force this publicly-known dev
+ * secret offline and then forge tokens for ANY app's production database.
+ *
+ * @internal
+ */
+export const VARITY_DEV_JWT_SECRET = 'varity-dev-public-key-not-for-production';
+
+/**
+ * Base64url encode a string or Uint8Array (no padding, URL-safe).
+ * Works in both Node.js and browser environments.
+ * @internal
+ */
+function base64urlEncode(input: string | Uint8Array): string {
+  let base64: string;
+
+  if (typeof input === 'string') {
+    // In Node.js, use Buffer; in browser, use TextEncoder + btoa
+    if (typeof Buffer !== 'undefined') {
+      base64 = Buffer.from(input, 'utf-8').toString('base64');
+    } else {
+      base64 = btoa(input);
+    }
+  } else {
+    // Uint8Array (for HMAC output)
+    if (typeof Buffer !== 'undefined') {
+      base64 = Buffer.from(input).toString('base64');
+    } else {
+      // Browser: convert Uint8Array to binary string then btoa
+      let binary = '';
+      for (let i = 0; i < input.length; i++) {
+        binary += String.fromCharCode(input[i]);
+      }
+      base64 = btoa(binary);
+    }
+  }
+
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * Compute HMAC-SHA256 and return the raw bytes as Uint8Array.
+ * Uses Node.js crypto when available, falls back to Web Crypto API.
+ * @internal
+ */
+async function hmacSha256(key: string, message: string): Promise<Uint8Array> {
+  if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle) {
+    // Web Crypto API (browser + modern Node.js)
+    const enc = new TextEncoder();
+    const cryptoKey = await globalThis.crypto.subtle.importKey(
+      'raw',
+      enc.encode(key),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const sig = await globalThis.crypto.subtle.sign('HMAC', cryptoKey, enc.encode(message));
+    return new Uint8Array(sig);
+  }
+
+  // Fallback: Node.js crypto module (dynamic import to avoid bundler issues)
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { createHmac } = await import('crypto');
+  const hmac = createHmac('sha256', key);
+  hmac.update(message);
+  return new Uint8Array(hmac.digest());
+}
+
+/**
+ * Generate a signed JWT token using HS256.
+ *
+ * This is a minimal JWT implementation for generating dev tokens at runtime.
+ * It avoids adding a `jsonwebtoken` dependency to the SDK.
+ *
+ * @internal
+ */
+async function generateJwt(
+  payload: Record<string, unknown>,
+  secret: string
+): Promise<string> {
+  const header = { alg: 'HS256', typ: 'JWT' };
+
+  const headerB64 = base64urlEncode(JSON.stringify(header));
+  const payloadB64 = base64urlEncode(JSON.stringify(payload));
+  const signingInput = `${headerB64}.${payloadB64}`;
+
+  const signatureBytes = await hmacSha256(secret, signingInput);
+  const signatureB64 = base64urlEncode(signatureBytes);
+
+  return `${signingInput}.${signatureB64}`;
+}
+
+/**
+ * Cached dev token promise (generated once, reused).
+ * @internal
+ */
+let _devTokenPromise: Promise<string> | null = null;
+
+/**
+ * Get the development JWT token.
+ *
+ * The token is generated at runtime using a PUBLICLY-KNOWN dev-only secret.
+ * This ensures that even if someone extracts this token, they cannot use the
+ * secret to forge production tokens (which use a different, private secret).
+ *
+ * @internal
+ */
+export function getDevToken(): Promise<string> {
+  if (_devTokenPromise === null) {
+    const now = Math.floor(Date.now() / 1000);
+    _devTokenPromise = generateJwt(
+      {
+        appId: 'varity_dev',
+        iss: 'varity.so',
+        iat: now,
+        exp: now + 315360000, // 10 years from generation time
+      },
+      VARITY_DEV_JWT_SECRET
+    );
+  }
+  return _devTokenPromise;
+}
+
+/**
  * Varity Credential Proxy URL
  *
  * The CLI fetches infrastructure credentials from this service during deployment.
@@ -98,14 +233,19 @@ export const VARITY_DEV_DB_CREDENTIALS = {
   appId: 'varity_dev',
 
   /**
-   * Pre-signed JWT for development database access
+   * Get the development JWT token for database access.
+   *
+   * SECURITY: This token is generated at runtime using a publicly-known
+   * dev-only secret (VARITY_DEV_JWT_SECRET). It is NOT signed with the
+   * production secret. This prevents brute-force attacks on the dev token
+   * from compromising production databases.
+   *
    * - Grants access to `app_varity_dev` schema only (schema isolation)
    * - 10-year expiry (development convenience)
    * - Rate limited: 100 req/min per IP
    * Override: NEXT_PUBLIC_VARITY_APP_TOKEN environment variable
    */
-  token:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6InZhcml0eV9kZXYiLCJpc3MiOiJ2YXJpdHkuc28iLCJpYXQiOjE3NzA4MzI5MzIsImV4cCI6MjA4NjE5MjkzMn0.Kj4fijAhZJ5CihFj0Vf5YLMmPzEBtCKKyxdNWUNdRWs',
+  getToken: getDevToken,
 } as const;
 
 /**

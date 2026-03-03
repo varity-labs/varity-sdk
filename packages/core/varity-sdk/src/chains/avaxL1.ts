@@ -65,14 +65,14 @@ export const AVAX_L1_CONTRACTS = {
 
 /**
  * Avalanche L1 infrastructure endpoints
+ *
+ * Internal monitoring (Prometheus, Grafana) omitted — see ops documentation
  */
 export const AVAX_L1_ENDPOINTS = {
   rpc: 'http://81.15.150.164:9654/ext/bc/MZqKVUw3VeGVjL3DDgzRwWoKGXxJ4F168GKewvKt6CruzDpAH/rpc',
   bundler: 'http://81.15.150.164:4337',
   explorer: 'http://81.15.150.164:4000',
   graphql: 'http://81.15.150.164:8000/subgraphs/name/varity/app-registry',
-  prometheus: 'http://81.15.150.164:9090',
-  grafana: 'http://81.15.150.164:3000',
 } as const;
 
 /**

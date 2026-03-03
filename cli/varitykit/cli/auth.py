@@ -6,6 +6,7 @@ Login saves deploy key + gateway API key + JWT secret to ~/.varitykit/config.jso
 """
 
 import json
+import os
 import click
 from rich.console import Console
 from rich.panel import Panel
@@ -14,10 +15,12 @@ console = Console()
 
 
 def _save_config(data: dict) -> None:
-    """Merge data into ~/.varitykit/config.json."""
+    """Merge data into ~/.varitykit/config.json with restricted permissions."""
     from varitykit.services.gateway_client import CONFIG_PATH
 
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Restrict directory to owner-only access (drwx------)
+    os.chmod(CONFIG_PATH.parent, 0o700)
 
     config = {}
     if CONFIG_PATH.exists():
@@ -31,6 +34,9 @@ def _save_config(data: dict) -> None:
 
     with open(CONFIG_PATH, "w") as f:
         json.dump(config, f, indent=2)
+
+    # Restrict config file to owner-only read/write (-rw-------)
+    os.chmod(CONFIG_PATH, 0o600)
 
 
 def _try_decode_deploy_key(raw_key: str) -> dict:
@@ -91,7 +97,8 @@ def _do_login():
             except Exception:
                 pass
 
-    deploy_key = click.prompt("\n  Paste your deploy key", hide_input=False).strip()
+    click.echo("  (input will be hidden for security)")
+    deploy_key = click.prompt("\n  Paste your deploy key", hide_input=True).strip()
 
     if len(deploy_key) < 10:
         console.print("\n  [red]Invalid deploy key.[/red] It should be at least 10 characters.")
@@ -103,6 +110,7 @@ def _do_login():
     # Save all credentials to config
     _save_config(creds)
 
+    console.print("\n  [green]Deploy key saved securely.[/green]")
     console.print("\n  [green]Logged in successfully![/green]")
 
     # Show what was configured
@@ -154,6 +162,8 @@ def logout():
                 config.pop(key, None)
             with open(CONFIG_PATH, "w") as f:
                 json.dump(config, f, indent=2)
+            # Maintain restricted permissions after rewrite
+            os.chmod(CONFIG_PATH, 0o600)
         except Exception:
             pass
 

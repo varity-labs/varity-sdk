@@ -1,6 +1,7 @@
 {
   "name": "akash-simulator",
   "version": "1.0.0",
+  "private": true,
   "description": "Mock Akash Network compute service for LocalDePin testing",
   "main": "dist/index.js",
   "scripts": {

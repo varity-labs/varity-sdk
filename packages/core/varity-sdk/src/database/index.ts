@@ -33,7 +33,9 @@ import type { DatabaseConfig } from './types';
  * Configuration is automatically injected by Varity CLI during deployment.
  */
 export class Database {
-  private config: Required<DatabaseConfig>;
+  private proxyUrl: string;
+  private appToken: string | Promise<string>;
+  private _isUsingDevToken: boolean;
 
   /**
    * Create a new Database instance
@@ -56,23 +58,34 @@ export class Database {
   constructor(config?: Partial<DatabaseConfig>) {
     // Resolve configuration from environment or defaults
     // Use literal process.env.NEXT_PUBLIC_* for Next.js build-time replacement
-    this.config = {
-      proxyUrl:
-        config?.proxyUrl ||
-        process.env.NEXT_PUBLIC_VARITY_DB_PROXY_URL ||
-        process.env.VITE_VARITY_DB_PROXY_URL ||
-        process.env.REACT_APP_VARITY_DB_PROXY_URL ||
-        'http://provider.akashprovid.com:31782',
-      appToken:
-        config?.appToken ||
-        process.env.NEXT_PUBLIC_VARITY_APP_TOKEN ||
-        process.env.VITE_VARITY_APP_TOKEN ||
-        process.env.REACT_APP_VARITY_APP_TOKEN ||
-        VARITY_DEV_DB_CREDENTIALS.token,
-    };
+    this.proxyUrl =
+      config?.proxyUrl ||
+      process.env.NEXT_PUBLIC_VARITY_DB_PROXY_URL ||
+      process.env.VITE_VARITY_DB_PROXY_URL ||
+      process.env.REACT_APP_VARITY_DB_PROXY_URL ||
+      'http://provider.akashprovid.com:31782';
+
+    // Resolve app token: use env var if available, otherwise fall back to
+    // runtime-generated dev token (signed with a separate, public dev secret)
+    const envToken =
+      config?.appToken ||
+      process.env.NEXT_PUBLIC_VARITY_APP_TOKEN ||
+      process.env.VITE_VARITY_APP_TOKEN ||
+      process.env.REACT_APP_VARITY_APP_TOKEN ||
+      null;
+
+    if (envToken) {
+      this.appToken = envToken;
+      this._isUsingDevToken = false;
+    } else {
+      // Dev token is generated at runtime using a publicly-known secret
+      // that is DIFFERENT from the production JWT secret
+      this.appToken = VARITY_DEV_DB_CREDENTIALS.getToken();
+      this._isUsingDevToken = true;
+    }
 
     // Log when using shared development database
-    if (this.config.appToken === VARITY_DEV_DB_CREDENTIALS.token && typeof console !== 'undefined') {
+    if (this._isUsingDevToken && typeof console !== 'undefined') {
       console.info(
         '[Varity Database] Using shared development database. ' +
         'Data is stored in an isolated dev schema.\n' +
@@ -104,7 +117,7 @@ export class Database {
    * ```
    */
   collection<T = any>(name: string): Collection<T> {
-    return new Collection<T>(name, this.config.proxyUrl, this.config.appToken);
+    return new Collection<T>(name, this.proxyUrl, this.appToken);
   }
 }
 

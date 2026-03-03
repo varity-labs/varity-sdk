@@ -1,6 +1,7 @@
 {
   "name": "varity-db-proxy",
   "version": "1.0.2",
+  "private": true,
   "description": "Zero-config database proxy for Varity apps",
   "main": "dist/index.js",
   "scripts": {

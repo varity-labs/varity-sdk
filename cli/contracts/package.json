@@ -1,6 +1,7 @@
 {
   "name": "varietykit-contracts",
   "version": "1.0.0",
+  "private": true,
   "description": "VarityKit Smart Contracts - Template Marketplace with 90/10 Revenue Split (90% creator, 10% platform)",
   "main": "index.js",
   "scripts": {
