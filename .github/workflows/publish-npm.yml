@@ -7,10 +7,11 @@ on:
       - "sdk-v*"
       - "types-v*"
       - "ui-kit-v*"
+      - "mcp-v*"
   workflow_dispatch:
     inputs:
       packages:
-        description: "Packages to publish (comma-separated: sdk,types,ui-kit or 'all')"
+        description: "Packages to publish (comma-separated: sdk,types,ui-kit,mcp or 'all')"
         required: true
         default: "all"
         type: string
@@ -64,6 +65,7 @@ jobs:
             packages/core/varity-types/dist/
             packages/core/varity-sdk/dist/
             packages/ui/varity-ui-kit/dist/
+            packages/cli/varity-mcp/dist/
           retention-days: 1
 
   determine-packages:
@@ -73,6 +75,7 @@ jobs:
       publish_types: ${{ steps.check.outputs.publish_types }}
       publish_sdk: ${{ steps.check.outputs.publish_sdk }}
       publish_ui_kit: ${{ steps.check.outputs.publish_ui_kit }}
+      publish_mcp: ${{ steps.check.outputs.publish_mcp }}
     steps:
       - name: Determine which packages to publish
         id: check
@@ -84,6 +87,7 @@ jobs:
           PUBLISH_TYPES="false"
           PUBLISH_SDK="false"
           PUBLISH_UI_KIT="false"
+          PUBLISH_MCP="false"
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             # Manual trigger — parse input
@@ -91,6 +95,7 @@ jobs:
               PUBLISH_TYPES="true"
               PUBLISH_SDK="true"
               PUBLISH_UI_KIT="true"
+              PUBLISH_MCP="true"
             else
               IFS=',' read -ra PKGS <<< "$MANUAL_INPUT"
               for pkg in "${PKGS[@]}"; do
@@ -99,6 +104,7 @@ jobs:
                   types)  PUBLISH_TYPES="true" ;;
                   sdk)    PUBLISH_SDK="true" ;;
                   ui-kit) PUBLISH_UI_KIT="true" ;;
+                  mcp)    PUBLISH_MCP="true" ;;
                 esac
               done
             fi
@@ -108,21 +114,26 @@ jobs:
             PUBLISH_SDK="true"
           elif [[ "$TAG" == ui-kit-v* ]]; then
             PUBLISH_UI_KIT="true"
+          elif [[ "$TAG" == mcp-v* ]]; then
+            PUBLISH_MCP="true"
           elif [[ "$TAG" == v* ]]; then
             # Generic vX.Y.Z tag publishes all packages
             PUBLISH_TYPES="true"
             PUBLISH_SDK="true"
             PUBLISH_UI_KIT="true"
+            PUBLISH_MCP="true"
           fi
 
           echo "publish_types=$PUBLISH_TYPES" >> "$GITHUB_OUTPUT"
           echo "publish_sdk=$PUBLISH_SDK" >> "$GITHUB_OUTPUT"
           echo "publish_ui_kit=$PUBLISH_UI_KIT" >> "$GITHUB_OUTPUT"
+          echo "publish_mcp=$PUBLISH_MCP" >> "$GITHUB_OUTPUT"
 
           echo "--- Publish Plan ---"
           echo "@varity-labs/types:  $PUBLISH_TYPES"
           echo "@varity-labs/sdk:    $PUBLISH_SDK"
           echo "@varity-labs/ui-kit: $PUBLISH_UI_KIT"
+          echo "@varity-labs/mcp:    $PUBLISH_MCP"
 
   publish-types:
     name: Publish @varity-labs/types
@@ -331,6 +342,68 @@ jobs:
       - name: Dry run publish
         if: github.event.inputs.dry_run == 'true'
         working-directory: packages/ui/varity-ui-kit
+        run: npm publish --dry-run --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-mcp:
+    name: Publish @varity-labs/mcp
+    needs: [build, determine-packages]
+    if: needs.determine-packages.outputs.publish_mcp == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: packages/
+
+      - name: Verify dist exists
+        run: |
+          if [ ! -d "packages/cli/varity-mcp/dist" ]; then
+            echo "ERROR: dist/ not found for @varity-labs/mcp"
+            exit 1
+          fi
+          echo "dist/ contents:"
+          ls -la packages/cli/varity-mcp/dist/
+
+      - name: Check if version already published
+        id: version_check
+        working-directory: packages/cli/varity-mcp
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+          if npm view "@varity-labs/mcp@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "WARNING: @varity-labs/mcp@$PACKAGE_VERSION already published, skipping"
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "Publishing @varity-labs/mcp@$PACKAGE_VERSION"
+          fi
+
+      - name: Publish to npm
+        if: steps.version_check.outputs.already_published == 'false' && github.event.inputs.dry_run != 'true'
+        working-directory: packages/cli/varity-mcp
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run publish
+        if: github.event.inputs.dry_run == 'true'
+        working-directory: packages/cli/varity-mcp
         run: npm publish --dry-run --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
