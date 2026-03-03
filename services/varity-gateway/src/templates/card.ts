@@ -31,7 +31,7 @@ const fonts = {
 export function cardSvgDev(record: DomainRecord, _baseDomain: string): string {
   const displayName = record.appName || titleCase(record.subdomain);
   const subdomain = record.subdomain || 'my-app';
-  const appUrl = `${esc(subdomain)}.varity.app`;
+  const appUrl = `varity.app/${esc(subdomain)}`;
 
   // Truncate long app names
   const truncName = displayName.length > 28
@@ -165,6 +165,8 @@ export function cardSvgDev(record: DomainRecord, _baseDomain: string): string {
 
 export function cardSvgUser(record: DomainRecord, _baseDomain: string): string {
   const displayName = record.appName || titleCase(record.subdomain);
+  const subdomain = record.subdomain || 'my-app';
+  const appUrl = `varity.app/${esc(subdomain)}`;
   const tagline = record.tagline || 'Built and deployed on Varity';
 
   // Truncate long names/taglines
@@ -205,12 +207,6 @@ export function cardSvgUser(record: DomainRecord, _baseDomain: string): string {
       <stop offset="0%" stop-color="#14B8A6"/><stop offset="100%" stop-color="#2DD4BF"/>
     </linearGradient>
 
-    <!-- CTA pill gradient -->
-    <linearGradient id="ctaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#14B8A6"/>
-      <stop offset="100%" stop-color="#0D9488"/>
-    </linearGradient>
-
     <!-- Glow filter -->
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
@@ -245,37 +241,36 @@ export function cardSvgUser(record: DomainRecord, _baseDomain: string): string {
   <rect x="0" y="0" width="1200" height="4" fill="url(#accentGradient)"/>
 
   <!-- HERO CONTENT (centered) -->
-  <g transform="translate(600, 200)">
-    <!-- Crystal logo 48px centered -->
-    <g transform="translate(-24, -80) scale(0.75)">
-      <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#logoFacet4)"/>
-      <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#logoFacet1)"/>
-      <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#logoFacet2)"/>
-      <path d="M8 36 L32 58 L20 58 Z" fill="url(#logoFacet1)" opacity="0.7"/>
-      <path d="M56 36 L44 58 L32 58 Z" fill="url(#logoFacet2)" opacity="0.7"/>
-      <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
-    </g>
+  <g transform="translate(600, ${record.logoUrl ? 275 : 290})">
+    ${record.logoUrl ? `
+    <!-- Developer's app icon (64x64 with rounded corners) -->
+    <defs>
+      <clipPath id="iconClip">
+        <rect x="-32" y="-100" width="64" height="64" rx="12" ry="12"/>
+      </clipPath>
+    </defs>
+    <image href="${esc(record.logoUrl)}" x="-32" y="-100" width="64" height="64" clip-path="url(#iconClip)"/>
+    ` : ''}
 
     <!-- App name — THE HERO (56px, white, extrabold) -->
-    <text x="0" y="10" font-family="${fonts.display}" font-size="56" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="-1">
+    <text x="0" y="0" font-family="${fonts.display}" font-size="56" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="-1">
       ${esc(truncName)}
     </text>
 
     <!-- Tagline (26px, muted) -->
-    <text x="0" y="56" font-family="${fonts.body}" font-size="26" font-weight="400" fill="#94A3B8" text-anchor="middle">
+    <text x="0" y="46" font-family="${fonts.body}" font-size="26" font-weight="400" fill="#94A3B8" text-anchor="middle">
       ${esc(truncTagline)}
     </text>
 
-    <!-- CTA pill "button" -->
-    <rect x="-120" y="84" width="240" height="48" rx="24" fill="url(#ctaGradient)"/>
-    <text x="0" y="115" font-family="${fonts.body}" font-size="18" font-weight="700" fill="#030712" text-anchor="middle">
-      Try it on Varity
+    <!-- App URL (prominent, teal, clickable-looking) -->
+    <text x="0" y="86" font-family="${fonts.mono}" font-size="20" font-weight="400" fill="#2DD4BF" text-anchor="middle">
+      ${appUrl}
     </text>
   </g>
 
-  <!-- "Available on Varity" badge bottom-center -->
-  <g transform="translate(502, 560)">
-    <g transform="translate(0, -14) scale(0.25)">
+  <!-- "Built with Varity" bottom-center -->
+  <g transform="translate(556, 560)">
+    <g transform="translate(-54, -14) scale(0.25)">
       <path d="M32 6 L48 22 L32 32 L16 22 Z" fill="url(#logoFacet4)"/>
       <path d="M16 22 L32 32 L32 58 L8 36 Z" fill="url(#logoFacet1)"/>
       <path d="M48 22 L56 36 L32 58 L32 32 Z" fill="url(#logoFacet2)"/>
@@ -283,8 +278,8 @@ export function cardSvgUser(record: DomainRecord, _baseDomain: string): string {
       <path d="M56 36 L44 58 L32 58 Z" fill="url(#logoFacet2)" opacity="0.7"/>
       <path d="M32 12 L40 22 L32 28 L24 22 Z" fill="white" opacity="0.25"/>
     </g>
-    <text x="24" y="0" font-family="${fonts.body}" font-size="16" font-weight="500" fill="#64748B">
-      Available on Varity
+    <text x="0" y="0" font-family="${fonts.body}" font-size="16" font-weight="500" fill="#64748B" text-anchor="middle">
+      Built with Varity
     </text>
   </g>
 
@@ -310,31 +305,25 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
   const storeUrl = `https://store.varity.so/${record.subdomain}`;
   const cardUrl = `https://${baseDomain}/card/${record.subdomain}`;
   const imageUrl = `https://${baseDomain}/card/${record.subdomain}/image.png`;
-  const imageDevUrl = `https://${baseDomain}/card/${record.subdomain}/image-dev.png`;
   const imageUserUrl = `https://${baseDomain}/card/${record.subdomain}/image-user.png`;
   const displayName = record.appName || titleCase(record.subdomain);
   const tagline = record.tagline || 'Built and deployed on Varity';
 
-  // Developer share tweet
-  const devTweetText = encodeURIComponent(`${displayName} is live! Built and deployed with @VarityLabs \u{1F680}\n\n${appUrl}`);
-  const devTwitterUrl = `https://x.com/intent/tweet?text=${devTweetText}`;
-  const devLinkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cardUrl)}`;
-
-  // User share tweet
-  const userTweetText = encodeURIComponent(`Check out ${displayName} \u2014 ${tagline}\n\n${storeUrl}`);
-  const userTwitterUrl = `https://x.com/intent/tweet?text=${userTweetText}`;
-  const userLinkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(storeUrl)}`;
+  // Share tweet
+  const tweetText = encodeURIComponent(`Check out ${displayName} \u2014 ${tagline}\n\n${appUrl}`);
+  const twitterUrl = `https://x.com/intent/tweet?text=${tweetText}`;
+  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cardUrl)}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${esc(displayName)} — Deployed on Varity</title>
+  <title>${esc(displayName)} — Built with Varity</title>
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="${esc(displayName)} — Deployed on Varity">
+  <meta property="og:title" content="${esc(displayName)} — Built with Varity">
   <meta property="og:description" content="${esc(tagline)}. Built and deployed in under 60 seconds. 70% cheaper than AWS.">
   <meta property="og:url" content="${cardUrl}">
   <meta property="og:image" content="${imageUrl}">
@@ -345,7 +334,7 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${esc(displayName)} — Deployed on Varity">
+  <meta name="twitter:title" content="${esc(displayName)} — Built with Varity">
   <meta name="twitter:description" content="${esc(tagline)}. Built and deployed in under 60 seconds. 70% cheaper than AWS.">
   <meta name="twitter:image" content="${imageUrl}">
   <meta name="twitter:site" content="@VarityLabs">
@@ -488,27 +477,15 @@ export function cardHtml(record: DomainRecord, baseDomain: string): string {
     </div>
 
     <h1>${esc(displayName)} <span class="teal">is live.</span></h1>
-    <p class="subtitle">Share your deployment card on social media</p>
+    <p class="subtitle">Share your deployment</p>
 
-    <!-- Developer Card (primary) -->
+    <!-- Deployment Card -->
     <div class="card-section">
-      <div class="card-label">Developer Card &mdash; &ldquo;I just shipped&rdquo;</div>
-      <img class="card-img" src="${imageDevUrl}" alt="${esc(displayName)} developer deployment card" width="1200" height="630">
+      <img class="card-img" src="${imageUserUrl}" alt="${esc(displayName)} deployment card" width="1200" height="630">
       <div class="actions">
-        <a class="btn btn-primary" href="${devTwitterUrl}" target="_blank" rel="noopener">Share on X</a>
-        <a class="btn btn-linkedin" href="${devLinkedinUrl}" target="_blank" rel="noopener">Share on LinkedIn</a>
-        <a class="btn btn-secondary" href="${imageDevUrl}" download="${record.subdomain}-dev-card.png">Download PNG</a>
-      </div>
-    </div>
-
-    <!-- User Card (secondary) -->
-    <div class="card-section">
-      <div class="card-label">User Card &mdash; &ldquo;Check out my app&rdquo;</div>
-      <img class="card-img" src="${imageUserUrl}" alt="${esc(displayName)} user deployment card" width="1200" height="630">
-      <div class="actions">
-        <a class="btn btn-primary" href="${userTwitterUrl}" target="_blank" rel="noopener">Share on X</a>
-        <a class="btn btn-linkedin" href="${userLinkedinUrl}" target="_blank" rel="noopener">Share on LinkedIn</a>
-        <a class="btn btn-secondary" href="${imageUserUrl}" download="${record.subdomain}-user-card.png">Download PNG</a>
+        <a class="btn btn-primary" href="${twitterUrl}" target="_blank" rel="noopener">Share on X</a>
+        <a class="btn btn-linkedin" href="${linkedinUrl}" target="_blank" rel="noopener">Share on LinkedIn</a>
+        <a class="btn btn-secondary" href="${imageUserUrl}" download="${record.subdomain}-card.png">Download PNG</a>
       </div>
     </div>
 

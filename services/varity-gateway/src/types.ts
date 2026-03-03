@@ -4,6 +4,7 @@ export interface DomainRecord {
   cid: string;
   appName: string;
   tagline?: string;
+  logoUrl?: string;
   ownerId?: string;
   registeredBy: string;
   createdAt: string;

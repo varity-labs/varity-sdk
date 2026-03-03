@@ -83,8 +83,9 @@ class ProjectDetector:
         except (json.JSONDecodeError, IOError) as e:
             raise ProjectDetectionError(f"Failed to read package.json: {e}")
 
-        # Get project name from package.json or directory name
+        # Get project name and description from package.json
         project_name = package_json.get("name", project_path.name)
+        project_description = package_json.get("description") or None
 
         # Merge dependencies and devDependencies
         dependencies = {
@@ -100,16 +101,16 @@ class ProjectDetector:
 
         # Detect framework
         if "next" in dependencies:
-            return self._detect_nextjs(project_path, project_name, dependencies, package_manager, has_backend)
+            return self._detect_nextjs(project_path, project_name, dependencies, package_manager, has_backend, project_description)
 
         elif "react" in dependencies or "react-scripts" in dependencies:
-            return self._detect_react(project_path, project_name, dependencies, package_manager, has_backend)
+            return self._detect_react(project_path, project_name, dependencies, package_manager, has_backend, project_description)
 
         elif "vue" in dependencies:
-            return self._detect_vue(project_path, project_name, dependencies, package_manager, has_backend)
+            return self._detect_vue(project_path, project_name, dependencies, package_manager, has_backend, project_description)
 
         elif "express" in dependencies or "fastify" in dependencies:
-            return self._detect_nodejs(project_path, project_name, dependencies, package_manager)
+            return self._detect_nodejs(project_path, project_name, dependencies, package_manager, project_description)
 
         else:
             dep_list = ", ".join(list(dependencies.keys())[:10])
@@ -119,7 +120,8 @@ class ProjectDetector:
             )
 
     def _detect_nextjs(
-        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool
+        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool,
+        description: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect Next.js project configuration."""
         # Check if using static export
@@ -132,11 +134,13 @@ class ProjectDetector:
             build_command=f"{package_manager} run build",
             output_dir="out" if is_static_export else ".next",
             package_manager=package_manager,
+            description=description,
             has_backend=has_backend or not is_static_export,  # Next.js API routes
         )
 
     def _detect_react(
-        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool
+        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool,
+        description: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect React project configuration (CRA or Vite)."""
         # Check if using Vite
@@ -149,11 +153,13 @@ class ProjectDetector:
             build_command=f"{package_manager} run build",
             output_dir="dist" if is_vite else "build",
             package_manager=package_manager,
+            description=description,
             has_backend=has_backend,
         )
 
     def _detect_vue(
-        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool
+        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str, has_backend: bool,
+        description: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect Vue.js project configuration."""
         return ProjectInfo(
@@ -163,11 +169,13 @@ class ProjectDetector:
             build_command=f"{package_manager} run build",
             output_dir="dist",
             package_manager=package_manager,
+            description=description,
             has_backend=has_backend,
         )
 
     def _detect_nodejs(
-        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str
+        self, project_path: Path, project_name: str, dependencies: dict, package_manager: str,
+        description: Optional[str] = None,
     ) -> ProjectInfo:
         """Detect Node.js backend project configuration."""
         framework = "express" if "express" in dependencies else "fastify"
@@ -179,6 +187,7 @@ class ProjectDetector:
             build_command="",  # No build needed for plain Node.js
             output_dir=".",
             package_manager=package_manager,
+            description=description,
             has_backend=True,
         )
 

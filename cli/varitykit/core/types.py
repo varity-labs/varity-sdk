@@ -16,6 +16,7 @@ class ProjectInfo:
 
     Attributes:
         name: Project name (from package.json or directory name)
+        description: Short description (from package.json, used as card tagline)
         project_type: Type of project ('nextjs', 'react', 'vue', 'nodejs', 'python')
         framework_version: Version of the framework (e.g., '14.0.0')
         build_command: Command to build the project (e.g., 'npm run build')
@@ -30,6 +31,7 @@ class ProjectInfo:
     build_command: str
     output_dir: str
     package_manager: str
+    description: Optional[str] = None
     has_backend: bool = False
 
 

@@ -95,7 +95,7 @@ domainsRouter.get('/api/domains/mine', verifyApiKey, async (req: Request, res: R
 // ---------------------------------------------------------------------------
 
 domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, res: Response) => {
-  const { subdomain, cid, appName, ownerId } = req.body;
+  const { subdomain, cid, appName, tagline, logoUrl, ownerId } = req.body;
 
   if (!subdomain || !cid) {
     res.status(400).json({ error: 'subdomain and cid are required' });
@@ -128,7 +128,7 @@ domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, r
       return;
     }
 
-    const record = {
+    const record: Record<string, unknown> = {
       subdomain: name,
       cid,
       appName: appName || name,
@@ -136,6 +136,8 @@ domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, r
       registeredBy: 'cli',
       createdAt: new Date().toISOString(),
     };
+    if (tagline) record.tagline = tagline;
+    if (logoUrl) record.logoUrl = logoUrl;
 
     const addUrl = `${config.dbProxy.url}/db/${DB_COLLECTION}/add`;
     const addRes = await fetch(addUrl, {
@@ -175,7 +177,7 @@ domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, r
 // ---------------------------------------------------------------------------
 
 domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res: Response) => {
-  const { subdomain, cid, ownerId } = req.body;
+  const { subdomain, cid, tagline, logoUrl, ownerId } = req.body;
 
   if (!subdomain || !cid) {
     res.status(400).json({ error: 'subdomain and cid are required' });
@@ -204,10 +206,12 @@ domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res:
       return;
     }
 
-    const updatedRecord = {
+    const updatedRecord: Record<string, unknown> = {
       subdomain: name,
       cid,
       appName: existing.appName || name,
+      tagline: tagline || (existing as any).tagline || null,
+      logoUrl: logoUrl || (existing as any).logoUrl || null,
       ownerId: ownerId || existing.ownerId || null,
       registeredBy: 'cli',
       createdAt: existing.createdAt || new Date().toISOString(),

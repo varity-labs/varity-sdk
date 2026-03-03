@@ -4,10 +4,12 @@ import { healthRouter } from './routes/health';
 import { domainsRouter } from './routes/domains';
 import { cardRouter } from './routes/card';
 import { proxyRouter } from './routes/proxy';
+import { subgraphRouter } from './routes/subgraph';
 
 const ALLOWED_ORIGINS = [
   /^https?:\/\/(.+\.)?varity\.so$/,
   /^https?:\/\/(.+\.)?varity\.app$/,
+  /^https?:\/\/(.+\.)?4everland\.\w+$/,
   /^https?:\/\/localhost(:\d+)?$/,
 ];
 
@@ -34,6 +36,7 @@ app.use(express.json());
 // ---------------------------------------------------------------------------
 
 app.use(healthRouter);
+app.use(subgraphRouter);  // Before catch-all proxy
 app.use(domainsRouter);
 app.use(cardRouter);
 app.use(proxyRouter);

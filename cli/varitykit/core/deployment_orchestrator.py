@@ -266,7 +266,12 @@ class DeploymentOrchestrator:
             custom_domain_url = None
             if cid and subdomain and hosting != "akash":
                 try:
-                    register_domain(subdomain, cid, app_name=project_info.name, owner_id=owner_id)
+                    register_domain(
+                        subdomain, cid,
+                        app_name=project_info.name,
+                        tagline=project_info.description,
+                        owner_id=owner_id,
+                    )
                     custom_domain_url = f"https://varity.app/{subdomain}"
                     frontend_url = custom_domain_url
                     self._log(f"   🌐 {custom_domain_url}")

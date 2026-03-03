@@ -30,11 +30,22 @@ GATEWAY_URL = os.getenv(
     "https://varity.app"
 )
 
-# CLI API key for gateway authentication
-GATEWAY_API_KEY = os.getenv(
-    "VARITY_GATEWAY_API_KEY",
-    "17b2902f4974e9a41a06059777e50a86a235432f39780742309c62b1b5da3311"
-)
+# Gateway API key — loaded from config.json (set during `varitykit login`)
+# Falls back to env var for CI/custom deployments, never hardcoded.
+def _get_gateway_api_key() -> Optional[str]:
+    """Read gateway API key from config.json or env var."""
+    env_key = os.getenv("VARITY_GATEWAY_API_KEY")
+    if env_key:
+        return env_key
+
+    if not CONFIG_PATH.exists():
+        return None
+    try:
+        with open(CONFIG_PATH, "r") as f:
+            config = json.load(f)
+        return config.get("gateway_api_key")
+    except (json.JSONDecodeError, IOError):
+        return None
 
 # Config file path
 CONFIG_PATH = Path.home() / ".varitykit" / "config.json"
@@ -153,10 +164,16 @@ def check_availability(
     if owner_id:
         url += f"?ownerId={urllib.parse.quote(owner_id)}"
 
+    api_key = _get_gateway_api_key()
+    if not api_key:
+        raise GatewayError(
+            "Not authenticated. Run 'varitykit login' first to configure your gateway key."
+        )
+
     try:
         req = urllib.request.Request(
             url,
-            headers={"Authorization": f"Bearer {GATEWAY_API_KEY}"}
+            headers={"Authorization": f"Bearer {api_key}"}
         )
 
         with urllib.request.urlopen(req, timeout=10) as response:
@@ -182,6 +199,8 @@ def register_domain(
     subdomain: str,
     cid: str,
     app_name: Optional[str] = None,
+    tagline: Optional[str] = None,
+    logo_url: Optional[str] = None,
     owner_id: Optional[str] = None,
     gateway_url: Optional[str] = None,
 ) -> Dict:
@@ -195,6 +214,8 @@ def register_domain(
         subdomain: Subdomain to register
         cid: IPFS CID to map to
         app_name: Human-readable app name
+        tagline: Short description for the deployment card (from package.json description)
+        logo_url: URL to app icon for the deployment card
         owner_id: Developer's deploy key (ties domain to developer)
         gateway_url: Override gateway URL
 
@@ -205,17 +226,27 @@ def register_domain(
         GatewayError: If registration fails
     """
     base = gateway_url or GATEWAY_URL
+    api_key = _get_gateway_api_key()
+    if not api_key:
+        raise GatewayError(
+            "Not authenticated. Run 'varitykit login' first to configure your gateway key."
+        )
+
     body = {
         "subdomain": subdomain,
         "cid": cid,
         "appName": app_name or subdomain,
     }
+    if tagline:
+        body["tagline"] = tagline
+    if logo_url:
+        body["logoUrl"] = logo_url
     if owner_id:
         body["ownerId"] = owner_id
     payload = json.dumps(body).encode()
 
     headers = {
-        "Authorization": f"Bearer {GATEWAY_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
 
@@ -234,7 +265,7 @@ def register_domain(
     except urllib.error.HTTPError as e:
         if e.code == 409:
             # Already registered — update CID (redeployment)
-            return _update_domain(subdomain, cid, base, headers, owner_id)
+            return _update_domain(subdomain, cid, base, headers, owner_id, tagline, logo_url)
         elif e.code == 401:
             raise GatewayError("Authentication failed with Varity gateway service.")
         elif e.code == 400:
@@ -261,12 +292,19 @@ def register_domain(
 
 
 def _update_domain(
-    subdomain: str, cid: str, base: str, headers: dict, owner_id: Optional[str] = None
+    subdomain: str, cid: str, base: str, headers: dict,
+    owner_id: Optional[str] = None,
+    tagline: Optional[str] = None,
+    logo_url: Optional[str] = None,
 ) -> Dict:
     """Update an existing domain mapping (internal helper for redeployments)."""
     body = {"subdomain": subdomain, "cid": cid}
     if owner_id:
         body["ownerId"] = owner_id
+    if tagline:
+        body["tagline"] = tagline
+    if logo_url:
+        body["logoUrl"] = logo_url
     payload = json.dumps(body).encode()
 
     try:
@@ -306,13 +344,19 @@ def list_my_domains(owner_id: str, gateway_url: Optional[str] = None) -> List[Di
     Raises:
         GatewayError: If request fails
     """
+    api_key = _get_gateway_api_key()
+    if not api_key:
+        raise GatewayError(
+            "Not authenticated. Run 'varitykit login' first to configure your gateway key."
+        )
+
     base = gateway_url or GATEWAY_URL
     url = f"{base}/api/domains/mine?ownerId={urllib.parse.quote(owner_id)}"
 
     try:
         req = urllib.request.Request(
             url,
-            headers={"Authorization": f"Bearer {GATEWAY_API_KEY}"}
+            headers={"Authorization": f"Bearer {api_key}"}
         )
 
         with urllib.request.urlopen(req, timeout=10) as response:
