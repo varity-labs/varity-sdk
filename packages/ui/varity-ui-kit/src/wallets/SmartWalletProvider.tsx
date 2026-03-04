@@ -356,7 +356,7 @@ export function SmartWalletProvider({ config, children }: SmartWalletProviderPro
           apiUrl: config.gasTracking?.apiUrl,
           enabled: config.gasTracking?.enabled !== false,
         }
-      ).catch(error => {
+      ).catch((error: unknown) => {
         // Log error but don't throw - tracking failure shouldn't affect user flow
         console.warn('[SmartWallet] Failed to track gas usage:', error);
       });

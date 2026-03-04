@@ -100,14 +100,11 @@ export class ThirdwebWrapper {
     }
 
     // Initialize Thirdweb Client (with optional secret key for server-side operations)
-    const clientConfig: Record<string, string> = {
-      clientId: config.clientId || process.env.THIRDWEB_CLIENT_ID || 'a35636133eb5ec6f30eb9f4c15fce2f3',
-    };
+    const clientId = config.clientId || process.env.THIRDWEB_CLIENT_ID || 'a35636133eb5ec6f30eb9f4c15fce2f3';
     const secretKey = config.secretKey || process.env.THIRDWEB_SECRET_KEY;
-    if (secretKey) {
-      clientConfig.secretKey = secretKey;
-    }
-    this.client = createThirdwebClient(clientConfig);
+    this.client = createThirdwebClient(
+      secretKey ? { clientId, secretKey } : { clientId }
+    );
 
     // Initialize account if private key provided
     if (config.privateKey) {

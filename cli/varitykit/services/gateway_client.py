@@ -5,7 +5,8 @@ Enables automatic domain registration on deploy: every app gets varity.app/{name
 The CLI calls the gateway API to register/update domain mappings.
 
 Security:
-- API key is embedded in the CLI (same pattern as credential_fetcher.py)
+- Gateway API key is auto-fetched from the credential proxy (same pattern as credential_fetcher.py)
+- Developer authenticates via deploy_key (from `varitykit login`)
 - Gateway rate-limits and validates subdomain availability
 """
 
@@ -30,25 +31,77 @@ GATEWAY_URL = os.getenv(
     "https://varity.app"
 )
 
-# Gateway API key — loaded from config.json (set during `varitykit login`)
-# Falls back to env var for CI/custom deployments, never hardcoded.
+# Credential proxy URL (same as credential_fetcher.py)
+CREDENTIAL_PROXY_URL = os.getenv(
+    "VARITY_CREDENTIAL_PROXY_URL",
+    "http://j8t2mv79s9arr5pb6b4nkjmoh4.ingress.akash.tagus.host"
+)
+
+# Config file path
+CONFIG_PATH = Path.home() / ".varitykit" / "config.json"
+
+
 def _get_gateway_api_key() -> Optional[str]:
-    """Read gateway API key from config.json or env var."""
+    """
+    Resolve gateway API key with auto-fetch from credential proxy.
+
+    Resolution order:
+    1. Environment variable VARITY_GATEWAY_API_KEY (for CI/custom deployments)
+    2. Cached value in ~/.varitykit/config.json
+    3. Auto-fetch from credential proxy using deploy_key (same pattern as credential_fetcher.py)
+    """
+    # 1. Check env var
     env_key = os.getenv("VARITY_GATEWAY_API_KEY")
     if env_key:
         return env_key
 
-    if not CONFIG_PATH.exists():
-        return None
-    try:
-        with open(CONFIG_PATH, "r") as f:
-            config = json.load(f)
-        return config.get("gateway_api_key")
-    except (json.JSONDecodeError, IOError):
+    # 2. Check config.json cache
+    config = {}
+    if CONFIG_PATH.exists():
+        try:
+            with open(CONFIG_PATH, "r") as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            config = {}
+
+    cached_key = config.get("gateway_api_key")
+    if cached_key:
+        return cached_key
+
+    # 3. Auto-fetch from credential proxy using deploy_key
+    deploy_key = config.get("deploy_key")
+    if not deploy_key:
         return None
 
-# Config file path
-CONFIG_PATH = Path.home() / ".varitykit" / "config.json"
+    try:
+        url = f"{CREDENTIAL_PROXY_URL}/api/credentials/gateway"
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {deploy_key}"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            api_key = data.get("api_key")
+            if api_key:
+                # Cache to config.json for subsequent calls
+                _cache_gateway_key(config, api_key)
+                return api_key
+    except Exception:
+        pass  # Fall through — gateway key not available
+
+    return None
+
+
+def _cache_gateway_key(config: dict, api_key: str) -> None:
+    """Cache gateway API key to config.json (avoids repeated proxy calls)."""
+    try:
+        config["gateway_api_key"] = api_key
+        CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(CONFIG_PATH, "w") as f:
+            json.dump(config, f, indent=2)
+        os.chmod(CONFIG_PATH, 0o600)
+    except Exception:
+        pass  # Non-fatal — next call will re-fetch
 
 
 def get_deploy_key() -> Optional[str]:
@@ -172,7 +225,7 @@ def check_availability(
     api_key = _get_gateway_api_key()
     if not api_key:
         raise GatewayError(
-            "Not authenticated. Run 'varitykit login' first to configure your gateway key."
+            "Not authenticated. Run 'varitykit login' first."
         )
 
     try:
@@ -234,7 +287,7 @@ def register_domain(
     api_key = _get_gateway_api_key()
     if not api_key:
         raise GatewayError(
-            "Not authenticated. Run 'varitykit login' first to configure your gateway key."
+            "Not authenticated. Run 'varitykit login' first."
         )
 
     body = {
@@ -352,7 +405,7 @@ def list_my_domains(owner_id: str, gateway_url: Optional[str] = None) -> List[Di
     api_key = _get_gateway_api_key()
     if not api_key:
         raise GatewayError(
-            "Not authenticated. Run 'varitykit login' first to configure your gateway key."
+            "Not authenticated. Run 'varitykit login' first."
         )
 
     base = gateway_url or GATEWAY_URL

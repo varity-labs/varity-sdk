@@ -15,7 +15,12 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "jsx": "react",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@varity-labs/sdk/chains": ["../../core/varity-sdk/dist/chains"],
+      "@varity-labs/sdk/tracking": ["../../core/varity-sdk/dist/tracking"],
+      "@varity-labs/sdk/contracts": ["../../core/varity-sdk/dist/contracts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"]
