@@ -66,6 +66,9 @@ class CredentialConfig:
     THIRDWEB_CLIENT_ID = os.getenv("VARITY_THIRDWEB_CLIENT_ID", "a35636133eb5ec6f30eb9f4c15fce2f3")
     PRIVY_APP_ID = os.getenv("VARITY_PRIVY_APP_ID", "cmhwbozxu004fjr0cicfz0tf8")
 
+    # Gateway API key — shared key that authenticates CLI requests to the gateway
+    GATEWAY_API_KEY = os.getenv("VARITY_GATEWAY_API_KEY", "")
+
     # Per-chain credentials — env var pattern: CHAIN_{chainId}_{CREDENTIAL}
     # Example: CHAIN_43214_PRIVY_APP_ID, CHAIN_43214_THIRDWEB_CLIENT_ID
     # Falls back to default credentials if chain-specific ones aren't set
@@ -128,7 +131,7 @@ class ServiceConfig:
 
     # Service Info
     SERVICE_NAME = "varity-credential-proxy"
-    VERSION = "1.1.0"
+    VERSION = "1.1.1"
 
     # Server Config
     HOST = os.getenv("HOST", "0.0.0.0")

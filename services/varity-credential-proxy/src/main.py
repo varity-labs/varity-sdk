@@ -117,6 +117,10 @@ class PrivyCredentialsResponse(BaseModel):
     app_id: str
 
 
+class GatewayCredentialsResponse(BaseModel):
+    api_key: str
+
+
 # Routes
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
@@ -237,6 +241,42 @@ async def get_privy_credentials(
     return PrivyCredentialsResponse(
         app_id=creds["app_id"]
     )
+
+
+@app.get("/api/credentials/gateway", response_model=GatewayCredentialsResponse)
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_MINUTE}/minute")
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_HOUR}/hour")
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_DAY}/day")
+async def get_gateway_credentials(
+    request: Request,
+    tier: str = Depends(verify_api_key),
+):
+    """
+    Get Varity gateway API key for domain management.
+
+    The CLI uses this to authenticate with the gateway service (varity.app)
+    for domain registration, availability checks, and domain listing.
+
+    **Authentication:**
+    ```
+    Authorization: Bearer <API_KEY>
+    ```
+
+    **Returns:**
+    - `api_key`: Gateway API key for domain management
+    """
+    api_key = CredentialConfig.GATEWAY_API_KEY
+
+    if not api_key:
+        logger.error("Gateway API key not configured!")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Gateway credentials not configured on server"}
+        )
+
+    logger.info(f"Providing gateway credentials: tier={tier}")
+
+    return GatewayCredentialsResponse(api_key=api_key)
 
 
 @app.exception_handler(Exception)
