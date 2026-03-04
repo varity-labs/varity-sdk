@@ -1,6 +1,6 @@
 {
   "name": "@varity-labs/sdk",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-beta.1",
   "description": "Varity SDK - Build, deploy, and monetize applications with auth, database, storage, and analytics",
   "type": "module",
   "main": "./dist/index.js",
@@ -73,7 +73,7 @@
     "url": "https://github.com/varity-labs/varity-sdk/issues"
   },
   "dependencies": {
-    "@varity-labs/types": "^2.0.0-alpha.1"
+    "@varity-labs/types": "^2.0.0-beta.1"
   },
   "optionalDependencies": {
     "@emotion/react": "^11.11.0",

@@ -473,5 +473,5 @@ export type {
 } from './database'
 
 // Version
-export const VERSION = '2.0.0-alpha.1'
-export const SDK_VERSION = '2.0.0-alpha.1'
+export const VERSION = '2.0.0-beta.1'
+export const SDK_VERSION = '2.0.0-beta.1'
