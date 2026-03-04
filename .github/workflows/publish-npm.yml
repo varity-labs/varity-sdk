@@ -1,0 +1,419 @@
+name: Publish npm Packages
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "sdk-v*"
+      - "types-v*"
+      - "ui-kit-v*"
+      - "mcp-v*"
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Packages to publish (comma-separated: sdk,types,ui-kit,mcp or 'all')"
+        required: true
+        default: "all"
+        type: string
+      dry_run:
+        description: "Dry run (skip actual publish)"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: publish-npm-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    name: Build & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build publishable packages (in dependency order)
+        run: |
+          cd packages/core/varity-types && pnpm build && cd ../../..
+          cd packages/core/varity-sdk && pnpm build && cd ../../..
+          cd packages/ui/varity-ui-kit && pnpm build && cd ../../..
+          cd packages/cli/varity-mcp && pnpm build && cd ../../..
+
+      - name: Verify builds succeeded
+        run: |
+          for dir in packages/core/varity-types packages/core/varity-sdk packages/ui/varity-ui-kit packages/cli/varity-mcp; do
+            if [ ! -d "$dir/dist" ]; then
+              echo "ERROR: $dir/dist not found"
+              exit 1
+            fi
+            echo "OK: $dir/dist exists"
+          done
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            packages/core/varity-types/dist/
+            packages/core/varity-sdk/dist/
+            packages/ui/varity-ui-kit/dist/
+            packages/cli/varity-mcp/dist/
+          retention-days: 1
+
+  determine-packages:
+    name: Determine Packages to Publish
+    runs-on: ubuntu-latest
+    outputs:
+      publish_types: ${{ steps.check.outputs.publish_types }}
+      publish_sdk: ${{ steps.check.outputs.publish_sdk }}
+      publish_ui_kit: ${{ steps.check.outputs.publish_ui_kit }}
+      publish_mcp: ${{ steps.check.outputs.publish_mcp }}
+    steps:
+      - name: Determine which packages to publish
+        id: check
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          MANUAL_INPUT="${{ github.event.inputs.packages }}"
+
+          # Default: publish nothing
+          PUBLISH_TYPES="false"
+          PUBLISH_SDK="false"
+          PUBLISH_UI_KIT="false"
+          PUBLISH_MCP="false"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual trigger — parse input
+            if [[ "$MANUAL_INPUT" == "all" ]]; then
+              PUBLISH_TYPES="true"
+              PUBLISH_SDK="true"
+              PUBLISH_UI_KIT="true"
+              PUBLISH_MCP="true"
+            else
+              IFS=',' read -ra PKGS <<< "$MANUAL_INPUT"
+              for pkg in "${PKGS[@]}"; do
+                pkg=$(echo "$pkg" | xargs)  # trim whitespace
+                case "$pkg" in
+                  types)  PUBLISH_TYPES="true" ;;
+                  sdk)    PUBLISH_SDK="true" ;;
+                  ui-kit) PUBLISH_UI_KIT="true" ;;
+                  mcp)    PUBLISH_MCP="true" ;;
+                esac
+              done
+            fi
+          elif [[ "$TAG" == types-v* ]]; then
+            PUBLISH_TYPES="true"
+          elif [[ "$TAG" == sdk-v* ]]; then
+            PUBLISH_SDK="true"
+          elif [[ "$TAG" == ui-kit-v* ]]; then
+            PUBLISH_UI_KIT="true"
+          elif [[ "$TAG" == mcp-v* ]]; then
+            PUBLISH_MCP="true"
+          elif [[ "$TAG" == v* ]]; then
+            # Generic vX.Y.Z tag publishes all packages
+            PUBLISH_TYPES="true"
+            PUBLISH_SDK="true"
+            PUBLISH_UI_KIT="true"
+            PUBLISH_MCP="true"
+          fi
+
+          echo "publish_types=$PUBLISH_TYPES" >> "$GITHUB_OUTPUT"
+          echo "publish_sdk=$PUBLISH_SDK" >> "$GITHUB_OUTPUT"
+          echo "publish_ui_kit=$PUBLISH_UI_KIT" >> "$GITHUB_OUTPUT"
+          echo "publish_mcp=$PUBLISH_MCP" >> "$GITHUB_OUTPUT"
+
+          echo "--- Publish Plan ---"
+          echo "@varity-labs/types:  $PUBLISH_TYPES"
+          echo "@varity-labs/sdk:    $PUBLISH_SDK"
+          echo "@varity-labs/ui-kit: $PUBLISH_UI_KIT"
+          echo "@varity-labs/mcp:    $PUBLISH_MCP"
+
+  publish-types:
+    name: Publish @varity-labs/types
+    needs: [build, determine-packages]
+    if: needs.determine-packages.outputs.publish_types == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: packages/
+
+      - name: Verify dist exists
+        run: |
+          if [ ! -d "packages/core/varity-types/dist" ]; then
+            echo "ERROR: dist/ not found for @varity-labs/types"
+            exit 1
+          fi
+          echo "dist/ contents:"
+          ls -la packages/core/varity-types/dist/
+
+      - name: Check if version already published
+        id: version_check
+        working-directory: packages/core/varity-types
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+          if npm view "@varity-labs/types@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "WARNING: @varity-labs/types@$PACKAGE_VERSION already published, skipping"
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "Publishing @varity-labs/types@$PACKAGE_VERSION"
+          fi
+
+      - name: Publish to npm
+        if: steps.version_check.outputs.already_published == 'false' && github.event.inputs.dry_run != 'true'
+        working-directory: packages/core/varity-types
+        run: pnpm publish --provenance --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+
+      - name: Dry run publish
+        if: github.event.inputs.dry_run == 'true'
+        working-directory: packages/core/varity-types
+        run: pnpm publish --dry-run --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-sdk:
+    name: Publish @varity-labs/sdk
+    needs: [build, determine-packages, publish-types]
+    # Run even if publish-types was skipped (not needed), but not if it failed
+    if: |
+      always() &&
+      needs.build.result == 'success' &&
+      needs.determine-packages.outputs.publish_sdk == 'true' &&
+      (needs.publish-types.result == 'success' || needs.publish-types.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: packages/
+
+      - name: Verify dist exists
+        run: |
+          if [ ! -d "packages/core/varity-sdk/dist" ]; then
+            echo "ERROR: dist/ not found for @varity-labs/sdk"
+            exit 1
+          fi
+          echo "dist/ contents:"
+          ls -la packages/core/varity-sdk/dist/
+
+      - name: Check if version already published
+        id: version_check
+        working-directory: packages/core/varity-sdk
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+          if npm view "@varity-labs/sdk@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "WARNING: @varity-labs/sdk@$PACKAGE_VERSION already published, skipping"
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "Publishing @varity-labs/sdk@$PACKAGE_VERSION"
+          fi
+
+      - name: Publish to npm
+        if: steps.version_check.outputs.already_published == 'false' && github.event.inputs.dry_run != 'true'
+        working-directory: packages/core/varity-sdk
+        run: pnpm publish --provenance --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+
+      - name: Dry run publish
+        if: github.event.inputs.dry_run == 'true'
+        working-directory: packages/core/varity-sdk
+        run: pnpm publish --dry-run --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-ui-kit:
+    name: Publish @varity-labs/ui-kit
+    needs: [build, determine-packages, publish-sdk]
+    # Run even if publish-sdk was skipped, but not if it failed
+    if: |
+      always() &&
+      needs.build.result == 'success' &&
+      needs.determine-packages.outputs.publish_ui_kit == 'true' &&
+      (needs.publish-sdk.result == 'success' || needs.publish-sdk.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: packages/
+
+      - name: Verify dist exists
+        run: |
+          if [ ! -d "packages/ui/varity-ui-kit/dist" ]; then
+            echo "ERROR: dist/ not found for @varity-labs/ui-kit"
+            exit 1
+          fi
+          echo "dist/ contents:"
+          ls -la packages/ui/varity-ui-kit/dist/
+
+      - name: Check if version already published
+        id: version_check
+        working-directory: packages/ui/varity-ui-kit
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+          if npm view "@varity-labs/ui-kit@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "WARNING: @varity-labs/ui-kit@$PACKAGE_VERSION already published, skipping"
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "Publishing @varity-labs/ui-kit@$PACKAGE_VERSION"
+          fi
+
+      - name: Publish to npm
+        if: steps.version_check.outputs.already_published == 'false' && github.event.inputs.dry_run != 'true'
+        working-directory: packages/ui/varity-ui-kit
+        run: pnpm publish --provenance --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+
+      - name: Dry run publish
+        if: github.event.inputs.dry_run == 'true'
+        working-directory: packages/ui/varity-ui-kit
+        run: pnpm publish --dry-run --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-mcp:
+    name: Publish @varity-labs/mcp
+    needs: [build, determine-packages]
+    if: needs.determine-packages.outputs.publish_mcp == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: packages/
+
+      - name: Verify dist exists
+        run: |
+          if [ ! -d "packages/cli/varity-mcp/dist" ]; then
+            echo "ERROR: dist/ not found for @varity-labs/mcp"
+            exit 1
+          fi
+          echo "dist/ contents:"
+          ls -la packages/cli/varity-mcp/dist/
+
+      - name: Check if version already published
+        id: version_check
+        working-directory: packages/cli/varity-mcp
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+          if npm view "@varity-labs/mcp@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "WARNING: @varity-labs/mcp@$PACKAGE_VERSION already published, skipping"
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+            echo "Publishing @varity-labs/mcp@$PACKAGE_VERSION"
+          fi
+
+      - name: Publish to npm
+        if: steps.version_check.outputs.already_published == 'false' && github.event.inputs.dry_run != 'true'
+        working-directory: packages/cli/varity-mcp
+        run: pnpm publish --provenance --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+
+      - name: Dry run publish
+        if: github.event.inputs.dry_run == 'true'
+        working-directory: packages/cli/varity-mcp
+        run: pnpm publish --dry-run --access public --no-git-checks --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

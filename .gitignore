@@ -1,0 +1,103 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+.turbo/
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+htmlcov/
+.coverage
+*.egg-info/
+
+# Environment (NEVER commit .env files)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.pypirc
+
+# Private keys / sensitive config (use .example files instead)
+**/network.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Generated / Solidity
+typechain-types/
+artifacts/
+cache/
+compile-warnings.txt
+compile_output.txt
+final-compilation.txt
+
+# Database
+*.db
+*.sqlite
+
+# Package manager locks (only keep pnpm-lock.yaml at root)
+packages/**/package-lock.json
+packages/**/yarn.lock
+
+# Apps folder (separate repos)
+apps/
+
+# Services (deployed separately)
+services/*
+!services/varity-gateway/
+!services/varity-db-proxy/
+!services/varity-credential-proxy/
+
+# Tools (separate repos)
+tools/
+
+# Examples (cleanup later)
+examples/
+
+# Non-MVP packages (kept locally, hidden from public repo)
+# These will be open-sourced as they become production-ready
+packages/clients/
+packages/infrastructure/
+packages/migration/
+
+# Claude session files
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# Temporary files
+*.backup
+*.bak
+*.tmp
+.cursor/
+cli/varitykit_old/

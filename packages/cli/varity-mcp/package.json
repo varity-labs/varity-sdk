@@ -1,0 +1,59 @@
+{
+  "name": "@varity-labs/mcp",
+  "version": "1.0.0",
+  "description": "Varity MCP Server — deploy production apps from any AI coding tool",
+  "type": "module",
+  "bin": {
+    "varity-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "varity",
+    "mcp",
+    "model-context-protocol",
+    "cursor",
+    "claude",
+    "deploy",
+    "ai",
+    "developer-tools",
+    "saas",
+    "fullstack",
+    "vibe-coding",
+    "copilot",
+    "windsurf",
+    "chatgpt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/varity-labs/varity-sdk.git",
+    "directory": "packages/cli/varity-mcp"
+  },
+  "homepage": "https://docs.varity.so/mcp",
+  "bugs": {
+    "url": "https://github.com/varity-labs/varity-sdk/issues"
+  },
+  "author": "Varity Labs <team@varity.so>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

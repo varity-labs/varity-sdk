@@ -1,0 +1,129 @@
+name: Publish CLI to PyPI
+
+on:
+  push:
+    tags:
+      - "cli-v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (skip actual publish)"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: publish-pypi-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    name: Build CLI Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: pip install build twine
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#cli-v}"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "Building varitykit $VERSION"
+          else
+            echo "version=dev" >> "$GITHUB_OUTPUT"
+            echo "Building development version"
+          fi
+
+      - name: Verify pyproject.toml version matches tag
+        if: github.ref_type == 'tag'
+        working-directory: cli
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#cli-v}"
+          PKG_VERSION=$(python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+          print(data['project']['version'])
+          ")
+          echo "Tag version:     $TAG_VERSION"
+          echo "Package version: $PKG_VERSION"
+          if [[ "$TAG_VERSION" != "$PKG_VERSION" ]]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match pyproject.toml version ($PKG_VERSION)"
+            echo "Update cli/pyproject.toml version before tagging."
+            exit 1
+          fi
+
+      - name: Compile check all Python files
+        working-directory: cli
+        run: |
+          echo "Running py_compile on all Python source files..."
+          python -m py_compile varitykit/__init__.py
+          find varitykit -name "*.py" -exec python -m py_compile {} \;
+          echo "All Python files compile successfully"
+
+      - name: Build sdist and wheel
+        working-directory: cli
+        run: python -m build
+
+      - name: Validate distributions
+        working-directory: cli
+        run: twine check dist/*
+
+      - name: List build output
+        working-directory: cli
+        run: ls -la dist/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-dist
+          path: cli/dist/
+          retention-days: 5
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/varitykit/
+    permissions:
+      id-token: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-dist
+          path: dist/
+
+      - name: List artifacts
+        run: ls -la dist/
+
+      - name: Publish to PyPI (trusted publisher)
+        if: github.event.inputs.dry_run != 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Uses trusted publishing (OIDC) if configured in PyPI,
+          # otherwise falls back to API token
+          password: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Dry run
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "DRY RUN: Would publish the following to PyPI:"
+          ls -la dist/
+          echo "Skipping actual publish."

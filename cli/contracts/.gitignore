@@ -1,0 +1,35 @@
+# Hardhat files
+cache/
+artifacts/
+typechain-types/
+
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Deployment records (sensitive)
+deployments/
+
+# Gas reports
+gas-report.txt
+
+# Coverage reports
+coverage/
+coverage.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Hardhat console history
+.hardhat_console_history.txt
+
+# Misc
+.DS_Store
+*.log
+*.swp
+*.swo
+*~

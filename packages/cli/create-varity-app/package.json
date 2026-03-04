@@ -1,0 +1,61 @@
+{
+  "name": "create-varity-app",
+  "version": "2.0.0-alpha.1",
+  "description": "Create production-ready apps with auth, database, and payments built in",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/varity-labs/varity-sdk.git",
+    "directory": "packages/cli/create-varity-app"
+  },
+  "homepage": "https://docs.varity.so",
+  "bugs": {
+    "url": "https://github.com/varity-labs/varity-sdk/issues"
+  },
+  "keywords": [
+    "varity",
+    "create-app",
+    "saas",
+    "dashboard",
+    "nextjs",
+    "starter",
+    "template",
+    "react",
+    "deploy",
+    "auth",
+    "database",
+    "payments",
+    "developer-tools",
+    "fullstack"
+  ],
+  "bin": {
+    "create-varity-app": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "template",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "scripts": {
+    "prebuild": "node scripts/copy-template.mjs",
+    "build": "tsc",
+    "clean": "rm -rf dist template"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0",
+    "ora": "^8.1.0",
+    "prompts": "^2.4.2",
+    "validate-npm-package-name": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.0.0",
+    "@types/prompts": "^2.4.9",
+    "@types/validate-npm-package-name": "^4.0.2",
+    "typescript": "^5.5.0"
+  }
+}
