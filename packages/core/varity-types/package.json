@@ -41,7 +41,7 @@
     "url": "https://github.com/varity-labs/varity-sdk/issues"
   },
   "optionalDependencies": {
-    "thirdweb": "^5.112.0"
+    "thirdweb": "^5.119.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
