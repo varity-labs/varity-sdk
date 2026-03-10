@@ -21,7 +21,7 @@
     "@varity-labs/types": "workspace:^",
     "@varity-labs/ui-kit": "workspace:^",
     "lucide-react": "^0.400.0",
-    "next": "^15.0.0",
+    "next": "^16.1.6",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
   },
