@@ -215,8 +215,7 @@ The database collection is created automatically on first use — no migrations 
 
 | Variable | Required | Notes |
 |----------|----------|-------|
-| `NEXT_PUBLIC_PRIVY_APP_ID` | No | Auth provider (auto-configured) |
-| `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` | No | Infrastructure (auto-configured) |
+| `NEXT_PUBLIC_VARITY_AUTH_ID` | No | Auth provider (auto-configured) |
 | `NEXT_PUBLIC_VARITY_APP_TOKEN` | No | Database token (auto-configured) |
 | `NEXT_PUBLIC_VARITY_APP_ID` | No | App ID (auto-configured) |
 
