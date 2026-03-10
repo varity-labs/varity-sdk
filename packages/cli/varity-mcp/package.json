@@ -48,7 +48,7 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@sentry/node": "^8.38.0",
+    "@sentry/node": "^10.43.0",
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
     "winston": "^3.17.0",
