@@ -9,7 +9,7 @@ import { registerDeployLogsTool } from "./tools/deploy-logs.js";
 import { registerSubmitToStoreTool } from "./tools/submit-to-store.js";
 import { createOAuthProvider } from "./auth/provider.js";
 
-export const VERSION = "1.3.0";
+export const VERSION = "1.3.2";
 
 export type TransportMode = "stdio" | "http";
 

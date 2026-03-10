@@ -60,7 +60,7 @@ Switch your entire app's color scheme by editing `src/app/globals.css`:
 This template works immediately with **zero setup**:
 
 ### Instant Auth
-- ✅ Email login (Privy)
+- ✅ Email login (built-in)
 - ✅ Google/Apple social login
 - ✅ Dev credentials built-in
 - ❌ No env vars needed
@@ -75,9 +75,9 @@ This template works immediately with **zero setup**:
 ```bash
 npm run deploy
 ```
-- ✅ Deploys to IPFS
+- ✅ Deploys to production
 - ✅ Auto-fetches credentials
-- ❌ No thirdweb account needed
+- ❌ No extra accounts needed
 
 ---
 
@@ -103,7 +103,7 @@ This template uses `workspace:^` protocol for Varity packages:
 - ✅ `output: 'export'` in next.config.js
 - ✅ All pages pre-rendered to static HTML
 - ✅ No server-side dependencies
-- ✅ IPFS/CDN deployable
+- ✅ CDN deployable
 
 ### Type Safety
 - ✅ TypeScript strict mode enabled

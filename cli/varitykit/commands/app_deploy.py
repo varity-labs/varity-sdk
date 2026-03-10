@@ -184,28 +184,28 @@ def app():
 @click.option(
     "--hosting",
     default="auto",
-    help="Hosting type: 'auto' (detect), 'static' for static sites, 'akash' for dynamic apps",
-    type=click.Choice(["auto", "static", "akash", "dynamic"], case_sensitive=False),
+    help="Hosting type: 'auto' (detect), 'static' for static sites, 'dynamic' for server apps",
+    type=click.Choice(["auto", "static", "dynamic"], case_sensitive=False),
 )
 @click.option(
     "--submit-to-store", is_flag=True, help="Auto-submit to Varity App Store"
 )
 @click.option(
-    "--chain",
+    "--target",
     default=None,
-    help="Target chain: varity-l3 (default), avax-l1",
-    type=click.Choice(["varity-l3", "avax-l1"], case_sensitive=False),
+    help="Target platform: varity (default), avalanche",
+    type=click.Choice(["varity", "avalanche"], case_sensitive=False),
 )
 @click.option(
     "--mode",
     default="auto",
-    help="Deployment mode: auto (recommended, default), guided (show options), expert (manual --chain)",
+    help="Deployment mode: auto (recommended, default), guided (show options), expert (manual --target)",
     type=click.Choice(["auto", "guided", "expert"], case_sensitive=False),
 )
 @click.option(
     "--tier",
     default=None,
-    help="Infrastructure tier: free, starter ($49/mo), growth ($99/mo), enterprise ($499/mo), scale ($1499/mo)",
+    help="Infrastructure tier: free, starter, growth, enterprise, scale",
     type=click.Choice(["free", "starter", "growth", "enterprise", "scale"], case_sensitive=False),
 )
 @click.option(
@@ -223,13 +223,13 @@ def app():
     type=click.Path(exists=True),
 )
 @click.pass_context
-def deploy(ctx, hosting, chain, submit_to_store, mode, tier, name, skip_build, path):
+def deploy(ctx, hosting, target, submit_to_store, mode, tier, name, skip_build, path):
     """
     Deploy your application.
 
     This command will:
     1. Detect your project type (Next.js, React, Vue)
-    2. Analyze your app and recommend the optimal chain (auto/guided mode)
+    2. Analyze your app and recommend the optimal platform (auto/guided mode)
     3. Detect and configure Varity features (database, auth, etc.)
     4. Build your application with auto-injected credentials
     5. Deploy and return your app URL
@@ -239,7 +239,7 @@ def deploy(ctx, hosting, chain, submit_to_store, mode, tier, name, skip_build, p
     Deployment Modes:
       • auto: Auto-picks optimal platform (default, recommended)
       • guided: Show all platform options, let you choose
-      • expert: Manual --chain selection
+      • expert: Manual --target selection
 
     \b
     Hosting Options:
@@ -273,6 +273,10 @@ def deploy(ctx, hosting, chain, submit_to_store, mode, tier, name, skip_build, p
     # Convert path to absolute early for orchestration
     project_path = Path(path).resolve()
 
+    # Normalize --target aliases to internal chain IDs
+    target_to_chain = {"varity": "varity-l3", "avalanche": "avax-l1"}
+    chain = target_to_chain.get(target, target) if target else None
+
     # Normalize hosting option: "dynamic" is an alias for "akash"
     if hosting == "dynamic":
         hosting = "akash"
@@ -283,23 +287,23 @@ def deploy(ctx, hosting, chain, submit_to_store, mode, tier, name, skip_build, p
         hosting = detect_hosting_type(str(project_path))
         # Hosting type detected silently — shown in banner below
 
-    # Resolve chain using intelligent orchestration
+    # Resolve platform using intelligent orchestration
     from varitykit.commands.chains import CHAIN_CONFIGS, DEFAULT_CHAIN
 
     selected_chain = None
     orchestration_result = None
 
-    # EXPERT mode: Use explicit --chain or default, skip orchestration
+    # EXPERT mode: Use explicit --target or default, skip orchestration
     if mode == "expert":
         selected_chain = chain or DEFAULT_CHAIN
         if not chain:
-            console.print("[dim]Expert mode: Using default chain (no orchestration)[/dim]\n")
+            console.print("[dim]Expert mode: Using default platform (no orchestration)[/dim]\n")
 
     # AUTO or GUIDED mode: Use intelligent orchestration
     elif mode in ["auto", "guided"]:
-        # Check if --chain was explicitly provided
+        # Check if --target was explicitly provided
         if chain:
-            console.print(f"[yellow]Warning: --chain flag ignored in {mode} mode (orchestration will recommend optimal chain)[/yellow]\n")
+            console.print(f"[yellow]Warning: --target flag ignored in {mode} mode (orchestration will recommend optimal platform)[/yellow]\n")
 
         try:
             # Call orchestration CLI
@@ -370,7 +374,7 @@ def deploy(ctx, hosting, chain, submit_to_store, mode, tier, name, skip_build, p
                         for idx, rec in enumerate(recommendations, 1):
                             console.print(f"  {idx}. [bold]{rec['chainName']}[/bold] (score: {rec['score']}/100)")
                             if rec.get("reasoning"):
-                                for reason in rec["reasoning"][:2]:  # Show top 2 reasons per chain
+                                for reason in rec["reasoning"][:2]:  # Show top 2 reasons per option
                                     # Remove checkmarks from reasoning
                                     clean_reason = reason.replace("✓ ", "     - ").replace("○ ", "     - ").replace("⚠ ", "     - ")
                                     console.print(clean_reason)
@@ -412,10 +416,10 @@ def deploy(ctx, hosting, chain, submit_to_store, mode, tier, name, skip_build, p
                 from rich.prompt import IntPrompt
 
                 console.print("[bold]Select Infrastructure Tier:[/bold]")
-                console.print("  1. [green]Free[/green]       - $0/mo   (Unlimited requests)")
-                console.print("  2. [cyan]Starter[/cyan]    - $49/mo  (50k requests/mo)")
-                console.print("  3. [blue]Growth[/blue]     - $99/mo  (250k requests/mo)")
-                console.print("  4. [magenta]Enterprise[/magenta] - $199/mo (1M requests/mo)")
+                console.print("  1. [green]Free[/green]       - For development and small projects")
+                console.print("  2. [cyan]Starter[/cyan]    - For production apps")
+                console.print("  3. [blue]Growth[/blue]     - For scaling apps")
+                console.print("  4. [magenta]Enterprise[/magenta] - For high-traffic apps")
                 tier_choice = IntPrompt.ask(
                     "\nTier",
                     choices=["1", "2", "3", "4"],

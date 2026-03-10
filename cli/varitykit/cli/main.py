@@ -76,11 +76,15 @@ cli.add_command(template)
 cli.add_command(marketplace)
 cli.add_command(domains)
 cli.add_command(platforms)
-cli.add_command(chains)
 
 # Utility commands
 cli.add_command(bootstrap)
 cli.add_command(completions)
+
+# Hidden aliases and internal commands (still callable, not shown in --help)
+chains.hidden = True
+cli.add_command(chains)
+migrate.hidden = True
 cli.add_command(migrate)
 
 # Advanced commands (hidden from default help - still callable)

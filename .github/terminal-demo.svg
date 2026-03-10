@@ -106,6 +106,6 @@
   <!-- Line 8: ✅ Live at: https://my-app.varity.app -->
   <text class="line line8 final" x="32" y="300">✅ Live at: https://my-app.varity.app</text>
 
-  <!-- Line 9: Monthly cost -->
-  <text class="line line9 savings" x="32" y="330">   Monthly cost: Starting at $49/mo (60-80% cheaper than AWS)</text>
+  <!-- Line 9: Cost savings -->
+  <text class="line line9 savings" x="32" y="330">   Saving 60-80% vs AWS — auth, database, hosting included</text>
 </svg>

@@ -89,13 +89,13 @@ varitykit app deploy
 ### Authentication (email, Google, GitHub — zero setup)
 
 ```tsx
-import { PrivyStack, PrivyLoginButton, usePrivy } from '@varity-labs/ui-kit';
+import { AuthProvider, LoginButton } from '@varity-labs/ui-kit';
 
 function App() {
   return (
-    <PrivyStack>
-      <PrivyLoginButton />
-    </PrivyStack>
+    <AuthProvider>
+      <LoginButton />
+    </AuthProvider>
   );
 }
 ```
@@ -274,7 +274,7 @@ Varity runs on distributed infrastructure providers that compete on price — no
 
 | What you save on | How |
 |------------------|-----|
-| **Compute** | Decentralized providers compete on price — **~70% less** than AWS/GCP |
+| **Compute** | Distributed providers compete on price — **~70% less** than AWS/GCP |
 | **Database** | Included with every app — no separate provisioning |
 | **Auth** | Included — no Cognito/Auth0 subscription needed |
 | **Storage** | Distributed storage at a fraction of centralized pricing |

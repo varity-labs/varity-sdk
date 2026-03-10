@@ -242,7 +242,6 @@ function App() {
 |----------|-------------|
 | `PrivyStack` | All-in-one provider (auth + theme + query client) |
 | `VarityPrivyProvider` | Auth provider (lower-level) |
-| `ZeroDevProvider` | Gas sponsorship provider (automatic in PrivyStack) |
 | `ThemeProvider` | Theme management |
 | `ToastProvider` | Toast notifications |
 | `VarityDashboardProvider` | Dashboard state management |

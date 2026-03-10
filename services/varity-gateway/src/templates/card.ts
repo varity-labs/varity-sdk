@@ -110,7 +110,7 @@ export function cardSvgDev(record: DomainRecord, _baseDomain: string): string {
     <text x="80" y="244">Deploying to Varity...</text>
     <text x="80" y="268">  &#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588;&#x2588; 100%</text>
     <text x="660" y="100">&#x2705; Live at: https://${appUrl}</text>
-    <text x="660" y="124">Monthly cost: $49/mo</text>
+    <text x="660" y="124">Saving 60-80% vs AWS</text>
     <text x="660" y="172">$ varitykit status</text>
     <text x="660" y="196">  App: ${esc(displayName)}</text>
     <text x="660" y="220">  Status: healthy</text>

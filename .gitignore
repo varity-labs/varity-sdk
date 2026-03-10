@@ -187,6 +187,38 @@ cli/tests/unit/test_ai_engine.py
 **/CLI_THIRDWEB_COMMANDS.md
 **/FINAL_POLISH_REPORT.md
 **/MCP_AUDIT_REPORT.md
+ARCHITECTURE.md
+ORCHESTRATION_COMPLETE.md
+ORCHESTRATION_README.md
+ORCHESTRATION_STATUS.md
+RELEASE_PROCESS.md
+TESTING_GUIDE.md
+AGENT_STATUS.md
+MVP_LAUNCH_STATUS.md
+.planning/
+
+# Internal SDK modules (not for public)
+packages/core/varity-sdk/src/orchestration/
+packages/core/varity-sdk/src/aa/
+packages/core/varity-sdk/docs/
+packages/core/varity-sdk/packages/
+
+# Test apps (internal)
+test-apps/
+
+# Internal MCP docs (not for npm or public repo)
+packages/cli/varity-mcp/BROWSER_USAGE.md
+packages/cli/varity-mcp/DEPLOYMENT.md
+packages/cli/varity-mcp/FUTURE_IMPLEMENTATIONS.md
+packages/cli/varity-mcp/MARKETPLACE_SUBMISSIONS.md
+packages/cli/varity-mcp/MCP_STATUS.md
+packages/cli/varity-mcp/PRE_PUBLISH_CHECKLIST.md
+packages/cli/varity-mcp/SENTRY_SETUP.md
+packages/cli/varity-mcp/SUBMIT_NOW.md
+packages/cli/varity-mcp/TEST_RESULTS.md
+packages/cli/varity-mcp/WORLD_CLASS_PLAN.md
+packages/cli/varity-mcp/WORLD_CLASS_STATUS.md
+packages/cli/varity-mcp/WORLD_CLASS_TESTING.md
 
 # Sync script (private repo tool)
 sync-to-public.sh
@@ -207,4 +239,14 @@ packages/ui/varity-ui-kit/src/providers/ZeroDevProvider.tsx
 cli/varitykit/core/README.md
 cli/varitykit/commands/platforms.py
 cli/templates/
+
+# CLI internal scripts and test files (not for public)
+cli/EXECUTE_DAY_1.sh
+cli/RUN_FIXES.sh
+cli/coverage.json
+cli/fix_types_and_lint.py
+cli/pyproject.toml.NEW
+cli/setup_dev.sh
+cli/test_installation.sh
+cli/test_phase3_credentials.py
 services/varity-gateway/DEPLOY.md
