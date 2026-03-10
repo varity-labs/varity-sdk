@@ -154,11 +154,11 @@ function Dashboard() {
 | `useSignIn` | Trigger sign-in flow |
 | `useSignOut` | Trigger sign-out flow |
 
-## Payments (Beta)
+## Payments (Coming Soon)
 
-Built-in payment components for app monetization (90% to developer, 10% platform fee).
+Payment components for app monetization (90% to developer, 10% platform fee).
 
-> **Note:** Payment components are exported and functional but the underlying payment contract is being finalized. APIs may change before stable release.
+> **Note:** Payment components are exported but the underlying payment processing is not yet live. APIs will change before stable release.
 
 ```tsx
 import { PaymentWidget, PaymentGate, useVarityPayment } from '@varity-labs/ui-kit'

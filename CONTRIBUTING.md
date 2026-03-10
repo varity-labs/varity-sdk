@@ -8,7 +8,7 @@ Thanks for your interest in contributing to Varity! This guide will help you get
 
 - **Node.js** 18+
 - **pnpm** 8+ (`npm install -g pnpm`)
-- **Python** 3.10+ (for CLI)
+- **Python** 3.8+ (for CLI)
 
 ### Setup
 

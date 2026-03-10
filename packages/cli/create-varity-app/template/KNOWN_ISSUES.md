@@ -26,7 +26,7 @@
 The template uses `usePrivy()` and `NEXT_PUBLIC_PRIVY_APP_ID`. The planned `useAuth()` hook and `NEXT_PUBLIC_VARITY_AUTH_ID` env var are post-beta tasks. No action required -- current auth works correctly.
 
 ### 2. Payments Section is Placeholder
-Settings > Billing shows mock UI. Credit card payment integration (on/off ramp) is coming before MVP launch. Wire your own billing provider (Stripe, etc.) if needed now.
+Settings > Billing shows mock UI. Credit card payment integration (on/off ramp) is coming soon. Wire your own billing provider (Stripe, etc.) if needed now.
 
 ### 3. No Server-Side Rendering
 All pages are statically exported. No SSR, API routes, or middleware. Do not use dynamic routes (`[id]` patterns) -- use client-side state for detail views instead.

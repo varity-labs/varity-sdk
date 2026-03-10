@@ -42,15 +42,15 @@
 
 Most platforms make you stitch together auth, database, storage, payments, and hosting yourself. Varity includes everything in the box.
 
-| | AWS | Vercel + Supabase | **Varity** |
-|---|---|---|---|
-| **Time to deploy** | 30+ min | 10 min | **60 seconds** |
-| **Auth included** | No | Yes | **Yes** |
-| **Database included** | No | Yes | **Yes** |
-| **Storage included** | No | Yes | **Yes** |
-| **Payments included** | No | No | **Coming soon** |
-| **App Store listing** | No | No | **Yes** |
-| **Starting price** | ~$100+/mo | ~$45/mo | **$49/mo** |
+| | Traditional Setup | **Varity** |
+|---|---|---|
+| **Time to deploy** | Hours (config, CI/CD, DNS, SSL) | **60 seconds** |
+| **Auth** | Set up Cognito/Auth0 + write auth logic | **Included — zero config** |
+| **Database** | Provision RDS/Supabase + manage schema | **Included — zero config** |
+| **Storage** | Configure S3/GCS + write upload logic | **Included — zero config** |
+| **Payments** | Stripe integration + webhook handlers | **Coming soon** |
+| **App Store listing** | Build your own distribution | **One command** |
+| **Infrastructure cost** | $500–2,800+/mo (AWS) | **~70% less** |
 
 You build. You deploy. Users find your app. You get paid. That's it.
 
@@ -128,7 +128,7 @@ Works out of the box. No database setup, no API keys, no configuration.
 
 ### Payments (coming soon)
 
-> Payment components are coming before MVP launch. Set your price, users pay with credit card, you receive 90% revenue automatically.
+> Set your price, users pay with credit card, you receive 90% revenue automatically.
 
 ```bash
 # Deploy and list on the Varity App Store
@@ -272,14 +272,14 @@ Set your price. Users pay with credit card. You get paid monthly. No Stripe setu
 
 Varity runs on distributed infrastructure providers that compete on price — no cloud premiums.
 
-| Resource | AWS | Varity | Savings |
-|----------|-----|--------|---------|
-| Compute | ~$500/mo | ~$150/mo | **~70%** |
-| Database | ~$300/mo | ~$50/mo | **~83%** |
-| Storage (1 TB) | ~$230/mo | ~$23/mo | **~90%** |
-| Auth (managed) | ~$100/mo | **Included** | **100%** |
+| What you save on | How |
+|------------------|-----|
+| **Compute** | Decentralized providers compete on price — **~70% less** than AWS/GCP |
+| **Database** | Included with every app — no separate provisioning |
+| **Auth** | Included — no Cognito/Auth0 subscription needed |
+| **Storage** | Distributed storage at a fraction of centralized pricing |
 
-All-in-one plans start at **$49/mo** with auth, database, storage, and hosting included.
+Auth, database, storage, and hosting are all included. Most teams save **60–80%** compared to AWS.
 
 ## Architecture
 

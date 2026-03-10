@@ -1,6 +1,6 @@
 {
   "name": "@varity-labs/types",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "Type definitions for Varity SDK — auth, database, API, and utility types",
   "type": "module",
   "main": "./dist/index.js",

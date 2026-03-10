@@ -1,6 +1,6 @@
 {
   "name": "@varity-labs/sdk",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "Varity SDK - Build, deploy, and monetize applications with auth, database, storage, and analytics",
   "type": "module",
   "main": "./dist/index.js",

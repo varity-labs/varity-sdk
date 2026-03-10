@@ -4,7 +4,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/varitykit)](https://pypi.org/project/varitykit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/varity-labs/varity-sdk/blob/main/LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
 ## Install
 
@@ -43,7 +43,7 @@ Check that your environment is ready to build and deploy.
 varitykit doctor
 ```
 
-Validates: Node.js, Python 3.10+, Git, npm, disk space, memory, network connectivity.
+Validates: Node.js, Python 3.8+, Git, npm, disk space, memory, network connectivity.
 
 ### `varitykit init [name]`
 
