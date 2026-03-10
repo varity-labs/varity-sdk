@@ -1,0 +1,8 @@
+node_modules
+dist
+*.yaml
+*.yml
+.env*
+.git
+README.md
+DEPLOY.md

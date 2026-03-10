@@ -1,0 +1,220 @@
+# Varity Testnet Configuration
+# This file contains all network configurations for testnet deployments
+
+# Blockchain Networks
+networks:
+  # Arbitrum Sepolia Testnet (Primary L3 Settlement Layer)
+  arbitrum:
+    name: Arbitrum Sepolia
+    chainId: 421614
+    rpc: https://sepolia-rollup.arbitrum.io/rpc
+    # Alternative RPC with Alchemy (requires ALCHEMY_API_KEY env var)
+    # rpc: https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+    explorer: https://sepolia.arbiscan.io
+    faucet: https://faucet.quicknode.com/arbitrum/sepolia
+    nativeCurrency:
+      name: Ethereum
+      symbol: ETH
+      decimals: 18
+
+# DePin Infrastructure Configurations
+depin:
+  # Akash Network (Decentralized Compute)
+  akash:
+    name: Akash Testnet
+    rpc: https://rpc.testnet-02.aksh.pw:443
+    api: https://api.testnet-02.aksh.pw:443
+    chainId: testnet-02
+    faucet: https://faucet.testnet-02.aksh.pw
+    explorer: https://testnet.akash.network
+    nativeCurrency:
+      name: AKT
+      symbol: AKT
+      decimals: 6
+    # Default deployment settings
+    defaults:
+      minCPU: 100  # millicores
+      minMemory: 512  # MB
+      minStorage: 1  # GB
+      maxCPU: 32000
+      maxMemory: 65536
+      maxStorage: 1024
+      timeout: 300  # seconds
+
+  # Filecoin/IPFS Storage (via Pinata)
+  filecoin:
+    name: Filecoin Testnet
+    pinata:
+      api: https://api.pinata.cloud
+      gateway: https://gateway.pinata.cloud
+      uploadEndpoint: /pinning/pinFileToIPFS
+      uploadJSONEndpoint: /pinning/pinJSONToIPFS
+      unpinEndpoint: /pinning/unpin
+      pinListEndpoint: /data/pinList
+      # Environment variables required:
+      # - PINATA_API_KEY
+      # - PINATA_API_SECRET
+
+  # Celestia DA (Data Availability Layer)
+  celestia:
+    name: Celestia Mocha Testnet
+    network: mocha-4
+    rpc: https://rpc-mocha.pops.one
+    api: https://api-mocha.pops.one
+    explorer: https://mocha.celenium.io
+    faucet: https://faucet.celestia-mocha-4.com
+    # Namespace configuration for PDA (Proxy Data Availability)
+    namespaces:
+      varity_internal: "0x76617269747900000000000000000000000000000001"  # varity internal
+      industry_rag: "0x76617269747900000000000000000000000000000002"  # industry rag
+      customer_data: "0x76617269747900000000000000000000000000000003"  # customer data
+    # Environment variable required:
+    # - CELESTIA_AUTH_TOKEN
+
+  # Lit Protocol (Encryption & Access Control)
+  lit:
+    name: Lit Protocol Datil Test
+    network: datil-test
+    nodes:
+      - https://datil-test-1.getlit.dev
+      - https://datil-test-2.getlit.dev
+      - https://datil-test-3.getlit.dev
+    chainId: 1  # Ethereum mainnet for PKP minting (testnet uses mainnet)
+    litTokenAddress: "0x0000000000000000000000000000000000000000"  # Test network
+
+# Deployed Contract Addresses (Testnet)
+# These will be populated after first deployment
+contracts:
+  dashboardRegistry: ""
+  templateManager: ""
+  accessControl: ""
+  billingModule: ""
+  zkmlVerifier: ""
+  oracleClient: ""
+
+# Gas Configuration
+gas:
+  # Gas limits for different operations
+  limits:
+    deployContract: 5000000
+    registerDashboard: 300000
+    grantAccess: 100000
+    recordUsage: 80000
+  # Gas price settings (in gwei)
+  price:
+    standard: 0.1
+    fast: 0.2
+    rapid: 0.5
+
+# Storage Layer Configuration
+storage:
+  # Layer 1: Varity Internal Storage
+  varity_internal:
+    layer: varity-internal
+    namespace_prefix: varity-internal
+    encryption_enabled: true
+    lit_protocol_access: varity-admins-only
+    celestia_da_enabled: false
+    max_file_size_mb: 100
+    allowed_extensions:
+      - .pdf
+      - .docx
+      - .txt
+      - .md
+      - .json
+      - .yaml
+
+  # Layer 2: Industry RAG Storage
+  industry_rag:
+    layer: industry-rag
+    namespace_prefix: industry-{industry}-rag
+    encryption_enabled: true
+    lit_protocol_access: industry-customers
+    celestia_da_enabled: true
+    target_documents: 10000
+    max_file_size_mb: 50
+    allowed_extensions:
+      - .pdf
+      - .docx
+      - .txt
+      - .md
+      - .json
+
+  # Layer 3: Customer Data Storage
+  customer_data:
+    layer: customer-data
+    namespace_prefix: customer-{company-id}
+    encryption_enabled: true
+    lit_protocol_access: customer-only
+    celestia_da_enabled: true
+    zk_proofs_enabled: true
+    max_file_size_mb: 500
+    allowed_extensions:
+      - "*"  # All file types allowed
+
+# Template Configuration
+templates:
+  # Available industry templates
+  industries:
+    - finance
+    - healthcare
+    - retail
+    - iso-merchant
+  # Template storage location
+  template_cid_prefix: "Qm"  # IPFS CID prefix
+  # Template versioning
+  version_format: "v{major}.{minor}.{patch}"
+
+# Deployment Configuration
+deployment:
+  # Default timeout for operations (seconds)
+  timeout: 600
+  # Retry configuration
+  retries:
+    max_attempts: 3
+    backoff_multiplier: 2
+    initial_delay: 5
+  # Health check configuration
+  health_check:
+    enabled: true
+    interval: 30
+    timeout: 10
+    retries: 3
+  # Verification settings
+  verification:
+    enabled: true
+    wait_confirmations: 2
+    timeout: 300
+
+# Monitoring & Logging
+monitoring:
+  # Log level
+  log_level: INFO
+  # Enable detailed logging
+  verbose: false
+  # Metrics collection
+  metrics_enabled: true
+  # Error tracking
+  sentry_dsn: ""  # Optional Sentry DSN for error tracking
+
+# Cost Estimation (Testnet - all costs are free or minimal)
+cost_estimates:
+  # Arbitrum Sepolia (free testnet ETH)
+  gas_price_gwei: 0.1
+  eth_usd_price: 0  # Free testnet
+  # Akash Testnet (free via faucet)
+  akt_usd_price: 0  # Free testnet
+  # Filecoin via Pinata (free tier)
+  pinata_monthly_cost: 0  # Free tier up to 1GB
+
+# Security Configuration
+security:
+  # Wallet configuration
+  require_hardware_wallet: false
+  # Access control
+  enable_multisig: false
+  multisig_threshold: 0
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    max_requests_per_minute: 60

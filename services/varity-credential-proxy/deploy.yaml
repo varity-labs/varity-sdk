@@ -1,0 +1,52 @@
+---
+version: "2.0"
+
+services:
+  credential-proxy:
+    image: ghcr.io/varity-labs/credential-proxy:1.0.4
+    expose:
+      - port: 8001
+        as: 80
+        to:
+          - global: true
+    env:
+      # Environment
+      - ENV=production
+
+      # Varity Infrastructure Credentials
+      - VARITY_THIRDWEB_SECRET_KEY=${VARITY_THIRDWEB_SECRET_KEY}
+      - VARITY_THIRDWEB_CLIENT_ID=${VARITY_THIRDWEB_CLIENT_ID}
+      - VARITY_PRIVY_APP_ID=${VARITY_PRIVY_APP_ID}
+
+      # API Keys
+      - VARITY_CLI_PRODUCTION_KEY=${VARITY_CLI_PRODUCTION_KEY}
+      - VARITY_CLI_BETA_KEY=${VARITY_CLI_BETA_KEY}
+      - VARITY_CLI_DEV_KEY=${VARITY_CLI_DEV_KEY}
+
+      # Service Configuration
+      - HOST=0.0.0.0
+      - PORT=8001
+
+profiles:
+  compute:
+    credential-proxy:
+      resources:
+        cpu:
+          units: 0.5
+        memory:
+          size: 512Mi
+        storage:
+          size: 1Gi
+
+  placement:
+    akash:
+      pricing:
+        credential-proxy:
+          denom: uakt
+          amount: 1000
+
+deployment:
+  credential-proxy:
+    akash:
+      profile: credential-proxy
+      count: 1

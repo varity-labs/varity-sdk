@@ -1,0 +1,270 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+.turbo/
+
+# Build artifacts in source (should not be committed)
+**/*.d.ts.map
+**/*.js.map
+**/src/**/*.d.ts
+**/src/**/*.js
+!**/src/**/*.config.js
+!**/postcss.config.js
+!**/tailwind.config.js
+!**/jest.config.cjs
+!**/next.config.js
+!**/hardhat.config.js
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+htmlcov/
+.coverage
+*.egg-info/
+
+# Environment (NEVER commit .env files)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.pypirc
+
+# Private keys / sensitive config (use .example files instead)
+**/network.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Generated / Solidity
+typechain-types/
+artifacts/
+cache/
+compile-warnings.txt
+compile_output.txt
+final-compilation.txt
+
+# Database
+*.db
+*.sqlite
+
+# Package manager locks (only keep pnpm-lock.yaml at root)
+packages/**/package-lock.json
+packages/**/yarn.lock
+
+# Apps folder (separate repos)
+apps/
+
+# Services (deployed separately)
+services/*
+!services/varity-gateway/
+!services/varity-db-proxy/
+!services/varity-credential-proxy/
+
+# Tools (separate repos)
+tools/
+
+# Examples (cleanup later)
+examples/
+
+# Non-MVP packages (kept locally, hidden from public repo)
+packages/clients/
+packages/infrastructure/
+packages/migration/
+
+# Claude session files
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# Temporary files
+*.backup
+*.bak
+*.tmp
+.cursor/
+cli/varitykit_old/
+
+# =============================================================
+# Internal / Future Features (not for beta testers)
+# These exist locally but should not be pushed to the public repo
+# =============================================================
+
+# SDK internal modules (future features)
+packages/core/varity-sdk/src/modules/
+packages/core/varity-sdk/src/contracts/
+packages/core/varity-sdk/src/generators/
+packages/core/varity-sdk/src/cli/
+packages/core/varity-sdk/src/ui/
+packages/core/varity-sdk/src/dev/
+packages/core/varity-sdk/src/validation/
+packages/core/varity-sdk/src/blockchain/
+packages/core/varity-sdk/src/chains/
+packages/core/varity-sdk/src/thirdweb/
+packages/core/varity-sdk/src/tracking/
+
+# UI-Kit internal modules and components (future features)
+packages/ui/varity-ui-kit/src/modules/
+packages/ui/varity-ui-kit/src/components/InAppWallet/
+packages/ui/varity-ui-kit/src/components/Payments/
+packages/ui/varity-ui-kit/src/components/PaymentWidget/
+packages/ui/varity-ui-kit/src/components/AI/
+packages/ui/varity-ui-kit/src/components/SIWE/
+packages/ui/varity-ui-kit/src/components/Onramp/
+packages/ui/varity-ui-kit/src/components/templates/ISO/
+packages/ui/varity-ui-kit/src/components/templates/Finance/
+packages/ui/varity-ui-kit/src/components/templates/Healthcare/
+packages/ui/varity-ui-kit/src/components/templates/Retail/
+packages/ui/varity-ui-kit/src/wallets/
+packages/ui/varity-ui-kit/src/web3/
+packages/ui/varity-ui-kit/src/hooks/web3/
+packages/ui/varity-ui-kit/src/hooks/useWalletAuth.ts
+packages/ui/varity-ui-kit/src/providers/WalletContext.tsx
+packages/ui/varity-ui-kit/src/providers/WalletSyncProvider.tsx
+packages/ui/varity-ui-kit/src/providers/ChainContext.tsx
+packages/ui/varity-ui-kit/src/config/
+packages/ui/varity-ui-kit/docs/
+
+# CLI internal commands (future features)
+cli/varitykit/cli/contract.py
+cli/varitykit/cli/fund.py
+cli/varitykit/cli/localnet.py
+cli/varitykit/cli/localdepin.py
+cli/varitykit/cli/migrate.py
+cli/varitykit/cli/marketing.py
+cli/varitykit/cli/task.py
+cli/varitykit/cli/thirdweb.py
+cli/varitykit/core/contract_verifier.py
+cli/varitykit/core/gas_estimator.py
+cli/varitykit/core/sdk_wrapper.py
+cli/varitykit/core/ai_engine.py
+cli/varitykit/commands/chains.py
+cli/contracts/
+cli/docs/
+cli/scripts/
+cli/localdepin/
+cli/templates/akash/
+cli/tests/contracts/
+cli/tests/unit/test_fund.py
+cli/tests/unit/test_marketplace.py
+cli/tests/unit/test_ai_engine.py
+
+# Internal documentation and reports
+**/COMPLETION_REPORT*.md
+**/AGENT*_SUMMARY.md
+**/DAY_*_COMPLETION_REPORT.md
+**/INTEGRATION_GUIDE.md
+**/MIGRATION_THIRDWEB.md
+**/CLI_THIRDWEB_COMMANDS.md
+**/FINAL_POLISH_REPORT.md
+**/MCP_AUDIT_REPORT.md
+
+# Sync script (private repo tool)
+sync-to-public.sh
+
+# Additional private-only files
+packages/core/varity-sdk/src/database/README.md
+packages/core/varity-types/src/thirdweb.ts
+packages/core/varity-types/src/__tests__/
+packages/ui/varity-ui-kit/src/components/templates/
+packages/ui/varity-ui-kit/src/core/
+packages/ui/varity-ui-kit/src/types/
+packages/ui/varity-ui-kit/src/hooks/useAnalytics.ts
+packages/ui/varity-ui-kit/src/hooks/useAuth.ts
+packages/ui/varity-ui-kit/src/hooks/useDashboard.ts
+packages/ui/varity-ui-kit/src/hooks/useVarityAPI.tsx
+packages/ui/varity-ui-kit/src/providers/VarityProvider.tsx
+packages/ui/varity-ui-kit/src/providers/ZeroDevProvider.tsx
+cli/varitykit/core/README.md
+cli/varitykit/commands/platforms.py
+cli/templates/
+services/varity-gateway/DEPLOY.md
+
+# Internal planning and status docs
+.planning/
+AGENT_STATUS.md
+ARCHITECTURE.md
+MVP_FOCUS_STATUS.md
+MVP_LAUNCH_STATUS.md
+ORCHESTRATION_*.md
+RELEASE_PROCESS.md
+TESTING_GUIDE.md
+sync-to-public.sh
+
+# Internal package docs
+packages/core/varity-sdk/packages/
+packages/core/varity-sdk/docs/
+
+# Test apps (internal)
+test-apps/
+
+# Orchestration internals in SDK
+packages/core/varity-sdk/src/orchestration/
+
+# Account Abstraction internals (uses internal staging URLs)
+packages/core/varity-sdk/src/aa/
+
+# Internal CLI scripts and artifacts
+cli/EXECUTE_DAY_1.sh
+cli/RUN_FIXES.sh
+cli/setup_dev.sh
+cli/test_installation.sh
+cli/pyproject.toml.NEW
+cli/fix_types_and_lint.py
+cli/test_phase3_credentials.py
+cli/coverage.json
+cli/.archive/
+cli/varitykit_old/
+
+# Internal planning docs
+ENGINEERING_GUIDE.md
+MVP_FOCUS_STATUS.md
+ORCHESTRATION_CATALOG_STATUS.md
+FINAL_POLISH_REPORT.md
+services/CREDENTIAL_ORCHESTRATION_DESIGN.md
+
+# MCP internal docs
+packages/cli/varity-mcp/MCP_STATUS.md
+packages/cli/varity-mcp/MCP_AUDIT_REPORT.md
+packages/cli/varity-mcp/WORLD_CLASS_PLAN.md
+packages/cli/varity-mcp/WORLD_CLASS_STATUS.md
+packages/cli/varity-mcp/WORLD_CLASS_TESTING.md
+packages/cli/varity-mcp/SUBMIT_NOW.md
+packages/cli/varity-mcp/PRE_PUBLISH_CHECKLIST.md
+packages/cli/varity-mcp/SENTRY_SETUP.md
+packages/cli/varity-mcp/FUTURE_IMPLEMENTATIONS.md
+packages/cli/varity-mcp/MARKETPLACE_SUBMISSIONS.md
+packages/cli/varity-mcp/TEST_RESULTS.md
+packages/cli/varity-mcp/DEPLOYMENT.md
+
+# Test caches
+**/.pytest_cache/
+BROWSER_USAGE

@@ -1,0 +1,63 @@
+---
+version: "2.0"
+
+endpoints:
+  gateway-ip:
+    kind: ip
+
+services:
+  gateway:
+    image: ghcr.io/varity-labs/varity-gateway:1.4.4
+    expose:
+      - port: 8081
+        as: 80
+        to:
+          - global: true
+            ip: gateway-ip
+      - port: 8443
+        as: 443
+        to:
+          - global: true
+            ip: gateway-ip
+    env:
+      - NODE_ENV=production
+      - PORT=8080
+      - DB_PROXY_URL=${DB_PROXY_URL}
+      - DB_PROXY_TOKEN=${DB_PROXY_TOKEN}
+      - GATEWAY_API_KEY=${GATEWAY_API_KEY}
+      - BASE_DOMAIN=varity.app
+      - IPFS_BACKEND=ipfs.dweb.link
+      - CACHE_TTL=300
+    params:
+      storage:
+        caddy-certs:
+          mount: /data
+          readOnly: false
+
+profiles:
+  compute:
+    gateway:
+      resources:
+        cpu:
+          units: 0.5
+        memory:
+          size: 512Mi
+        storage:
+          - size: 1Gi
+          - name: caddy-certs
+            size: 256Mi
+            attributes:
+              persistent: true
+              class: beta3
+  placement:
+    akash:
+      pricing:
+        gateway:
+          denom: uakt
+          amount: 1000
+
+deployment:
+  gateway:
+    akash:
+      profile: gateway
+      count: 1
