@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@akashnetwork/akash-api": "^1.4.1",
-    "@akashnetwork/akashjs": "^0.0.7",
+    "@akashnetwork/akashjs": "^0.11.1",
     "@cosmjs/proto-signing": "^0.38.1",
     "@cosmjs/stargate": "^0.38.1",
     "cors": "^2.8.6",
