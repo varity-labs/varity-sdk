@@ -131,7 +131,7 @@ AI:  Submitted. You earn $26.10/month per user (90% revenue split)
 | Create new apps | No | Yes |
 | Auth included | No | Yes |
 | Database included | No | Yes (Document Database) |
-| Payments included | No | Yes (90/10 split) |
+| Payments included | No | Coming soon (90/10 split) |
 | Cost | $20+/mo | ~70% less |
 | Open source | No | Yes (MIT) |
 
