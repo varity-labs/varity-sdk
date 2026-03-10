@@ -97,7 +97,7 @@ Try these in Cursor Agent mode, Claude Code, or any MCP-enabled AI editor:
 **Create & Deploy:**
 - "Create a new SaaS app called my-dashboard"
 - "Deploy this project to production"
-- "Deploy and submit to the Varity App Store for $19/month"
+- "Deploy and submit to the Varity App Store"
 
 **Manage & Debug:**
 - "Show my deployments"
@@ -120,8 +120,8 @@ AI:  Created analytics-pro with auth, database, dashboard, landing page
 You: "Deploy it to production"
 AI:  Deployed! Live at https://analytics-pro.varity.app
 
-You: "Submit to the App Store for $29/month"
-AI:  Submitted. You earn $26.10/month per user (90% revenue split)
+You: "Submit to the App Store"
+AI:  Submitted to the Varity App Store (90% revenue split)
 ```
 
 ## What Makes This Different

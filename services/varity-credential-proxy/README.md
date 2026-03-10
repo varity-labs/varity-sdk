@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Enable zero-config deployments by providing Varity's thirdweb and Privy credentials to the `varitykit` CLI without requiring developers to create their own accounts.
+Enable zero-config deployments by providing Varity's platform credentials to the `varitykit` CLI without requiring developers to create their own accounts.
 
 ## Security Features
 
@@ -32,11 +32,11 @@ pip install -r requirements.txt
 cp .env.example .env
 
 # Edit .env and add:
-# - VARITY_THIRDWEB_SECRET_KEY (get from thirdweb dashboard)
+# - Platform secret keys
 # - Generate secure API keys for VARITY_CLI_PRODUCTION_KEY and VARITY_CLI_BETA_KEY
 ```
 
-**CRITICAL:** Add the actual `VARITY_THIRDWEB_SECRET_KEY` to `.env` before starting!
+**CRITICAL:** Add the actual platform secret keys to `.env` before starting!
 
 ### 3. Run Service
 
@@ -73,7 +73,7 @@ Expected:
 
 ```bash
 curl -H "Authorization: Bearer <YOUR_API_KEY>" \
-  http://localhost:8001/api/credentials/thirdweb
+  http://localhost:8001/api/credentials/platform
 ```
 
 Expected:
@@ -100,9 +100,9 @@ Health check endpoint. No authentication required.
 }
 ```
 
-### `GET /api/credentials/thirdweb`
+### `GET /api/credentials/platform`
 
-Get Varity's thirdweb credentials.
+Get Varity's platform credentials.
 
 **Authentication:** Bearer token required
 
@@ -119,14 +119,14 @@ Authorization: Bearer <API_KEY>
 **Response:**
 ```json
 {
-  "secret_key": "thirdweb-secret-key",
-  "client_id": "thirdweb-client-id"
+  "secret_key": "platform-secret-key",
+  "client_id": "platform-client-id"
 }
 ```
 
-### `GET /api/credentials/privy`
+### `GET /api/credentials/auth`
 
-Get Varity's Privy app ID.
+Get Varity's auth provider app ID.
 
 **Authentication:** Bearer token required
 
@@ -140,7 +140,7 @@ Authorization: Bearer <API_KEY>
 **Response:**
 ```json
 {
-  "app_id": "privy-app-id"
+  "app_id": "auth-app-id"
 }
 ```
 
@@ -195,7 +195,7 @@ System monitors for suspicious patterns:
 
 ## Deployment
 
-### Production Deployment (Akash)
+### Production Deployment
 
 **1. Build Docker Image:**
 ```bash
@@ -203,9 +203,8 @@ docker build -t ghcr.io/varity-labs/credential-proxy:1.0.4 .
 docker push ghcr.io/varity-labs/credential-proxy:1.0.4
 ```
 
-**2. Deploy via Akash Console:**
-- Go to: https://console.akash.network
-- Upload `deploy-production.yaml` (contains secrets - private file)
+**2. Deploy to production cloud:**
+- Upload deployment config
 - Select provider and accept bid
 - Get production URL
 
@@ -238,7 +237,7 @@ Set up alerts for:
 
 ### "Credentials not configured on server"
 
-**Problem:** Missing `VARITY_THIRDWEB_SECRET_KEY` in `.env`
+**Problem:** Missing platform secret key in `.env`
 
 **Solution:** Add the actual secret key to `.env`
 
@@ -263,7 +262,7 @@ Set up alerts for:
 ## Security Checklist
 
 Before production:
-- [ ] VARITY_THIRDWEB_SECRET_KEY added to .env
+- [ ] Platform secret keys added to .env
 - [ ] Production API keys generated (32+ chars, random)
 - [ ] ENV=production set
 - [ ] HTTPS configured

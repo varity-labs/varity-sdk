@@ -1,6 +1,6 @@
 # Varity Gateway
 
-Custom domain gateway for Varity apps. Maps `varity.app/{app-name}` to IPFS-hosted content with automatic TLS, SPA fallback, and domain ownership enforcement.
+Custom domain gateway for Varity apps. Maps `varity.app/{app-name}` to hosted content with automatic TLS, SPA fallback, and domain ownership enforcement.
 
 **Live:** https://varity.app
 
@@ -19,19 +19,19 @@ Client Request
     |
     ├── /health, /tls-check, /resolve  →  Health & diagnostics
     ├── /api/domains/*                 →  Domain CRUD (auth required)
-    └── /:appName/*                    →  IPFS proxy (public)
+    └── /:appName/*                    →  Content proxy (public)
                                             |
-                                            ├── Resolve subdomain → CID (via DB Proxy + cache)
-                                            ├── Fetch content from IPFS gateway
+                                            ├── Resolve subdomain → content ID (via DB Proxy + cache)
+                                            ├── Fetch content from CDN
                                             ├── Rewrite HTML paths for /{appName}/ prefix
                                             └── SPA fallback (serve index.html for non-file 404s)
 ```
 
 **Infrastructure:**
-- **Hosting:** Akash Network (dedicated IP lease)
+- **Hosting:** Distributed cloud (dedicated IP lease)
 - **TLS:** Let's Encrypt via Caddy (automatic)
-- **Storage:** DB Proxy (PostgreSQL on Akash) for domain records
-- **Content:** IPFS gateways (`ipfs.dweb.link` for CIDv1, `ipfs.io` for CIDv0)
+- **Storage:** DB Proxy for domain records
+- **Content:** Global CDN
 - **Cache:** In-memory (node-cache, 5-minute TTL)
 
 ---
@@ -49,10 +49,10 @@ src/
   routes/
     health.ts           GET /health, /tls-check, /resolve/:subdomain
     domains.ts          Domain CRUD — check, list, register, update
-    proxy.ts            IPFS proxy — path rewriting, SPA fallback, caching
+    proxy.ts            Content proxy — path rewriting, SPA fallback, caching
   services/
-    resolver.ts         Domain → CID resolution with in-memory cache
-    ipfs.ts             IPFS URL building, path sanitization
+    resolver.ts         Domain → content ID resolution with in-memory cache
+    content.ts          Content URL building, path sanitization
   templates/
     not-found.ts        404 HTML page
 ```
@@ -67,18 +67,18 @@ src/
 |--------|----------|-------------|
 | GET | `/health` | Service health check |
 | GET | `/tls-check?domain=app.varity.app` | Caddy on-demand TLS validation |
-| GET | `/{app-name}` | Serve app's index.html from IPFS |
-| GET | `/{app-name}/{path}` | Serve app asset from IPFS |
+| GET | `/{app-name}` | Serve app's index.html |
+| GET | `/{app-name}/{path}` | Serve app asset |
 
 ### Authenticated (requires `Authorization: Bearer <API_KEY>`)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/resolve/:subdomain` | Debug: resolve subdomain to CID |
+| GET | `/resolve/:subdomain` | Debug: resolve subdomain to content ID |
 | GET | `/api/domains/check/:name?ownerId=` | Check subdomain availability |
 | GET | `/api/domains/mine?ownerId=` | List domains owned by developer |
 | POST | `/api/domains/register` | Register new subdomain |
-| PUT | `/api/domains/update` | Update subdomain CID (redeploy) |
+| PUT | `/api/domains/update` | Update subdomain content (redeploy) |
 
 ### Request/Response Examples
 
@@ -87,7 +87,7 @@ src/
 curl -X POST https://varity.app/api/domains/register \
   -H "Authorization: Bearer $GATEWAY_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"subdomain":"my-app","cid":"QmXyz...","appName":"My App","ownerId":"0x123..."}'
+  -d '{"subdomain":"my-app","cid":"content-id","appName":"My App","ownerId":"owner-123"}'
 ```
 
 **Update on redeploy:**
@@ -95,7 +95,7 @@ curl -X POST https://varity.app/api/domains/register \
 curl -X PUT https://varity.app/api/domains/update \
   -H "Authorization: Bearer $GATEWAY_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"subdomain":"my-app","cid":"QmNew...","ownerId":"0x123..."}'
+  -d '{"subdomain":"my-app","cid":"new-content-id","ownerId":"owner-123"}'
 ```
 
 ---
@@ -132,7 +132,6 @@ npm start
 | `DB_PROXY_TOKEN` | Yes | — | JWT token for DB Proxy authentication |
 | `GATEWAY_API_KEY` | Yes | — | API key for domain management endpoints |
 | `BASE_DOMAIN` | No | `varity.app` | Base domain for URL generation |
-| `IPFS_BACKEND` | No | `ipfs.dweb.link` | IPFS gateway for CIDv1 subdomain resolution |
 | `CACHE_TTL` | No | `300` | Domain cache TTL in seconds |
 
 ---
@@ -153,9 +152,7 @@ The Docker image includes Caddy for TLS termination. In production, Caddy listen
 
 ## Deployment
 
-See [DEPLOY.md](./DEPLOY.md) for the full Akash deployment runbook.
-
-**Quick summary:** Tag a release (`gateway-vX.Y.Z`), GitHub Actions builds and pushes to GHCR, deploy the image on Akash with an IP lease, point DNS A record to the leased IP.
+Tag a release (`gateway-vX.Y.Z`), GitHub Actions builds and pushes to GHCR, deploy the image to production, point DNS A record to the server IP.
 
 ---
 
@@ -164,7 +161,7 @@ See [DEPLOY.md](./DEPLOY.md) for the full Akash deployment runbook.
 - **Auth:** Timing-safe API key comparison (`crypto.timingSafeEqual`)
 - **CORS:** Whitelist — only `*.varity.so`, `*.varity.app`, and `localhost`
 - **Path traversal:** `decodeURIComponent` + `path.posix.normalize` + `..` rejection
-- **CID validation:** Regex enforcement for CIDv0 (`Qm` + 44 chars) and CIDv1 (`bafy` + 55+ chars)
+- **Content ID validation:** Regex enforcement for valid content identifiers
 - **Content types:** Unsafe MIME types forced to `application/octet-stream`
 - **Reserved subdomains:** 26 reserved names (www, api, admin, etc.) blocked from registration
 - **TLS:** Caddy auto-issues Let's Encrypt certificates with HSTS preload

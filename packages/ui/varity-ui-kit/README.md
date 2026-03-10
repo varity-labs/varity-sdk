@@ -16,13 +16,13 @@ Peer dependencies: `react` and `react-dom` 18+.
 ## Quick Start
 
 ```tsx
-import { PrivyStack } from '@varity-labs/ui-kit'
+import { AuthProvider } from '@varity-labs/ui-kit'
 
 function App() {
   return (
-    <PrivyStack>
+    <AuthProvider>
       <YourApp />
-    </PrivyStack>
+    </AuthProvider>
   )
 }
 ```
@@ -110,14 +110,14 @@ Authentication, theming, and providers are all configured automatically with zer
 Built-in authentication -- email, Google, and social login with zero configuration:
 
 ```tsx
-import { PrivyStack, PrivyLoginButton } from '@varity-labs/ui-kit'
+import { AuthProvider, LoginButton } from '@varity-labs/ui-kit'
 import { useAuth } from '@varity-labs/ui-kit'
 
 function App() {
   return (
-    <PrivyStack>
+    <AuthProvider>
       <Dashboard />
-    </PrivyStack>
+    </AuthProvider>
   )
 }
 
@@ -141,10 +141,10 @@ function Dashboard() {
 
 | Component | Description |
 |-----------|-------------|
-| `PrivyLoginButton` | Drop-in login button |
-| `PrivyUserProfile` | User profile display |
-| `PrivyProtectedRoute` | Route protection wrapper |
-| `PrivyReadyGate` | Loading gate during initialization |
+| `LoginButton` | Drop-in login button |
+| `UserProfile` | User profile display |
+| `ProtectedRoute` | Route protection wrapper |
+| `ReadyGate` | Loading gate during initialization |
 
 ### Auth Hooks
 
@@ -166,7 +166,7 @@ import { PaymentWidget, PaymentGate, useVarityPayment } from '@varity-labs/ui-ki
 // Wrap a trigger element -- opens checkout on click
 // appId is a number (from Varity App Registry)
 // price is in cents (e.g., 9900 = $99.00)
-<PaymentWidget appId={123} price={9900} onSuccess={(txHash) => console.log('Paid!', txHash)}>
+<PaymentWidget appId={123} price={9900} onSuccess={(receipt) => console.log('Paid!', receipt)}>
   <button>Buy Premium - $99</button>
 </PaymentWidget>
 
@@ -206,7 +206,7 @@ function ThemeToggle() {
 
 ```tsx
 import {
-  PrivyStack,
+  AuthProvider,
   DashboardLayout,
   DashboardHeader,
   DashboardSidebar,
@@ -219,7 +219,7 @@ import {
 
 function App() {
   return (
-    <PrivyStack>
+    <AuthProvider>
       <ToastProvider>
         <DashboardLayout>
           <DashboardSidebar items={sidebarItems} />
@@ -231,7 +231,7 @@ function App() {
           </main>
         </DashboardLayout>
       </ToastProvider>
-    </PrivyStack>
+    </AuthProvider>
   )
 }
 ```
@@ -240,8 +240,7 @@ function App() {
 
 | Provider | Description |
 |----------|-------------|
-| `PrivyStack` | All-in-one provider (auth + theme + query client) |
-| `VarityPrivyProvider` | Auth provider (lower-level) |
+| `AuthProvider` | All-in-one provider (auth + theme + query client) |
 | `ThemeProvider` | Theme management |
 | `ToastProvider` | Toast notifications |
 | `VarityDashboardProvider` | Dashboard state management |
