@@ -20,9 +20,14 @@ const SAFE_CONTENT_TYPES = /^(text\/(html|css|plain|javascript)|application\/(ja
  */
 function rewriteHtmlPaths(html: string, appName: string): string {
   const prefix = `/${appName}`;
+  const escaped = appName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Skip paths already prefixed with /{appName}/ to avoid double-prefixing
+  // when apps are built with basePath (e.g. Next.js NEXT_PUBLIC_BASE_PATH)
+  const dq = new RegExp(`(href|src|action)="\\/(?!\\/|${escaped}\\/)`, 'g');
+  const sq = new RegExp(`(href|src|action)='\\/(?!\\/|${escaped}\\/)`, 'g');
   return html
-    .replace(/(href|src|action)="\/(?!\/)/g, `$1="${prefix}/`)
-    .replace(/(href|src|action)='\/(?!\/)/g, `$1='${prefix}/`);
+    .replace(dq, `$1="${prefix}/`)
+    .replace(sq, `$1='${prefix}/`);
 }
 
 /**
@@ -101,6 +106,11 @@ async function proxyIpfs(appName: string, assetPath: string, res: Response): Pro
 proxyRouter.get('/:appName', async (req, res, next) => {
   if (RESERVED_SUBDOMAINS.has(req.params.appName.toLowerCase())) {
     next();
+    return;
+  }
+  // Redirect to trailing slash so relative paths in static apps resolve correctly
+  if (!req.originalUrl.endsWith('/')) {
+    res.redirect(301, `/${req.params.appName}/`);
     return;
   }
   await proxyIpfs(req.params.appName.toLowerCase(), '', res);

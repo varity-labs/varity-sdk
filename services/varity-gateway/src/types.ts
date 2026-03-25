@@ -1,3 +1,5 @@
+export type DeploymentType = 'ipfs' | 'akash' | 'custom';
+
 export interface DomainRecord {
   id: string;
   subdomain: string;
@@ -9,4 +11,7 @@ export interface DomainRecord {
   registeredBy: string;
   createdAt: string;
   updatedAt?: string;
+  deploymentType?: DeploymentType;
+  deploymentUrl?: string;
+  deploymentId?: string;
 }

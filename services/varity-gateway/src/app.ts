@@ -6,6 +6,7 @@ import { cardRouter } from './routes/card';
 import { proxyRouter } from './routes/proxy';
 import { subgraphRouter } from './routes/subgraph';
 import { akashRouter } from './routes/akash';
+import { dbProxyRouter } from './routes/db-proxy';
 
 const ALLOWED_ORIGINS = [
   /^https?:\/\/(.+\.)?varity\.so$/,
@@ -37,7 +38,8 @@ app.use(express.json());
 // ---------------------------------------------------------------------------
 
 app.use(healthRouter);
-app.use(subgraphRouter);  // Before catch-all proxy
+app.use(dbProxyRouter);    // HTTPS frontend for DB Proxy (before catch-all)
+app.use(subgraphRouter);   // Before catch-all proxy
 app.use(akashRouter);      // Before catch-all proxy
 app.use(domainsRouter);
 app.use(cardRouter);
