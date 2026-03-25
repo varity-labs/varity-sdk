@@ -30,11 +30,13 @@ export async function execCLI(
 
     return { stdout: stdout.trim(), stderr: stderr.trim(), exitCode: 0 };
   } catch (error: unknown) {
-    const e = error as { stdout?: string; stderr?: string; code?: number };
+    const e = error as { stdout?: string; stderr?: string; code?: number | string };
+    // Use || (not ??) so empty-string stderr still falls back to the Error message
+    const stderr = e.stderr?.trim() || String(error);
     return {
       stdout: e.stdout?.trim() ?? "",
-      stderr: e.stderr?.trim() ?? String(error),
-      exitCode: e.code ?? 1,
+      stderr,
+      exitCode: typeof e.code === "number" ? e.code : 1,
     };
   }
 }

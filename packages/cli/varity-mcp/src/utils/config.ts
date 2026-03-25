@@ -3,29 +3,25 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 
 const VARITYKIT_CONFIG_DIR = join(homedir(), ".varitykit");
-const VARITYKIT_CONFIG_FILE = join(VARITYKIT_CONFIG_DIR, "config");
+const VARITYKIT_CONFIG_FILE = join(VARITYKIT_CONFIG_DIR, "config.json");
 const DEPLOYMENTS_DIR = join(VARITYKIT_CONFIG_DIR, "deployments");
 
 /**
- * Get the API key from config file or environment variable.
+ * Get the API key (deploy key) from config file or environment variable.
+ * The CLI stores config as JSON: { "deploy_key": "..." }
  */
 export async function getApiKey(): Promise<string | null> {
   // Check env var first
   const envKey = process.env["VARITY_API_KEY"];
   if (envKey) return envKey;
 
-  // Check config file
+  // Check config file (JSON format, matches CLI's auth.py)
   try {
     const configContent = await readFile(VARITYKIT_CONFIG_FILE, "utf-8");
-    const lines = configContent.split("\n");
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("api_key=") || trimmed.startsWith("api_key =")) {
-        return trimmed.split("=")[1]?.trim() ?? null;
-      }
-    }
+    const config = JSON.parse(configContent);
+    return config.deploy_key ?? config.api_key ?? null;
   } catch {
-    // Config file doesn't exist
+    // Config file doesn't exist or invalid JSON
   }
 
   return null;
@@ -54,11 +50,11 @@ export function getConfigDir(): string {
 }
 
 /**
- * Public-facing infrastructure endpoints.
+ * Infrastructure endpoints (all LIVE).
  */
 export const INFRASTRUCTURE = {
+  GATEWAY: "https://varity.app",
   DOCS: "https://docs.varity.so",
   APP_STORE: "https://store.varity.so",
   DEVELOPER_PORTAL: "https://developer.store.varity.so",
-  GATEWAY: "https://varity.app",
 } as const;
