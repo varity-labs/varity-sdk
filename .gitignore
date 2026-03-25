@@ -86,7 +86,7 @@ services/*
 !services/varity-credential-proxy/
 
 # Tools (separate repos)
-tools/
+/tools/
 
 # Examples (cleanup later)
 examples/
