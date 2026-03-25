@@ -1,0 +1,81 @@
+{
+  "name": "varity-sdk-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Build, deploy, and monetize production apps — auth, database, payments included. 70% cheaper than AWS.",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.0",
+    "prettier": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/varity-labs/varity-sdk"
+  },
+  "license": "MIT",
+  "keywords": [
+    "varity",
+    "sdk",
+    "deploy",
+    "saas",
+    "auth",
+    "database",
+    "payments",
+    "react",
+    "nextjs",
+    "developer-tools",
+    "fullstack",
+    "starter-template",
+    "mcp",
+    "model-context-protocol",
+    "cursor",
+    "claude",
+    "ai",
+    "vibe-coding"
+  ],
+  "homepage": "https://www.varity.so",
+  "bugs": {
+    "url": "https://github.com/varity-labs/varity-sdk/issues"
+  },
+  "author": "Varity",
+  "pnpm": {
+    "overrides": {
+      "fast-xml-parser": ">=5.3.8",
+      "serialize-javascript": ">=7.0.3",
+      "tar": ">=7.5.10",
+      "immutable": ">=4.3.8",
+      "express-rate-limit": ">=8.2.2",
+      "multer": ">=2.1.1",
+      "hono": ">=4.12.4",
+      "axios": ">=0.30.3",
+      "cookie": ">=1.0.2",
+      "qs": ">=6.15.0",
+      "minimatch": ">=10.2.3",
+      "undici": ">=7.10.0",
+      "ws": ">=8.18.1",
+      "@tootallnate/once": ">=3.0.1",
+      "elliptic": ">=6.6.1",
+      "@isaacs/brace-expansion": ">=5.0.1",
+      "@coinbase/wallet-sdk": ">=4.3.0",
+      "bn.js": ">=5.2.3",
+      "ajv": ">=8.18.0",
+      "lodash": ">=4.17.23",
+      "esbuild": ">=0.25.0",
+      "diff": ">=4.0.4"
+    }
+  }
+}

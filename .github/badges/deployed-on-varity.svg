@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="166" height="28" viewBox="0 0 166 28">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#555"/>
+      <stop offset="100%" stop-color="#444"/>
+    </linearGradient>
+    <linearGradient id="brand2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="28" rx="4" fill="url(#bg2)"/>
+  <rect x="96" width="70" height="28" rx="4" fill="url(#brand2)"/>
+  <rect x="96" width="4" height="28" fill="url(#brand2)"/>
+  <text x="48" y="18" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" fill="#fff">deployed on</text>
+  <text x="131" y="18" text-anchor="middle" font-family="-apple-system, 'Segoe UI', sans-serif" font-size="11" font-weight="bold" fill="#fff">Varity</text>
+</svg>

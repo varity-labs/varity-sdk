@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "declaration": false,
+    "declarationMap": false,
+    "module": "CommonJS",
+    "target": "ES2020"
+  },
+  "include": ["src/orchestration/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}

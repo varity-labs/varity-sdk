@@ -1,0 +1,32 @@
+{
+  "name": "varity-gateway",
+  "version": "1.5.2",
+  "private": true,
+  "license": "MIT",
+  "description": "Custom domain gateway for Varity apps — maps varity.app/{name} to IPFS content",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@akashnetwork/akash-api": "^1.4.0",
+    "@akashnetwork/akashjs": "^0.11.1",
+    "@cosmjs/proto-signing": "^0.38.1",
+    "@cosmjs/stargate": "^0.38.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "4.20.0",
+    "node-cache": "^5.1.2",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "@types/sharp": "^0.31.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
