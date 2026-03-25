@@ -7,18 +7,20 @@ import { registerDeployTool } from "./tools/deploy.js";
 import { registerDeployStatusTool } from "./tools/deploy-status.js";
 import { registerDeployLogsTool } from "./tools/deploy-logs.js";
 import { registerSubmitToStoreTool } from "./tools/submit-to-store.js";
+import { registerDoctorTool } from "./tools/doctor.js";
 import { createOAuthProvider } from "./auth/provider.js";
 
-export const VERSION = "1.3.2";
+export const VERSION = "1.5.0";
 
 export type TransportMode = "stdio" | "http";
 
 /**
  * Create and configure the Varity MCP Server.
  *
- * The server exposes 8 tools:
+ * The server exposes 9 tools:
  *   - varity_search_docs (public)
  *   - varity_cost_calculator (public)
+ *   - varity_doctor (public — environment check)
  *   - varity_init (authenticated — stdio only, requires local filesystem)
  *   - varity_create_repo (authenticated — HTTP/stdio, GitHub API)
  *   - varity_deploy (authenticated, requires confirmation)
@@ -37,6 +39,7 @@ export function createVarityServer(mode: TransportMode = "stdio"): McpServer {
   // Public tools (no auth required)
   registerSearchDocsTool(server);
   registerCostCalculatorTool(server);
+  registerDoctorTool(server);
 
   // Authenticated tools
   // varity_init is only available in stdio mode (requires local filesystem)
