@@ -15,3 +15,15 @@ export interface DomainRecord {
   deploymentUrl?: string;
   deploymentId?: string;
 }
+
+export interface AuthenticatedUser {
+  userId: string;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthenticatedUser;
+    }
+  }
+}

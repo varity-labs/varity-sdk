@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { verifyPrivyToken } from '../middleware/privyAuth';
 
 /**
  * Subgraph proxy routes.
@@ -22,7 +23,7 @@ const SUBGRAPH_ENDPOINTS: Record<string, string> = {
 
 export const subgraphRouter = Router();
 
-subgraphRouter.post('/api/subgraph/:name', async (req: Request, res: Response) => {
+subgraphRouter.post('/api/subgraph/:name', verifyPrivyToken, async (req: Request, res: Response) => {
   const name = req.params.name;
   const upstream = SUBGRAPH_ENDPOINTS[name];
 
@@ -43,6 +44,6 @@ subgraphRouter.post('/api/subgraph/:name', async (req: Request, res: Response) =
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`Subgraph proxy error (${name}):`, message);
-    res.status(502).json({ error: 'Subgraph unreachable', details: message });
+    res.status(502).json({ error: 'Subgraph unreachable' });
   }
 });

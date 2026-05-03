@@ -8,6 +8,21 @@ const cache = new NodeCache({
   useClones: false,
 });
 
+const recordCache = new NodeCache({
+  stdTTL: config.cache.ttlSeconds,
+  checkperiod: 60,
+  useClones: false,
+});
+
+export class DbUnavailableError extends Error {
+  readonly originalCause: unknown;
+  constructor(cause?: unknown) {
+    super('Route database is temporarily unavailable');
+    this.name = 'DbUnavailableError';
+    this.originalCause = cause;
+  }
+}
+
 /**
  * Fetch all domain records from the DB Proxy.
  *
@@ -61,24 +76,38 @@ export async function resolveDomain(subdomain: string): Promise<string | null> {
 
 /**
  * Resolve a subdomain to its full domain record.
- * Used by the card route to display deployment metadata.
+ *
+ * Checks the in-memory record cache first. On a cache miss, fetches all
+ * domains from the DB Proxy and populates the cache. Throws DbUnavailableError
+ * when the DB Proxy is unreachable so callers can distinguish a database
+ * outage from a genuine "app not found" condition.
  */
 export async function resolveDomainRecord(subdomain: string): Promise<DomainRecord | null> {
+  const cached = recordCache.get<DomainRecord>(subdomain);
+  if (cached !== undefined) return cached;
+
+  let domains: DomainRecord[];
   try {
-    const domains = await fetchAllDomains();
-    return domains.find((r) => r.subdomain === subdomain) || null;
+    domains = await fetchAllDomains();
   } catch (err) {
-    console.error(`[resolver] Failed to resolve record "${subdomain}":`, err);
-    return null;
+    console.error(`[resolver] DB Proxy unreachable while resolving "${subdomain}":`, err);
+    throw new DbUnavailableError(err);
   }
+
+  for (const d of domains) {
+    if (d.subdomain) recordCache.set(d.subdomain, d);
+  }
+
+  return domains.find((r) => r.subdomain === subdomain) ?? null;
 }
 
 /**
- * Invalidate a single subdomain from the cache.
+ * Invalidate a single subdomain from both caches.
  * Called after domain registration or update.
  */
 export function invalidateCache(subdomain: string): void {
   cache.del(subdomain);
+  recordCache.del(subdomain);
 }
 
 /**

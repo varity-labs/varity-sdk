@@ -6,6 +6,29 @@ import { verifyApiKey } from '../middleware/auth';
 export const domainsRouter = Router();
 
 // ---------------------------------------------------------------------------
+// Propagation helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Poll fetchAllDomains() until subdomain appears in DB Proxy's response,
+ * up to timeoutMs. Guards against DB Proxy's GET cache returning a stale
+ * snapshot after a successful write — callers get a 201/200 only after
+ * the record is confirmed routable.
+ */
+async function waitForPropagation(subdomain: string, timeoutMs: number): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const domains = await fetchAllDomains();
+      if (domains.some((d) => d.subdomain === subdomain)) return;
+    } catch {
+      return; // DB unavailable — don't block the response indefinitely
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, 1500));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Validation helpers
 // ---------------------------------------------------------------------------
 
@@ -95,16 +118,31 @@ domainsRouter.get('/api/domains/mine', verifyApiKey, async (req: Request, res: R
 // ---------------------------------------------------------------------------
 
 domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, res: Response) => {
-  const { subdomain, cid, appName, tagline, logoUrl, ownerId } = req.body;
+  const { subdomain, cid, appName, tagline, logoUrl, ownerId,
+          deploymentType, deploymentUrl, deploymentId } = req.body;
 
-  if (!subdomain || !cid) {
-    res.status(400).json({ error: 'subdomain and cid are required' });
+  const effectiveType = deploymentType || 'ipfs';
+
+  if (!subdomain) {
+    res.status(400).json({ error: 'subdomain is required' });
     return;
   }
 
-  if (!isValidCid(cid)) {
-    res.status(400).json({ error: 'Invalid CID format. Must be a valid IPFS CIDv0 (Qm...) or CIDv1 (bafy...).' });
-    return;
+  // Validate based on deployment type
+  if (effectiveType === 'ipfs') {
+    if (!cid) {
+      res.status(400).json({ error: 'cid is required for static deployments' });
+      return;
+    }
+    if (!isValidCid(cid)) {
+      res.status(400).json({ error: 'Invalid CID format. Must be a valid IPFS CIDv0 (Qm...) or CIDv1 (bafy...).' });
+      return;
+    }
+  } else if (effectiveType === 'akash') {
+    if (!deploymentUrl) {
+      res.status(400).json({ error: 'deploymentUrl is required for dynamic deployments' });
+      return;
+    }
   }
 
   const name = subdomain.toLowerCase();
@@ -130,14 +168,17 @@ domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, r
 
     const record: Record<string, unknown> = {
       subdomain: name,
-      cid,
+      cid: cid || `akash:${deploymentId || 'unknown'}`,
       appName: appName || name,
       ownerId: ownerId || null,
       registeredBy: 'cli',
       createdAt: new Date().toISOString(),
+      deploymentType: effectiveType,
     };
     if (tagline) record.tagline = tagline;
     if (logoUrl) record.logoUrl = logoUrl;
+    if (deploymentUrl) record.deploymentUrl = deploymentUrl;
+    if (deploymentId) record.deploymentId = deploymentId;
 
     const addUrl = `${config.dbProxy.url}/db/${DB_COLLECTION}/add`;
     const addRes = await fetch(addUrl, {
@@ -158,12 +199,15 @@ domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, r
 
     const result = (await addRes.json()) as { success?: boolean; data?: { id: string } };
     invalidateCache(name);
+    await waitForPropagation(name, 20_000);
 
     console.log(`[domains] Registered: ${config.gateway.baseDomain}/${name} (owner: ${ownerId || 'none'})`);
     res.status(201).json({
       subdomain: name,
       url: `https://${config.gateway.baseDomain}/${name}`,
-      cid,
+      cid: record.cid,
+      deploymentType: effectiveType,
+      deploymentUrl: deploymentUrl || undefined,
       id: result.data?.id,
     });
   } catch (err) {
@@ -177,16 +221,31 @@ domainsRouter.post('/api/domains/register', verifyApiKey, async (req: Request, r
 // ---------------------------------------------------------------------------
 
 domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res: Response) => {
-  const { subdomain, cid, tagline, logoUrl, ownerId } = req.body;
+  const { subdomain, cid, tagline, logoUrl, ownerId,
+          deploymentType, deploymentUrl, deploymentId } = req.body;
 
-  if (!subdomain || !cid) {
-    res.status(400).json({ error: 'subdomain and cid are required' });
+  if (!subdomain) {
+    res.status(400).json({ error: 'subdomain is required' });
     return;
   }
 
-  if (!isValidCid(cid)) {
-    res.status(400).json({ error: 'Invalid CID format. Must be a valid IPFS CIDv0 (Qm...) or CIDv1 (bafy...).' });
-    return;
+  const effectiveType = deploymentType || 'ipfs';
+
+  // Validate based on deployment type
+  if (effectiveType === 'ipfs') {
+    if (!cid) {
+      res.status(400).json({ error: 'cid is required for static deployments' });
+      return;
+    }
+    if (!isValidCid(cid)) {
+      res.status(400).json({ error: 'Invalid CID format. Must be a valid IPFS CIDv0 (Qm...) or CIDv1 (bafy...).' });
+      return;
+    }
+  } else if (effectiveType === 'akash') {
+    if (!deploymentUrl) {
+      res.status(400).json({ error: 'deploymentUrl is required for dynamic deployments' });
+      return;
+    }
   }
 
   const name = subdomain.toLowerCase();
@@ -208,7 +267,7 @@ domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res:
 
     const updatedRecord: Record<string, unknown> = {
       subdomain: name,
-      cid,
+      cid: cid || (existing as any).cid || `akash:${deploymentId || 'unknown'}`,
       appName: existing.appName || name,
       tagline: tagline || (existing as any).tagline || null,
       logoUrl: logoUrl || (existing as any).logoUrl || null,
@@ -216,6 +275,9 @@ domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res:
       registeredBy: 'cli',
       createdAt: existing.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      deploymentType: effectiveType,
+      deploymentUrl: deploymentUrl || (existing as any).deploymentUrl || null,
+      deploymentId: deploymentId || (existing as any).deploymentId || null,
     };
 
     const updateUrl = `${config.dbProxy.url}/db/${DB_COLLECTION}/update/${existing.id}`;
@@ -235,6 +297,7 @@ domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res:
     }
 
     invalidateCache(name);
+    await waitForPropagation(name, 20_000);
 
     console.log(`[domains] Updated: ${config.gateway.baseDomain}/${name} (owner: ${ownerId || existing.ownerId || 'none'})`);
     res.json({
@@ -245,5 +308,19 @@ domainsRouter.put('/api/domains/update', verifyApiKey, async (req: Request, res:
   } catch (err) {
     console.error('[domains] update error:', err);
     res.status(500).json({ error: 'Internal error updating domain' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/domains/export — Dump all domain records (backup before redeploy)
+// ---------------------------------------------------------------------------
+
+domainsRouter.get('/api/domains/export', verifyApiKey, async (_req: Request, res: Response) => {
+  try {
+    const domains = await fetchAllDomains();
+    res.json({ exportedAt: new Date().toISOString(), count: domains.length, domains });
+  } catch (err) {
+    console.error('[domains] export error:', err);
+    res.status(502).json({ error: 'Failed to export domains — DB Proxy may be unavailable' });
   }
 });

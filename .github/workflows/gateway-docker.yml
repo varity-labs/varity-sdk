@@ -40,7 +40,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: services/varity-gateway
+          context: .
+          file: services/varity-gateway/Dockerfile
           push: true
           provenance: false
           tags: |
