@@ -54,6 +54,21 @@ def _safe_json_error(message: str) -> None:
     print(json.dumps({"success": False, "error": message}), flush=True)
 
 
+def _result_value(result: Any, *names: str, default: Any = None) -> Any:
+    if isinstance(result, dict):
+        for name in names:
+            value = result.get(name)
+            if value:
+                return value
+        return default
+
+    for name in names:
+        value = getattr(result, name, None)
+        if value:
+            return value
+    return default
+
+
 def main() -> int:
     try:
         payload = json.loads(sys.stdin.read() or "{}")
@@ -109,12 +124,16 @@ def main() -> int:
             _safe_json_error(result.error_message or "Deployment failed")
             return 1
 
+        deployment_id = _result_value(result, "dseq", "deployment_id", "deploymentId")
+        provider_url = _result_value(result, "url", "service_url", "frontend_url", default="")
+        provider = _result_value(result, "provider", default="")
+
         print(json.dumps({
             "success": True,
-            "deploymentId": result.dseq,
-            "providerUrl": result.url,
-            "provider": result.provider,
-            "estimatedMonthlyCost": result.estimated_monthly_cost,
+            "deploymentId": deployment_id,
+            "providerUrl": provider_url,
+            "provider": provider,
+            "estimatedMonthlyCost": _result_value(result, "estimated_monthly_cost", "estimatedMonthlyCost", default=0.0),
             "plan": {
                 "projectType": project_info.project_type,
                 "displayName": project_info.display_name or project_info.name,

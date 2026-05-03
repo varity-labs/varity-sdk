@@ -25,6 +25,47 @@ console = Console()
 _NEXT_STATIC_EXPORT_RE = re.compile(r"\boutput\s*:\s*['\"]export['\"]")
 
 
+def _result_value(result, *names: str, default=""):
+    if isinstance(result, dict):
+        for name in names:
+            value = result.get(name)
+            if value:
+                return value
+        return default
+
+    for name in names:
+        value = getattr(result, name, None)
+        if value:
+            return value
+    return default
+
+
+def _akash_result(success: bool, dseq: str = "", url: str = "", provider: str = "", **extra):
+    fields = getattr(AkashDeploymentResult, "__dataclass_fields__", {})
+    if "dseq" in fields:
+        result = AkashDeploymentResult(
+            success=success,
+            dseq=dseq,
+            url=url,
+            provider=provider,
+            **extra,
+        )
+        if not hasattr(result, "deployment_id"):
+            result.deployment_id = dseq
+        return result
+
+    result = AkashDeploymentResult(
+        success=success,
+        deployment_id=dseq or None,
+        url=url or None,
+        provider=provider or None,
+        **extra,
+    )
+    if not hasattr(result, "dseq"):
+        result.dseq = dseq
+    return result
+
+
 # ---------------------------------------------------------------------------
 # SDL templates (f-string, no Jinja2)
 # ---------------------------------------------------------------------------
@@ -492,16 +533,13 @@ def deploy(
         # pull an image, npm install / pip install, and bind to the port —
         # that's 1-10 minutes of "502 / Content not available" for the user
         # if we don't wait here.
-        if isinstance(result, AkashDeploymentResult):
-            if not result.success:
+        if not isinstance(result, dict):
+            if getattr(result, "success", True) is False:
                 return result
-            raw_url = result.url
-            dseq = result.dseq
-            provider = result.provider
-        else:
-            raw_url = result.get("url", "")
-            dseq = result.get("dseq", "")
-            provider = result.get("provider", "")
+
+        raw_url = _result_value(result, "url", "service_url", "frontend_url")
+        dseq = _result_value(result, "dseq", "deployment_id", "deploymentId")
+        provider = _result_value(result, "provider")
         health_url = _ensure_scheme(raw_url)
 
         # Python apps need more time: python:3.11-slim (~200MB) pull + pip install
@@ -518,7 +556,7 @@ def deploy(
         )
 
         if not healthy:
-            return AkashDeploymentResult(
+            return _akash_result(
                 success=False,
                 dseq=dseq,
                 url=_ensure_scheme(raw_url),
@@ -534,7 +572,7 @@ def deploy(
         _log("Container healthy — serving traffic")
         _log("App running")
 
-        return AkashDeploymentResult(
+        return _akash_result(
             success=True,
             dseq=dseq,
             url=_ensure_scheme(raw_url),
