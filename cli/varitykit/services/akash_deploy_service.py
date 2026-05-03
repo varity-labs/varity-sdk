@@ -475,6 +475,7 @@ def deploy(
     package_manager: str = "npm",
     api_key: Optional[str] = None,
     verbose: bool = True,
+    wait_for_health: bool = True,
 ) -> AkashDeploymentResult:
     """
     Deploy a GitHub repo to Akash.
@@ -493,6 +494,9 @@ def deploy(
         package_manager: Package manager detected from lockfiles (npm/yarn/pnpm)
         api_key: Akash Console API key (falls back to env / credential proxy)
         verbose: Print progress messages
+        wait_for_health: Wait until the app responds before returning. CLI
+            deploys keep this enabled; long-running API callers can disable it
+            and poll the deployment status separately.
 
     Returns:
         AkashDeploymentResult with URL and deployment info
@@ -541,6 +545,15 @@ def deploy(
         dseq = _result_value(result, "dseq", "deployment_id", "deploymentId")
         provider = _result_value(result, "provider")
         health_url = _ensure_scheme(raw_url)
+
+        if not wait_for_health:
+            return _akash_result(
+                success=True,
+                dseq=dseq,
+                url=health_url,
+                provider=provider,
+                estimated_monthly_cost=0.0,
+            )
 
         # Python apps need more time: python:3.11-slim (~200MB) pull + pip install
         # can take 4-8 min on slow Akash provider nodes (VAR-234). Node apps keep

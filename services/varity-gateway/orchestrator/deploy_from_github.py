@@ -115,6 +115,7 @@ def main() -> int:
                 package_manager=project_info.package_manager or "npm",
                 api_key=os.environ.get("VARITY_AKASH_CONSOLE_KEY") or os.environ.get("AKASH_CONSOLE_API_KEY"),
                 verbose=False,
+                wait_for_health=False,
             )
         captured_logs = deploy_stdout.getvalue().strip()
         if captured_logs:

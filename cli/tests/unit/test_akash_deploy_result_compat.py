@@ -80,3 +80,32 @@ def test_deploy_accepts_sdk_style_akash_result(monkeypatch):
     assert result.dseq == "26653321"
     assert result.provider == "akash1provider"
     assert result.url == "https://deployment.example.com"
+
+
+def test_deploy_can_return_after_akash_acceptance_without_health_wait(monkeypatch):
+    _patch_deploy_dependencies(
+        monkeypatch,
+        {
+            "dseq": "26654358",
+            "provider": "akash1provider",
+            "url": "provider.example.com:31000",
+        },
+    )
+
+    def fail_if_health_wait_runs(**kwargs):
+        raise AssertionError("portal deploy path should return before health polling")
+
+    monkeypatch.setattr(svc, "_wait_for_healthy", fail_if_health_wait_runs)
+
+    result = svc.deploy(
+        github_repo_url="https://github.com/example/app",
+        app_name="example",
+        api_key="akash-key",
+        verbose=False,
+        wait_for_health=False,
+    )
+
+    assert result.success is True
+    assert result.dseq == "26654358"
+    assert result.provider == "akash1provider"
+    assert result.url == "http://provider.example.com:31000"
