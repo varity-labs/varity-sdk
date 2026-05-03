@@ -1,0 +1,48 @@
+# WARNING: Never hardcode secrets. Use ${VAR_NAME} substitution.
+# Values injected at deploy time via Akash Console.
+---
+version: "2.0"
+services:
+  billing-meter:
+    image: ghcr.io/varity-labs/billing-meter:1.0.3
+    env:
+      - NODE_ENV=production
+      - DB_PROXY_URL=${DB_PROXY_URL}
+      - DB_PROXY_TOKEN=${DB_PROXY_TOKEN}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - VARITY_AKASH_CONSOLE_KEY=${VARITY_AKASH_CONSOLE_KEY}
+      - AKASH_CONSOLE_API_URL=${AKASH_CONSOLE_API_URL}
+      - PORT=8080
+      - METER_INTERVAL_MS=86400000
+      - MAX_HOURLY_MULTIPLIER=10
+    expose:
+      - port: 8080
+        as: 8080
+        proto: tcp
+        to:
+          - global: true
+profiles:
+  compute:
+    billing-meter:
+      resources:
+        cpu:
+          units: 0.25
+        memory:
+          size: 256Mi
+        storage:
+          size: 512Mi
+  placement:
+    akash:
+      pricing:
+        billing-meter:
+          denom: uakt
+          amount: 1000
+      signedBy:
+        anyOf:
+          - akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63
+        allOf: []
+deployment:
+  billing-meter:
+    akash:
+      profile: billing-meter
+      count: 1
