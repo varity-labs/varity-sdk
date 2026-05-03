@@ -1,0 +1,21 @@
+{
+  "name": "billing-meter",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Hourly metered usage cron — reads deployments from DB Proxy, pushes meter events to Stripe",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "stripe": "^22.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
