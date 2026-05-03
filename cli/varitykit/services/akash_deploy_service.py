@@ -22,6 +22,8 @@ from varitykit.core.akash.types import AkashDeploymentResult, AkashError
 
 console = Console()
 
+_NEXT_STATIC_EXPORT_RE = re.compile(r"\boutput\s*:\s*['\"]export['\"]")
+
 
 # ---------------------------------------------------------------------------
 # SDL templates (f-string, no Jinja2)
@@ -478,8 +480,10 @@ def deploy(
         # 3. Deploy via Console API
         _log("Deploying to compute network...")
         deployer = AkashConsoleDeployer(api_key=key)
-        # deploy() raises AkashError on failure, returns {"dseq", "provider", "url"} on success
-        result_dict = deployer.deploy(sdl=sdl, deposit=5)
+        # deploy() raises AkashError on failure. Depending on the installed
+        # console deployer version this returns either a dict or an
+        # AkashDeploymentResult, so normalize both shapes here.
+        result = deployer.deploy(sdl=sdl, deposit=5)
 
         _log("Deployment accepted by compute network")
 
@@ -488,9 +492,16 @@ def deploy(
         # pull an image, npm install / pip install, and bind to the port —
         # that's 1-10 minutes of "502 / Content not available" for the user
         # if we don't wait here.
-        raw_url = result_dict.get("url", "")
-        dseq = result_dict.get("dseq", "")
-        provider = result_dict.get("provider", "")
+        if isinstance(result, AkashDeploymentResult):
+            if not result.success:
+                return result
+            raw_url = result.url
+            dseq = result.dseq
+            provider = result.provider
+        else:
+            raw_url = result.get("url", "")
+            dseq = result.get("dseq", "")
+            provider = result.get("provider", "")
         health_url = _ensure_scheme(raw_url)
 
         # Python apps need more time: python:3.11-slim (~200MB) pull + pip install
@@ -730,7 +741,7 @@ def detect_hosting_type(project_path: str) -> str:
                 if config_path.exists():
                     try:
                         content = config_path.read_text(encoding="utf-8")
-                        if "output: 'export'" in content or 'output: "export"' in content:
+                        if _NEXT_STATIC_EXPORT_RE.search(content):
                             return "static"
                     except IOError:
                         pass

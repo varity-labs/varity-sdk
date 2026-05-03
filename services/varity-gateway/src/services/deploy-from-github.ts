@@ -422,7 +422,17 @@ function runCanonicalOrchestrator(payload: Record<string, unknown>): Promise<Orc
         try {
           return JSON.parse(stdout.trim() || '{}') as OrchestratorBridgeResult;
         } catch {
-          return null;
+          const jsonLine = stdout
+            .trim()
+            .split(/\r?\n/)
+            .reverse()
+            .find(line => line.trim().startsWith('{') && line.trim().endsWith('}'));
+          if (!jsonLine) return null;
+          try {
+            return JSON.parse(jsonLine) as OrchestratorBridgeResult;
+          } catch {
+            return null;
+          }
         }
       })();
 

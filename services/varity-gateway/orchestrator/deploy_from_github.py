@@ -15,6 +15,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from typing import Any, Dict
 
@@ -85,18 +87,23 @@ def main() -> int:
         port = detect_app_port(str(project_dir), project_info.project_type)
         python_start = detect_python_start_command(str(project_dir))
 
-        result = deploy_to_akash(
-            github_repo_url=github_url,
-            app_name=app_name,
-            project_type=project_info.project_type,
-            services=services,
-            port=port,
-            python_start_command=python_start,
-            env_vars=user_env,
-            package_manager=project_info.package_manager or "npm",
-            api_key=os.environ.get("VARITY_AKASH_CONSOLE_KEY") or os.environ.get("AKASH_CONSOLE_API_KEY"),
-            verbose=False,
-        )
+        deploy_stdout = StringIO()
+        with redirect_stdout(deploy_stdout):
+            result = deploy_to_akash(
+                github_repo_url=github_url,
+                app_name=app_name,
+                project_type=project_info.project_type,
+                services=services,
+                port=port,
+                python_start_command=python_start,
+                env_vars=user_env,
+                package_manager=project_info.package_manager or "npm",
+                api_key=os.environ.get("VARITY_AKASH_CONSOLE_KEY") or os.environ.get("AKASH_CONSOLE_API_KEY"),
+                verbose=False,
+            )
+        captured_logs = deploy_stdout.getvalue().strip()
+        if captured_logs:
+            print(captured_logs, file=sys.stderr, flush=True)
 
         if not result.success:
             _safe_json_error(result.error_message or "Deployment failed")
