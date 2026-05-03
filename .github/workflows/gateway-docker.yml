@@ -26,7 +26,10 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # Use GHCR_PAT (classic PAT with write:packages on varity-labs) when pushing
+          # from the Michael-Abril personal repo to varity-labs org. Falls back to
+          # GITHUB_TOKEN when running inside a varity-labs-owned repo.
+          password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Extract version from tag
         id: version
@@ -40,7 +43,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: services/varity-gateway
+          context: .
+          file: services/varity-gateway/Dockerfile
           push: true
           provenance: false
           tags: |

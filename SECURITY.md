@@ -1,69 +1,42 @@
 # Security Policy
 
-The Varity team takes security seriously. We appreciate your efforts to responsibly disclose vulnerabilities and will make every effort to acknowledge your contributions.
-
 ## Reporting a Vulnerability
 
-**Please do NOT open public GitHub issues for security vulnerabilities.**
+If you discover a security vulnerability in the Varity SDK, please report it responsibly.
 
-Instead, report vulnerabilities by emailing **[security@varity.so](mailto:security@varity.so)**.
+**Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Your report should include:
+Instead, email us at: **security@varity.so**
 
-- A clear description of the vulnerability
-- Steps to reproduce the issue
+Include:
+- Description of the vulnerability
+- Steps to reproduce
 - Affected package(s) and version(s)
-- Impact assessment (what an attacker could achieve)
-- Any suggested fixes, if applicable
+- Potential impact
 
-Providing a detailed report helps us triage and address the issue faster.
+We will acknowledge your report within 48 hours and provide a timeline for a fix.
 
-## Response Timeline
+## Supported Versions
 
-| Stage | Timeframe |
-|-------|-----------|
-| Acknowledgment | Within 48 hours |
-| Initial assessment | Within 5 business days |
-| Fix: Critical severity | 7 days |
-| Fix: High severity | 14 days |
-| Fix: Medium severity | 30 days |
+| Package | Supported Versions |
+|---------|-------------------|
+| `@varity-labs/sdk` | 2.x (latest beta) |
+| `@varity-labs/ui-kit` | 2.x (latest beta) |
+| `@varity-labs/types` | 2.x (latest beta) |
+| `@varity-labs/mcp` | 1.x (latest) |
+| `create-varity-app` | 2.x (latest beta) |
+| `varitykit` | 1.x (latest) |
 
-We will keep you informed of our progress throughout the process. If you do not receive an acknowledgment within 48 hours, please follow up to confirm we received your report.
+## Security Practices
 
-## Scope
+- All credentials are managed through Varity's credential proxy — developers never handle raw secrets
+- API keys use timing-safe comparison to prevent timing attacks
+- HTTPS is enforced in production
+- Rate limiting is applied to all authenticated endpoints
+- No credentials or secrets are ever logged
 
-### In Scope
+## Disclosure Policy
 
-- `@varity-labs/sdk`
-- `@varity-labs/ui-kit`
-- `@varity-labs/types`
-- `varitykit` CLI
-- Credential Proxy
-- DB Proxy
-- Varity Gateway
-
-### Out of Scope
-
-- **Third-party dependencies** -- please report these to the respective maintainers directly
-- **Varity L3 chain infrastructure** -- network-level issues should be reported through separate channels
-- Social engineering attacks against Varity team members
-- Denial-of-service attacks
-
-## Safe Harbor
-
-Varity supports safe harbor for security researchers who:
-
-- Make a good-faith effort to avoid privacy violations, destruction of data, and disruption of services
-- Only interact with accounts you own or with explicit permission of the account holder
-- Do not exploit a vulnerability beyond what is necessary to confirm its existence
-- Report vulnerabilities in accordance with this policy
-
-Good-faith security research following this policy will not be subject to legal action from Varity.
-
-## Recognition
-
-Security researchers who report valid vulnerabilities will be credited in release notes, with their permission. If you would like to be credited, please include your preferred name and optional link (e.g., GitHub profile) in your report.
-
-## Preferred Languages
-
-We accept vulnerability reports in English.
+- We will work with you to understand and resolve the issue
+- We will credit you (unless you prefer anonymity) when the fix is released
+- We aim to release a fix within 7 days for critical vulnerabilities

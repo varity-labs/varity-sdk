@@ -3,7 +3,7 @@ import { usePrivy, User } from '@privy-io/react-auth';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@varity-labs/types';
 
-export interface PrivyLoginButtonProps {
+export interface LoginButtonProps {
   onSuccess?: (user: User) => void;
   onError?: (error: Error) => void;
   className?: string;
@@ -26,12 +26,12 @@ export interface PrivyLoginButtonProps {
  * </PrivyLoginButton>
  * ```
  */
-export function PrivyLoginButton({
+export function LoginButton({
   onSuccess,
   onError,
   className = 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-xl',
   children = 'Sign In with Email or Social',
-}: PrivyLoginButtonProps): JSX.Element {
+}: LoginButtonProps): JSX.Element {
   const { ready, authenticated, login, user } = usePrivy();
 
   const handleLogin = async () => {
@@ -74,4 +74,4 @@ export function PrivyLoginButton({
   );
 }
 
-export default PrivyLoginButton;
+export default LoginButton;

@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/create-varity-app)](https://www.npmjs.com/package/create-varity-app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/varity-labs/varity-sdk/blob/main/LICENSE)
 
-Create production-ready apps with auth, database, and payments built in.
+Create production-ready apps with auth and database built in. Payments coming soon.
 
 ## Quick Start
 
@@ -77,7 +77,7 @@ Or deploy from your AI editor with the [Varity MCP server](https://www.npmjs.com
 
 ---
 
-**Part of the [Varity SDK](https://github.com/varity-labs/varity-sdk)** -- Build, deploy, and monetize apps 70% cheaper than AWS.
+**Part of the [Varity SDK](https://github.com/varity-labs/varity-sdk).** Deploy any app, AI agent, or LLM in 60 seconds. 60-80% cheaper than AWS.
 
 [Documentation](https://docs.varity.so) | [GitHub](https://github.com/varity-labs/varity-sdk) | [Discord](https://discord.gg/7vWsdwa2Bg)
 

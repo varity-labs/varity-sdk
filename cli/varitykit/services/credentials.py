@@ -19,10 +19,9 @@ except ImportError:
 # JWT secret — must match the DB_PROXY_JWT_SECRET in deploy.yaml
 _JWT_SECRET_ENV = os.environ.get("VARITY_DB_PROXY_JWT_SECRET", "")
 
-# Dev-tier fallback secret (matches DB Proxy dev tier)
-_DEV_JWT_SECRET = "varity-dev-jwt-secret-2026"
+# Dev-tier fallback secret (must match SDK's VARITY_DEV_JWT_SECRET in credentials.ts)
+_DEV_JWT_SECRET = "varity-dev-public-key-not-for-production"
 
-_jwt_secret_warned = False
 _dev_secret_warned = False
 
 
@@ -47,7 +46,6 @@ def _get_jwt_secret() -> str:
     2. ~/.varitykit/config.json (set during `varitykit login`)
     3. Fails with helpful message
     """
-    global _jwt_secret_warned
     if _JWT_SECRET_ENV:
         return _JWT_SECRET_ENV
 
@@ -153,7 +151,7 @@ def generate_app_credentials(app_name: Optional[str] = None) -> Dict:
     return {
         'app_id': app_id,
         'jwt_token': jwt_token,
-        'db_proxy_url': os.environ.get('VARITY_DB_PROXY_URL', 'http://provider.akashprovid.com:31782'),
+        'db_proxy_url': os.environ.get('VARITY_DB_PROXY_URL', 'https://varity.app'),
         'expires_days': 365
     }
 

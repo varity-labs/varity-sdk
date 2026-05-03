@@ -3,7 +3,7 @@ Unit tests for validators
 """
 
 import pytest
-from varietykit.utils.validators import ConfigValidator, ValidationResult
+from varitykit.utils.validators import ConfigValidator, ValidationResult
 
 
 class TestConfigValidator:
@@ -37,6 +37,13 @@ class TestConfigValidator:
         for name in invalid_names:
             result = ConfigValidator.validate_project_name(name)
             assert not result.passed, f"'{name}' should be invalid"
+
+    def test_normalize_project_name(self):
+        """Test project name normalization for non-interactive inputs"""
+        assert ConfigValidator.normalize_project_name("My App") == "my-app"
+        assert ConfigValidator.normalize_project_name("dogfood-row2-20260503T004755Z-12020") == \
+            "dogfood-row2-20260503t004755z-12020"
+        assert ConfigValidator.normalize_project_name("  --Weird__Name!!  ") == "weird-name"
 
     def test_validate_api_key(self):
         """Test API key validation"""

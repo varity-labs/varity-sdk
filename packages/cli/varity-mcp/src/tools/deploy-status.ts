@@ -13,6 +13,39 @@ interface DeploymentRecord {
   size: string;
   timestamp: string;
   path: string;
+  http_status?: number;
+  latency_ms?: number;
+}
+
+export async function checkLiveness(
+  url: string
+): Promise<{ live: boolean; httpStatus?: number; latencyMs?: number }> {
+  if (!url || url === "unknown" || !url.startsWith("http")) {
+    return { live: false };
+  }
+  try {
+    const start = Date.now();
+    const res = await fetch(url, {
+      method: "GET",
+      signal: AbortSignal.timeout(8000),
+      redirect: "follow",
+    });
+    return { live: res.ok, httpStatus: res.status, latencyMs: Date.now() - start };
+  } catch {
+    return { live: false };
+  }
+}
+
+async function applyLiveness(deployments: DeploymentRecord[]): Promise<void> {
+  const results = await Promise.all(deployments.map((d) => checkLiveness(d.url)));
+  for (let i = 0; i < deployments.length; i++) {
+    const { live, httpStatus, latencyMs } = results[i]!;
+    if (deployments[i]!.status === "deployed" && !live) {
+      deployments[i]!.status = "unhealthy";
+    }
+    if (httpStatus !== undefined) deployments[i]!.http_status = httpStatus;
+    if (latencyMs !== undefined) deployments[i]!.latency_ms = latencyMs;
+  }
 }
 
 async function readDeployments(): Promise<DeploymentRecord[]> {
@@ -27,15 +60,29 @@ async function readDeployments(): Promise<DeploymentRecord[]> {
       try {
         const content = await readFile(join(deploymentsDir, file), "utf-8");
         const data = JSON.parse(content);
+        // Resolve the live URL — always prefer clean varity.app custom domain over raw provider URLs
+        const rawUrl =
+          data.custom_domain?.url ||   // clean varity.app URL registered at deploy time
+          data.url ||
+          data.deployment_url ||
+          data.akash?.url ||
+          data.ipfs?.gateway_url ||
+          "unknown";
+        // Convert raw storage URLs to clean varity.app/{app-name}/ — use app name slug, never the deployment ID
+        const appSlug =
+          data.custom_domain?.subdomain ||   // most reliable: registered subdomain
+          data.app_name ||
+          data.project_name ||
+          data.project?.name ||
+          (data.path ? data.path.split("/").pop() : null);  // last dir segment as fallback
+        // Always construct a clean varity.app URL — never expose raw provider URLs
+        const cleanUrl = appSlug
+          ? `https://varity.app/${appSlug}/`
+          : (rawUrl.includes("ipfs.io/ipfs/") ? `https://varity.app/${file.replace(".json", "")}/` : rawUrl);
+
         deployments.push({
           id: file.replace(".json", ""),
-          url:
-            data.url ||
-            data.deployment_url ||
-            data.ipfs?.gateway_url ||
-            data.ipfs?.thirdweb_url ||
-            data.akash?.url ||
-            "unknown",
+          url: cleanUrl,
           framework:
             data.framework ||
             data.project?.type ||
@@ -46,7 +93,9 @@ async function readDeployments(): Promise<DeploymentRecord[]> {
             data.build_size ||
             (data.build?.size_mb ? `${data.build.size_mb.toFixed(1)} MB` : "unknown"),
           timestamp: data.timestamp || data.deployed_at || "unknown",
-          path: data.path || data.project_path || data.build?.output_dir || "unknown",
+          // Show the app name so developers can identify which project this belongs to.
+          // Never expose full filesystem paths — use app_name only.
+          path: appSlug || file.replace(".json", ""),
         });
       } catch {
         // Skip malformed deployment files
@@ -132,6 +181,8 @@ export function registerDeployStatusTool(server: McpServer): void {
           );
         }
 
+        await applyLiveness([deployment]);
+
         return successResponse(
           { deployment },
           `Deployment ${deployment.id}: ${deployment.status} at ${deployment.url}`
@@ -155,13 +206,18 @@ export function registerDeployStatusTool(server: McpServer): void {
       const limited = deployments.slice(0, maxResults);
       const hasMore = deployments.length > maxResults;
 
+      await applyLiveness(limited);
+
       return successResponse(
         {
           deployments: limited,
           total: deployments.length,
           showing: limited.length,
+          // When no path filter was applied, make it explicit these are account-wide results
+          // so developers don't mistake another project's deployments for their own.
+          ...(!path ? { scope: "account-wide", scope_note: `Showing deployments across all projects on this machine. Pass the \`path\` parameter (e.g., your project directory) to filter to a specific project.` } : { scope: "project-filtered" }),
           ...(hasMore
-            ? { note: `Showing ${limited.length} of ${deployments.length}. Increase "limit" to see more.` }
+            ? { pagination_note: `Showing ${limited.length} of ${deployments.length}. Increase "limit" to see more.` }
             : {}),
         },
         `Found ${deployments.length} deployment(s). Most recent: ${limited[0]!.url}`

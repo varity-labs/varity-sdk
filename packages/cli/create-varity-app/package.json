@@ -1,6 +1,6 @@
 {
   "name": "create-varity-app",
-  "version": "2.0.0-beta.6",
+  "version": "2.0.0-beta.26",
   "description": "Create production-ready apps with auth, database, and payments built in",
   "license": "MIT",
   "repository": {

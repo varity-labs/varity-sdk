@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
 # Import Akash components
-from varietykit.core.akash.types import (
+from varitykit.core.akash.types import (
     AkashProviderBid,
     AkashDeploymentResult,
     AkashDeploymentStatus,
@@ -18,12 +18,12 @@ from varietykit.core.akash.types import (
     AkashError,
     AkashProviderError
 )
-from varietykit.core.akash.provider_selector import ProviderSelector
-from varietykit.core.akash.manifest_generator import ManifestGenerator
-from varietykit.core.akash.akash_deployer import AkashDeployer
+from varitykit.core.akash.provider_selector import ProviderSelector
+from varitykit.core.akash.manifest_generator import ManifestGenerator
+from varitykit.core.akash.akash_deployer import AkashDeployer
 
 # Import project types
-from varietykit.core.types import ProjectInfo, BuildArtifacts
+from varitykit.core.types import ProjectInfo, BuildArtifacts
 
 
 class TestAkashTypes:

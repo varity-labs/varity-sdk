@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 
-export interface PrivyProtectedRouteProps {
+export interface ProtectedRouteProps {
   children: ReactNode;
   fallback?: ReactNode;
   loadingComponent?: ReactNode;
@@ -20,11 +20,11 @@ export interface PrivyProtectedRouteProps {
  * </PrivyProtectedRoute>
  * ```
  */
-export function PrivyProtectedRoute({
+export function ProtectedRoute({
   children,
   fallback,
   loadingComponent,
-}: PrivyProtectedRouteProps): JSX.Element {
+}: ProtectedRouteProps): JSX.Element {
   const { ready, authenticated, login } = usePrivy();
 
   // Loading state
@@ -90,4 +90,4 @@ export function PrivyProtectedRoute({
   return <>{children}</>;
 }
 
-export default PrivyProtectedRoute;
+export default ProtectedRoute;

@@ -3,7 +3,7 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@varity-labs/types';
 
-export interface PrivyUserProfileProps {
+export interface UserProfileProps {
   showLogoutButton?: boolean;
   onLogout?: () => void;
   className?: string;
@@ -26,11 +26,11 @@ export interface PrivyUserProfileProps {
  * />
  * ```
  */
-export function PrivyUserProfile({
+export function UserProfile({
   showLogoutButton = true,
   onLogout,
   className = 'max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg',
-}: PrivyUserProfileProps): JSX.Element | null {
+}: UserProfileProps): JSX.Element | null {
   const { ready, authenticated, user, logout: privyLogout } = usePrivy();
   const { wallets } = useWallets();
 
@@ -141,4 +141,4 @@ export function PrivyUserProfile({
   );
 }
 
-export default PrivyUserProfile;
+export default UserProfile;

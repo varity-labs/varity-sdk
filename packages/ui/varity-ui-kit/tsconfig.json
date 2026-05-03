@@ -18,5 +18,26 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "src/core/VarityClient.ts",
+    "src/hooks/useVarityAPI.tsx",
+    "src/types/api-extensions.ts",
+    "src/web3/**/*",
+    "src/hooks/web3/**/*",
+    "src/providers/VarityProvider.tsx",
+    "src/providers/WalletContext.tsx",
+    "src/providers/ChainContext.tsx",
+    "src/wallets/SimpleSmartWallet.tsx",
+    "src/wallets/SmartWalletProvider.tsx",
+    "src/wallets/index.ts",
+    "src/components/InAppWallet/**/*",
+    "src/components/SIWE/**/*",
+    "src/components/Onramp/**/*",
+    "src/providers/index.ts"
+  ]
 }

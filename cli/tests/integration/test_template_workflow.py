@@ -8,8 +8,8 @@ import pytest
 import json
 from pathlib import Path
 from click.testing import CliRunner
-from varietykit.cli.template import template
-from varietykit.cli.main import cli
+from varitykit.cli.template import template
+from varitykit.cli.main import cli
 
 
 @pytest.mark.integration

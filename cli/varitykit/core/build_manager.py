@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
-from typing import List
+from typing import Dict, List, Optional
 
 from .types import BuildArtifacts, BuildError
 
@@ -25,7 +25,7 @@ class BuildManager:
     - Validate build success
     """
 
-    def build(self, project_path: str, build_command: str, output_dir: str) -> BuildArtifacts:
+    def build(self, project_path: str, build_command: str, output_dir: str, extra_env: Optional[Dict[str, str]] = None) -> BuildArtifacts:
         """
         Execute build command and collect output artifacts.
 
@@ -33,6 +33,7 @@ class BuildManager:
             project_path: Path to the project directory
             build_command: Build command to execute (e.g., 'npm run build')
             output_dir: Expected output directory (e.g., './out', './build')
+            extra_env: Additional environment variables to inject into the build process
 
         Returns:
             BuildArtifacts with file paths, sizes, and timing info
@@ -58,32 +59,39 @@ class BuildManager:
                 try:
                     shutil.rmtree(cache_path)
                 except OSError:
-                    # WSL/Windows can fail on rmtree; fall back to rm -rf
-                    subprocess.run(["rm", "-rf", str(cache_path)], check=True)
+                    if os.name == 'nt':
+                        subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", str(cache_path)], check=True)
+                    else:
+                        subprocess.run(["rm", "-rf", str(cache_path)], check=True)
 
         # Execute build
         start_time = time.time()
         print(f"\nRunning build command: {build_command}")
         print("-" * 60)
 
-        # Split build command outside try block for error handling
-        cmd_parts = build_command.split()
+        # On Windows, shell=True requires a string command; on Unix, use a list
+        use_shell = os.name == 'nt'
+        cmd = build_command if use_shell else build_command.split()
 
         # Build with production environment to ensure minified output
         build_env = os.environ.copy()
         build_env["NODE_ENV"] = "production"
+        if "NODE_OPTIONS" not in build_env:
+            build_env["NODE_OPTIONS"] = "--max-old-space-size=4096"
+        if extra_env:
+            build_env.update(extra_env)
 
         try:
             # Execute build with real-time output
             process = subprocess.Popen(
-                cmd_parts,
+                cmd,
                 cwd=str(path),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
-                universal_newlines=True,
                 env=build_env,
+                shell=use_shell,
             )
 
             # Stream output in real-time
@@ -106,9 +114,12 @@ class BuildManager:
             print("-" * 60)
             print(f"Build completed successfully in {build_time:.1f}s\n")
 
-        except FileNotFoundError:
+        except (FileNotFoundError, PermissionError):
+            # FileNotFoundError: POSIX standard when command doesn't exist (ENOENT)
+            # PermissionError: raised on some Linux/WSL configs for nonexistent commands (EACCES)
+            first_token = build_command.split()[0] if build_command else build_command
             raise BuildError(
-                f"Build command not found: {cmd_parts[0]}\n"
+                f"Build command not found: {first_token}\n"
                 f"Make sure the package manager is installed.\n"
                 f"Command attempted: {build_command}"
             )

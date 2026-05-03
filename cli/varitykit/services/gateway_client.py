@@ -105,11 +105,21 @@ def _cache_gateway_key(config: dict, api_key: str) -> None:
 
 def get_deploy_key() -> Optional[str]:
     """
-    Read the developer's deploy key from ~/.varitykit/config.json.
+    Read the developer's deploy key.
+
+    Resolution order:
+    1. VARITY_DEPLOY_KEY environment variable (CI/CD, MCP agents)
+    2. ~/.varitykit/config.json (interactive login)
 
     Returns:
         Deploy key string, or None if not configured.
     """
+    # 1. Check environment variable (enables CI/CD and MCP agent workflows)
+    env_key = os.getenv("VARITY_DEPLOY_KEY")
+    if env_key:
+        return env_key
+
+    # 2. Check config file
     if not CONFIG_PATH.exists():
         return None
 
@@ -317,7 +327,7 @@ def register_domain(
             method="POST",
         )
 
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=30) as response:
             return json.loads(response.read().decode())
 
     except urllib.error.HTTPError as e:
@@ -373,7 +383,7 @@ def _update_domain(
             method="PUT",
         )
 
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=30) as response:
             return json.loads(response.read().decode())
 
     except urllib.error.HTTPError as e:
@@ -461,7 +471,7 @@ def register_akash_domain(
             method="POST",
         )
 
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=30) as response:
             return json.loads(response.read().decode())
 
     except urllib.error.HTTPError as e:
@@ -527,7 +537,7 @@ def _update_akash_domain(
             method="PUT",
         )
 
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=30) as response:
             return json.loads(response.read().decode())
 
     except urllib.error.HTTPError as e:

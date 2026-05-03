@@ -9,12 +9,10 @@ import { type PackageManager, getInstallCommand } from "./utils.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const VARITY_PACKAGE_VERSION = "^2.0.0-beta.1";
-
 const WORKSPACE_DEPS: Record<string, string> = {
-  "@varity-labs/sdk": VARITY_PACKAGE_VERSION,
-  "@varity-labs/types": VARITY_PACKAGE_VERSION,
-  "@varity-labs/ui-kit": VARITY_PACKAGE_VERSION,
+  "@varity-labs/sdk": "2.0.0-beta.14",
+  "@varity-labs/types": "2.0.0-beta.8",
+  "@varity-labs/ui-kit": "2.0.0-beta.15",
 };
 
 const EXCLUDED_FILES = new Set([
@@ -44,7 +42,7 @@ function rewritePackageJson(
         typeof version === "string" &&
         version.startsWith("workspace:")
       ) {
-        deps[name] = WORKSPACE_DEPS[name] || VARITY_PACKAGE_VERSION;
+        deps[name] = WORKSPACE_DEPS[name] || "2.0.0-beta.4";
       }
     }
   }
@@ -100,11 +98,16 @@ export async function createApp(
       },
     });
 
-    // Rename gitignore → .gitignore (npm strips .gitignore from tarballs)
-    const gitignoreSrc = path.join(targetDir, "gitignore");
-    const gitignoreDst = path.join(targetDir, ".gitignore");
-    if (fs.existsSync(gitignoreSrc) && !fs.existsSync(gitignoreDst)) {
-      await fs.rename(gitignoreSrc, gitignoreDst);
+    // Rename dotfiles back (npm strips them from tarballs)
+    for (const [plain, dot] of [
+      ["gitignore", ".gitignore"],
+      ["npmrc", ".npmrc"],
+    ] as const) {
+      const src = path.join(targetDir, plain);
+      const dst = path.join(targetDir, dot);
+      if (fs.existsSync(src) && !fs.existsSync(dst)) {
+        await fs.rename(src, dst);
+      }
     }
 
     // Rewrite package.json

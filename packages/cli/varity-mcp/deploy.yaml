@@ -1,3 +1,5 @@
+# WARNING: Never hardcode secrets. Use ${VAR_NAME} substitution.
+# Values injected at deploy time via Akash Console. See .env.example for required vars.
 ---
 version: "2.0"
 
@@ -17,8 +19,8 @@ services:
       - NODE_ENV=production
       - VARITY_AUTH_URL=https://auth.varity.so
       - VARITY_GATEWAY_URL=https://varity.app
-      - GITHUB_TOKEN=
-      - VARITY_MCP_DEV_TOKEN=varity_beta_2026_f8a9c2e4d6b7a1c3e5f8a9c2e4d6b7a1c3e5f8a9
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - VARITY_MCP_DEV_TOKEN=${VARITY_MCP_DEV_TOKEN}
 
 profiles:
   compute:

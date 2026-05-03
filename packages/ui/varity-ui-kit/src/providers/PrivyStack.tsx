@@ -1,11 +1,19 @@
 import React, { ReactNode } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThirdwebProvider } from 'thirdweb/react';
-import { createThirdwebClient, type Chain } from 'thirdweb';
-import { PrivyReadyGate } from '../components/Privy/PrivyReadyGate';
+import { ReadyGate } from '../components/Privy/PrivyReadyGate';
 import { WalletSyncProvider } from './WalletSyncProvider';
-import { resolveCredentials, VARITY_DEV_CREDENTIALS } from '@varity-labs/sdk';
+import { VARITY_DEV_CREDENTIALS } from '@varity-labs/sdk';
+
+/**
+ * Simple chain configuration type (Varity internal — no external dependency required)
+ */
+export interface Chain {
+  id: number;
+  rpc: string;
+  name?: string;
+  testnet?: boolean;
+}
 
 /**
  * Create React Query client (memoized singleton)
@@ -36,7 +44,7 @@ interface PrivyChainConfig {
 }
 
 /**
- * Convert thirdweb Chain to Privy Chain format
+ * Convert Varity Chain to Privy Chain format
  */
 function toPrivyChain(chain: Chain): PrivyChainConfig {
   return {
@@ -44,9 +52,9 @@ function toPrivyChain(chain: Chain): PrivyChainConfig {
     name: chain.name || `Chain ${chain.id}`,
     network: `chain-${chain.id}`,
     nativeCurrency: {
-      name: 'Ether',
-      symbol: 'ETH',
-      decimals: 18,
+      name: 'USDC',
+      symbol: 'USDC',
+      decimals: 6,
     },
     rpcUrls: {
       default: { http: [chain.rpc] },
@@ -56,25 +64,15 @@ function toPrivyChain(chain: Chain): PrivyChainConfig {
   };
 }
 
-export interface PrivyStackProps {
+export interface AuthProviderProps {
   /**
-   * Your Privy app ID from https://dashboard.privy.io
+   * Your Varity auth app ID.
    *
-   * Optional - defaults to shared development credentials (VARITY_DEV_CREDENTIALS).
-   * For production, provide your own credentials.
-   *
-   * @see https://dashboard.privy.io
+   * Optional — defaults to shared development credentials (VARITY_DEV_CREDENTIALS).
+   * For production, `varitykit deploy` injects the correct value automatically.
+   * You never need to sign up for any external service.
    */
   appId?: string;
-  /**
-   * Your thirdweb client ID from https://thirdweb.com/dashboard
-   *
-   * Optional - defaults to shared development credentials (VARITY_DEV_CREDENTIALS).
-   * For production, provide your own credentials.
-   *
-   * @see https://thirdweb.com/dashboard
-   */
-  thirdwebClientId?: string;
   /**
    * Chains to support
    * @default [varityL3Testnet]
@@ -86,7 +84,7 @@ export interface PrivyStackProps {
   children: ReactNode;
   /**
    * Login methods to enable
-   * @default ['email', 'google', 'wallet']
+   * @default ['email', 'google']
    */
   loginMethods?: Array<'email' | 'wallet' | 'google' | 'twitter' | 'discord' | 'github' | 'apple' | 'linkedin' | 'sms'>;
   /**
@@ -98,7 +96,7 @@ export interface PrivyStackProps {
     logo?: string;
   };
   /**
-   * Callback when wallet address changes
+   * Callback when user address changes
    */
   onAddressChange?: (address: string | null) => void;
 }
@@ -141,41 +139,34 @@ export interface PrivyStackProps {
  * }
  * ```
  *
- * @example Production setup with custom credentials
+ * @example Production setup (varitykit deploy injects appId automatically)
  * ```tsx
  * import { PrivyStack } from '@varity-labs/ui-kit';
  *
  * function App() {
  *   return (
- *     <PrivyStack
- *       appId={process.env.PRIVY_APP_ID}
- *       thirdwebClientId={process.env.THIRDWEB_CLIENT_ID}
- *     >
+ *     <PrivyStack appId={process.env.NEXT_PUBLIC_VARITY_AUTH_ID}>
  *       <YourApp />
  *     </PrivyStack>
  *   );
  * }
  * ```
  *
- * @example With custom chains and appearance
+ * @example With appearance customization
  * ```tsx
  * import { PrivyStack } from '@varity-labs/ui-kit';
- * import { varityL3Testnet, arbitrumSepolia } from '@varity-labs/sdk';
  *
  * function App() {
  *   return (
  *     <PrivyStack
- *       appId={process.env.PRIVY_APP_ID}
- *       thirdwebClientId={process.env.THIRDWEB_CLIENT_ID}
- *       chains={[varityL3Testnet, arbitrumSepolia]}
- *       loginMethods={['email', 'google', 'wallet']}
+ *       loginMethods={['email', 'google']}
  *       appearance={{
  *         theme: 'light',
  *         accentColor: '#2563EB',
  *         logo: '/logo.png'
  *       }}
  *       onAddressChange={(address) => {
- *         console.log('Wallet connected:', address);
+ *         console.log('User address changed:', address);
  *       }}
  *     >
  *       <YourApp />
@@ -183,45 +174,23 @@ export interface PrivyStackProps {
  *   );
  * }
  * ```
- *
- * @example With wallet address tracking
- * ```tsx
- * <PrivyStack
- *   appId={process.env.PRIVY_APP_ID}
- *   thirdwebClientId={process.env.THIRDWEB_CLIENT_ID}
- *   onAddressChange={(address) => {
- *     if (address) {
- *       // User connected wallet
- *       localStorage.setItem('wallet_address', address);
- *     } else {
- *       // User disconnected
- *       localStorage.removeItem('wallet_address');
- *     }
- *   }}
- * >
- *   <YourApp />
- * </PrivyStack>
- * ```
  */
-export function PrivyStack({
+export function AuthProvider({
   appId,
-  thirdwebClientId,
   chains,
   children,
-  loginMethods = ['email', 'google', 'wallet'],
+  loginMethods = ['email', 'google'],
   appearance = {
     theme: 'light',
     accentColor: '#2563EB',
   },
   onAddressChange,
-}: PrivyStackProps): JSX.Element {
-  // Resolve credentials with fallback to VARITY_DEV_CREDENTIALS
-  const credentials = React.useMemo(() => {
-    return resolveCredentials(
-      appId || VARITY_DEV_CREDENTIALS.privy.appId,
-      thirdwebClientId || VARITY_DEV_CREDENTIALS.thirdweb.clientId
-    );
-  }, [appId, thirdwebClientId]);
+}: AuthProviderProps): JSX.Element {
+  // Resolve auth app ID — fall back to shared dev credentials automatically
+  const resolvedAppId = React.useMemo(
+    () => appId || VARITY_DEV_CREDENTIALS.privy.appId,
+    [appId]
+  );
 
   // Use Varity default chain if none provided
   const supportedChains = React.useMemo((): PrivyChainConfig[] => {
@@ -232,7 +201,7 @@ export function PrivyStack({
     return [
       {
         id: 33529,
-        name: 'Varity L3 Testnet',
+        name: 'Varity Testnet',
         network: 'varity-testnet',
         nativeCurrency: {
           name: 'USDC',
@@ -261,7 +230,7 @@ export function PrivyStack({
   return (
     <QueryClientProvider client={queryClient}>
       <PrivyProvider
-        appId={credentials.privy.appId}
+        appId={resolvedAppId}
         config={{
           loginMethods,
           appearance: {
@@ -273,16 +242,14 @@ export function PrivyStack({
           defaultChain: supportedChains[0] as any,
         }}
       >
-        <PrivyReadyGate>
-          <ThirdwebProvider>
-            <WalletSyncProvider onAddressChange={onAddressChange}>
-              {children}
-            </WalletSyncProvider>
-          </ThirdwebProvider>
-        </PrivyReadyGate>
+        <ReadyGate>
+          <WalletSyncProvider onAddressChange={onAddressChange}>
+            {children}
+          </WalletSyncProvider>
+        </ReadyGate>
       </PrivyProvider>
     </QueryClientProvider>
   );
 }
 
-export default PrivyStack;
+export default AuthProvider;

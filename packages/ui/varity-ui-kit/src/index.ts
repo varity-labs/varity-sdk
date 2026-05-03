@@ -92,36 +92,35 @@ export { Breadcrumb } from './components/Navigation/Breadcrumb'
 //   OnboardingFlow,
 // } from './components/InAppWallet'
 
-// Privy Authentication Components (Recommended for Non-Crypto Users)
+// Authentication Components (base provider — requires appId)
 export {
-  VarityPrivyProvider,
-  type VarityPrivyProviderProps,
+  AuthBaseProvider,
+  type AuthBaseProviderProps,
 } from './providers/PrivyProvider'
 
-// Privy Stack (All-in-one Provider Setup - PRODUCTION PATTERN)
+// Authentication Provider (All-in-one — zero-config, PRODUCTION PATTERN)
 export {
-  PrivyStack,
-  type PrivyStackProps,
+  AuthProvider,
+  type AuthProviderProps,
 } from './providers/PrivyStack'
 
 export {
-  PrivyLoginButton,
-  PrivyUserProfile,
-  PrivyProtectedRoute,
-  // Production patterns for Privy initialization
-  PrivyReadyGate,
+  LoginButton,
+  UserProfile,
+  ProtectedRoute,
+  ReadyGate,
   InitializingScreen,
   InitTimeoutScreen,
-  type PrivyLoginButtonProps,
-  type PrivyUserProfileProps,
-  type PrivyProtectedRouteProps,
-  type PrivyReadyGateProps,
+  type LoginButtonProps,
+  type UserProfileProps,
+  type ProtectedRouteProps,
+  type ReadyGateProps,
   type InitializingScreenProps,
   type InitTimeoutScreenProps,
 } from './components/Privy'
 
-// Re-export Privy hooks for convenience
-export { usePrivy, useWallets, useLogin, useLogout } from '@privy-io/react-auth'
+// Re-export auth hooks for convenience
+export { usePrivy as useAuth, useWallets, useLogin, useLogout } from '@privy-io/react-auth'
 
 // ============================================================================
 // Advanced: Onramp Components
@@ -268,4 +267,4 @@ export {
 // import './styles/globals.css'
 
 // Version
-export const VERSION = '2.0.0-beta.5'
+export const VERSION = '2.0.0-beta.15'

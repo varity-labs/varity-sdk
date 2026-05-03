@@ -59,7 +59,7 @@ def _setup_github_workflow(console: Console) -> bool:
     console.print("     [dim]git commit -m 'Add Varity deployment workflow'[/dim]")
     console.print("     [dim]git push origin main[/dim]")
     console.print("")
-    console.print("  [green]On push to main, your app will automatically deploy to Akash![/green]")
+    console.print("  [green]On push to main, your app will automatically deploy via Varity![/green]")
 
     return True
 
@@ -75,10 +75,11 @@ def _setup_github_workflow(console: Console) -> bool:
     help="Template to use (default: saas-starter)",
 )
 @click.option("--path", "-p", type=click.Path(), help="Path where project should be created")
-@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompts")
-@click.option("--github", is_flag=True, help="Add GitHub Actions workflow for Akash deployment")
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompts (does NOT bypass directory safety check — use --force for that)")
+@click.option("--force", is_flag=True, help="Overwrite an existing non-empty directory. WARNING: existing files will be replaced.")
+@click.option("--github", is_flag=True, help="Add GitHub Actions workflow for automated deployment")
 @click.pass_context
-def init(ctx, project_name, template, path, yes, github):
+def init(ctx, project_name, template, path, yes, force, github):
     """
     Initialize a new Varity project
 
@@ -98,7 +99,7 @@ def init(ctx, project_name, template, path, yes, github):
         console.print(
             Panel.fit(
                 "[bold cyan]VarityKit GitHub Actions Setup[/bold cyan]\n"
-                "Setting up automated Akash deployment...",
+                "Setting up automated deployment workflow...",
                 border_style="cyan",
             )
         )
@@ -123,8 +124,16 @@ def init(ctx, project_name, template, path, yes, github):
 
     # Interactive mode if no project name provided
     if not project_name:
-        console.print("\n[bold]Project Configuration[/bold]\n")
-        project_name = Prompt.ask("Project name", default="my-varity-app")
+        if yes:
+            project_name = "my-varity-app"
+        else:
+            console.print("\n[bold]Project Configuration[/bold]\n")
+            project_name = Prompt.ask("Project name", default="my-varity-app")
+
+    normalized_project_name = ConfigValidator.normalize_project_name(project_name)
+    if normalized_project_name != project_name:
+        console.print(f"[yellow]Normalizing project name to:[/yellow] [cyan]{normalized_project_name}[/cyan]")
+        project_name = normalized_project_name
 
     # Validate project name
     validation = ConfigValidator.validate_project_name(project_name)
@@ -140,10 +149,17 @@ def init(ctx, project_name, template, path, yes, github):
     else:
         project_path = Path.cwd() / project_name
 
-    # Validate directory
+    # Validate directory — this safety check always runs; -y does not bypass it
     dir_validation = ConfigValidator.validate_directory_empty(project_path)
     if not dir_validation.passed:
-        if not yes:
+        if force:
+            console.print(f"[yellow]Warning: {dir_validation.message} — overwriting (--force).[/yellow]")
+        elif yes:
+            # -y skips the "Create project?" confirmation but NOT the directory safety check
+            console.print(f"[red]✗ {dir_validation.message}[/red]")
+            console.print("[dim]Use --force to overwrite an existing directory.[/dim]")
+            ctx.exit(1)
+        else:
             should_continue = Confirm.ask(
                 f"[yellow]{dir_validation.message}[/yellow]\nContinue anyway?"
             )
@@ -151,31 +167,36 @@ def init(ctx, project_name, template, path, yes, github):
                 console.print("[dim]Initialization cancelled.[/dim]")
                 ctx.exit(0)
 
-    # Select template (interactive if not provided)
+    # Select template (interactive if not provided and not --yes)
     if not template:
-        console.print("\n[bold]Select Template[/bold]\n")
+        if yes:
+            template = "saas-starter"
+        else:
+            console.print("\n[bold]Select Template[/bold]\n")
 
-        template_manager = TemplateManager()
-        templates = template_manager.list_templates()
+            template_manager = TemplateManager()
+            templates = template_manager.list_templates()
 
-        # Display template options
-        for i, tmpl in enumerate(templates, 1):
-            console.print(f"  {i}. [cyan]{tmpl.name}[/cyan] - {tmpl.description}")
+            # Display template options
+            for i, tmpl in enumerate(templates, 1):
+                console.print(f"  {i}. [cyan]{tmpl.name}[/cyan] - {tmpl.description}")
 
-        template_choice = Prompt.ask(
-            "\nChoose template", choices=[str(i) for i in range(1, len(templates) + 1)], default="1"
-        )
+            template_choice = Prompt.ask(
+                "\nChoose template", choices=[str(i) for i in range(1, len(templates) + 1)], default="1"
+            )
 
-        selected_template = templates[int(template_choice) - 1]
-        template = selected_template.industry
+            selected_template = templates[int(template_choice) - 1]
+            template = selected_template.industry
     else:
         # Normalize template name
         template = template.lower()
 
-    # Gather additional context
-    console.print("\n[bold]Additional Configuration[/bold]\n")
-
-    company_name = Prompt.ask("Company name", default=project_name.replace("-", " ").title())
+    # Gather additional context — skip prompts when --yes is set
+    if yes:
+        company_name = project_name.replace("-", " ").title()
+    else:
+        console.print("\n[bold]Additional Configuration[/bold]\n")
+        company_name = Prompt.ask("Company name", default=project_name.replace("-", " ").title())
 
     # Ask for features (simplified for now)
     context = {

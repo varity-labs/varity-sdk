@@ -1,13 +1,13 @@
+# WARNING: Never hardcode secrets. Use ${VAR_NAME} substitution.
+# Values injected at deploy time via Akash Console. See .env.example for required vars.
 ---
 version: "2.0"
-
 endpoints:
   gateway-ip:
     kind: ip
-
 services:
   gateway:
-    image: ghcr.io/varity-labs/varity-gateway:1.5.2
+    image: ghcr.io/varity-labs/varity-gateway:1.9.12
     expose:
       - port: 8081
         as: 80
@@ -28,12 +28,12 @@ services:
       - BASE_DOMAIN=varity.app
       - IPFS_BACKEND=ipfs.dweb.link
       - CACHE_TTL=300
-    params:
-      storage:
-        caddy-certs:
-          mount: /data
-          readOnly: false
-
+      - PRIVY_APP_ID=${PRIVY_APP_ID}
+      - PRIVY_APP_SECRET=${PRIVY_APP_SECRET}
+      - VARITY_AKASH_CONSOLE_KEY=${VARITY_AKASH_CONSOLE_KEY}
+      - SUBGRAPH_PAYMENTS_URL=${SUBGRAPH_PAYMENTS_URL}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PRICE_ID=${STRIPE_PRICE_ID}
 profiles:
   compute:
     gateway:
@@ -43,19 +43,17 @@ profiles:
         memory:
           size: 512Mi
         storage:
-          - size: 1Gi
-          - name: caddy-certs
-            size: 256Mi
-            attributes:
-              persistent: true
-              class: beta3
+          size: 1Gi
   placement:
     akash:
       pricing:
         gateway:
           denom: uakt
           amount: 1000
-
+      signedBy:
+        anyOf:
+          - akash1365yvmc4s7awdyj3n2sav7xfx76adc6dnmlx63
+        allOf: []
 deployment:
   gateway:
     akash:

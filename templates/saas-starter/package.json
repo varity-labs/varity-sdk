@@ -17,13 +17,18 @@
     "deploy": "varitykit app deploy"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.0.0",
     "@varity-labs/sdk": "workspace:^",
     "@varity-labs/types": "workspace:^",
     "@varity-labs/ui-kit": "workspace:^",
     "lucide-react": "^0.400.0",
-    "next": "^15.5.15",
+    "next": "^15.0.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
+  },
+  "overrides": {
+    "postcss": "$postcss",
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -32,7 +37,7 @@
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.0.0",
     "husky": "^9.1.7",
-    "postcss": "^8.0.0",
+    "postcss": "^8.4.31",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.0.0"
   }

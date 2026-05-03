@@ -7,7 +7,7 @@ Tests AI-powered template generation functionality
 import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
-from varietykit.core.template_generator import TemplateGenerator
+from varitykit.core.template_generator import TemplateGenerator
 
 
 @pytest.mark.unit

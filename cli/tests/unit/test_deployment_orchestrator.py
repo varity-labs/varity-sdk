@@ -10,8 +10,8 @@ from pathlib import Path
 from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime
 
-from varietykit.core.deployment_orchestrator import DeploymentOrchestrator
-from varietykit.core.types import (
+from varitykit.core.deployment_orchestrator import DeploymentOrchestrator
+from varitykit.core.types import (
     ProjectInfo,
     BuildArtifacts,
     DeploymentResult,
@@ -120,7 +120,7 @@ class TestDeploymentOrchestrator:
             assert deployment_id == manifest['deployment_id']
 
             # Verify file was created
-            deployments_dir = tmp_path / '.varietykit' / 'deployments'
+            deployments_dir = tmp_path / '.varitykit' / 'deployments'
             assert deployments_dir.exists()
 
             manifest_file = deployments_dir / f"{deployment_id}.json"
@@ -147,7 +147,7 @@ class TestDeploymentOrchestrator:
 
         # Save it
         with patch('pathlib.Path.home', return_value=tmp_path):
-            deployments_dir = tmp_path / '.varietykit' / 'deployments'
+            deployments_dir = tmp_path / '.varitykit' / 'deployments'
             deployments_dir.mkdir(parents=True, exist_ok=True)
 
             manifest_file = deployments_dir / f"{deployment_id}.json"
@@ -182,7 +182,7 @@ class TestDeploymentOrchestrator:
 
         # Save them
         with patch('pathlib.Path.home', return_value=tmp_path):
-            deployments_dir = tmp_path / '.varietykit' / 'deployments'
+            deployments_dir = tmp_path / '.varitykit' / 'deployments'
             deployments_dir.mkdir(parents=True, exist_ok=True)
 
             for manifest in manifests:
@@ -224,7 +224,7 @@ class TestDeploymentOrchestrator:
 
         # Save them
         with patch('pathlib.Path.home', return_value=tmp_path):
-            deployments_dir = tmp_path / '.varietykit' / 'deployments'
+            deployments_dir = tmp_path / '.varitykit' / 'deployments'
             deployments_dir.mkdir(parents=True, exist_ok=True)
 
             for manifest in manifests:
@@ -238,9 +238,9 @@ class TestDeploymentOrchestrator:
             assert len(varity_deployments) == 2
             assert all(d['network'] == 'varity' for d in varity_deployments)
 
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.builder')
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.ipfs')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.builder')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.ipfs')
     def test_deploy_success(
         self,
         mock_ipfs_prop,
@@ -283,11 +283,11 @@ class TestDeploymentOrchestrator:
         assert result.app_store_url is None
 
         # Verify manifest was saved
-        deployments_dir = tmp_path / '.varietykit' / 'deployments'
+        deployments_dir = tmp_path / '.varitykit' / 'deployments'
         manifest_file = deployments_dir / f"{result.deployment_id}.json"
         assert manifest_file.exists()
 
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
     def test_deploy_detection_failure(self, mock_detector_prop, orchestrator):
         """Test deployment failure during project detection"""
         mock_detector = Mock()
@@ -297,8 +297,8 @@ class TestDeploymentOrchestrator:
         with pytest.raises(ProjectDetectionError):
             orchestrator.deploy()
 
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.builder')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.builder')
     def test_deploy_build_failure(
         self,
         mock_builder_prop,
@@ -326,9 +326,9 @@ class TestDeploymentOrchestrator:
         with pytest.raises(BuildError):
             orchestrator.deploy()
 
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.builder')
-    @patch('varietykit.core.deployment_orchestrator.DeploymentOrchestrator.ipfs')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.detector')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.builder')
+    @patch('varitykit.core.deployment_orchestrator.DeploymentOrchestrator.ipfs')
     def test_deploy_ipfs_failure(
         self,
         mock_ipfs_prop,

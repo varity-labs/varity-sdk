@@ -22,16 +22,16 @@ Client Request
     └── /:appName/*                    →  Content proxy (public)
                                             |
                                             ├── Resolve subdomain → content ID (via DB Proxy + cache)
-                                            ├── Fetch content from CDN
+                                            ├── Fetch content from storage gateway
                                             ├── Rewrite HTML paths for /{appName}/ prefix
                                             └── SPA fallback (serve index.html for non-file 404s)
 ```
 
 **Infrastructure:**
-- **Hosting:** Distributed cloud (dedicated IP lease)
+- **Hosting:** Distributed compute (dedicated IP lease)
 - **TLS:** Let's Encrypt via Caddy (automatic)
-- **Storage:** DB Proxy for domain records
-- **Content:** Global CDN
+- **Storage:** DB Proxy (PostgreSQL) for domain records
+- **Content:** Distributed storage gateways
 - **Cache:** In-memory (node-cache, 5-minute TTL)
 
 ---
@@ -52,7 +52,7 @@ src/
     proxy.ts            Content proxy — path rewriting, SPA fallback, caching
   services/
     resolver.ts         Domain → content ID resolution with in-memory cache
-    content.ts          Content URL building, path sanitization
+    ipfs.ts             Storage URL building, path sanitization
   templates/
     not-found.ts        404 HTML page
 ```
@@ -87,7 +87,7 @@ src/
 curl -X POST https://varity.app/api/domains/register \
   -H "Authorization: Bearer $GATEWAY_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"subdomain":"my-app","cid":"content-id","appName":"My App","ownerId":"owner-123"}'
+  -d '{"subdomain":"my-app","contentId":"content-hash-here","appName":"My App","ownerId":"owner-id"}'
 ```
 
 **Update on redeploy:**
@@ -95,7 +95,7 @@ curl -X POST https://varity.app/api/domains/register \
 curl -X PUT https://varity.app/api/domains/update \
   -H "Authorization: Bearer $GATEWAY_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"subdomain":"my-app","cid":"new-content-id","ownerId":"owner-123"}'
+  -d '{"subdomain":"my-app","contentId":"new-content-hash","ownerId":"owner-id"}'
 ```
 
 ---
@@ -152,7 +152,9 @@ The Docker image includes Caddy for TLS termination. In production, Caddy listen
 
 ## Deployment
 
-Tag a release (`gateway-vX.Y.Z`), GitHub Actions builds and pushes to GHCR, deploy the image to production, point DNS A record to the server IP.
+See [DEPLOY.md](./DEPLOY.md) for the full deployment runbook.
+
+**Quick summary:** Tag a release (`gateway-vX.Y.Z`), GitHub Actions builds and pushes to GHCR, deploy the image with an IP lease, point DNS A record to the leased IP.
 
 ---
 

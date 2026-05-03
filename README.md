@@ -5,7 +5,7 @@
 <h1 align="center">Varity SDK</h1>
 
 <p align="center">
-  <strong>Build, deploy, and monetize production apps — 70% cheaper than AWS</strong>
+  <strong>Deploy any app, AI agent, or LLM in 60 seconds. 60-80% cheaper than AWS.</strong>
 </p>
 
 <p align="center">
@@ -45,12 +45,12 @@ Most platforms make you stitch together auth, database, storage, payments, and h
 | | Traditional Setup | **Varity** |
 |---|---|---|
 | **Time to deploy** | Hours (config, CI/CD, DNS, SSL) | **60 seconds** |
-| **Auth** | Set up Cognito/Auth0 + write auth logic | **Included — zero config** |
-| **Database** | Provision RDS/Supabase + manage schema | **Included — zero config** |
-| **Storage** | Configure S3/GCS + write upload logic | **Included — zero config** |
+| **Auth** | Set up Cognito/Auth0 + write auth logic | **Included, zero config** |
+| **Database** | Provision RDS/Supabase + manage schema | **Included, zero config** |
+| **Storage** | Configure S3/GCS + write upload logic | **Included, zero config** |
 | **Payments** | Stripe integration + webhook handlers | **Coming soon** |
 | **App Store listing** | Build your own distribution | **One command** |
-| **Infrastructure cost** | $500–2,800+/mo (AWS) | **~70% less** |
+| **Infrastructure cost** | $500–2,800+/mo (AWS) | **60-80% less** |
 
 You build. You deploy. Users find your app. You get paid. That's it.
 
@@ -79,14 +79,14 @@ npm run dev
 ```bash
 pip install varitykit   # if not already installed
 varitykit app deploy
-# => Live at https://my-app.varity.app
+# => Live at https://varity.app/my-app/
 ```
 
 **3 commands from zero to production.**
 
 ## What You Get Out of the Box
 
-### Authentication (email, Google, GitHub — zero setup)
+### Authentication (email, Google, GitHub. Zero setup)
 
 ```tsx
 import { AuthProvider, LoginButton } from '@varity-labs/ui-kit';
@@ -137,7 +137,7 @@ varitykit app deploy --submit-to-store
 
 Set your price. Users pay with credit card or Apple Pay. Varity handles all payment processing. **90% revenue to you, 10% to Varity.**
 
-### 19 Production-Ready UI Components
+### 52+ Production-Ready UI Components
 
 ```tsx
 import {
@@ -151,21 +151,26 @@ import {
   Button,
   Toggle,
   Avatar,
+  Badge,
+  Tabs,
+  DropdownMenu,
+  ProgressBar,
+  Skeleton,
 } from '@varity-labs/ui-kit';
 ```
 
-Dashboard layouts, data tables, analytics cards, modals, form components, and more. All accessible (WCAG 2.1) and compatible with Next.js static export.
+Dashboard layouts, data tables, analytics cards, modals, form components, navigation, and more. All accessible (WCAG 2.1) and compatible with Next.js static export.
 
 ## Packages
 
 | Package | Description | Install |
 |---------|-------------|---------|
 | **[@varity-labs/sdk](packages/core/varity-sdk/)** | Core SDK — database, credentials, zero-config development | `npm i @varity-labs/sdk` |
-| **[@varity-labs/ui-kit](packages/ui/varity-ui-kit/)** | 19 React components — auth, dashboards, payments, data tables | `npm i @varity-labs/ui-kit` |
+| **[@varity-labs/ui-kit](packages/ui/varity-ui-kit/)** | 52+ React components — auth, dashboards, data tables, navigation | `npm i @varity-labs/ui-kit` |
 | **[@varity-labs/types](packages/core/varity-types/)** | TypeScript type definitions for all Varity interfaces | `npm i @varity-labs/types` |
 | **[create-varity-app](packages/cli/create-varity-app/)** | Scaffold a new app in one command | `npx create-varity-app` |
 | **[varitykit](cli/)** | CLI — init, deploy, manage apps | `pip install varitykit` |
-| **[@varity-labs/mcp](packages/cli/varity-mcp/)** | MCP Server — use Varity from Cursor, Claude Code, and 10+ AI tools | `npx @varity-labs/mcp` |
+| **[@varity-labs/mcp](packages/cli/varity-mcp/)** | MCP Server — 16 tools for Cursor, Claude Code, Windsurf, and more | `npx @varity-labs/mcp` |
 
 ## Works with Your AI Tools
 
@@ -221,7 +226,7 @@ Command Palette → **MCP: Add Server** → Command (stdio) → `npx @varity-lab
 
 </details>
 
-**7 AI-powered tools:** search docs, calculate costs, create apps, deploy, check status, read logs, submit to App Store — all from natural language.
+**16 AI-powered tools:** search docs, calculate costs, create apps, add database collections, create repos, deploy, check status, read logs, submit to App Store, login, and more — all from natural language. The intelligent orchestration algorithm auto-detects your app type, selects optimal hosting, and configures backend services automatically.
 
 ## Templates
 
@@ -274,7 +279,7 @@ Varity runs on distributed infrastructure providers that compete on price — no
 
 | What you save on | How |
 |------------------|-----|
-| **Compute** | Distributed providers compete on price — **~70% less** than AWS/GCP |
+| **Compute** | Distributed providers compete on price — **60-80% less** than AWS/GCP |
 | **Database** | Included with every app — no separate provisioning |
 | **Auth** | Included — no Cognito/Auth0 subscription needed |
 | **Storage** | Distributed storage at a fraction of centralized pricing |
@@ -289,9 +294,9 @@ Auth, database, storage, and hosting are all included. Most teams save **60–80
 ├─────────────────────────────────────────────────────┤
 │  @varity-labs/ui-kit    │  @varity-labs/sdk         │
 │  - Auth components      │  - Database               │
-│  - Payment widgets *    │  - Credentials            │
-│  - Dashboard layouts    │  - Payments *             │
-│  - 19 components        │  - Zero-config dev        │
+│  - Dashboard layouts    │  - Credentials            │
+│  - Navigation           │  - Orchestration          │
+│  - 52+ components       │  - Zero-config dev        │
 ├─────────────────────────────────────────────────────┤
 │  varitykit CLI                                      │
 │  - Init / Deploy / Manage / Submit to Store         │
@@ -301,7 +306,7 @@ Auth, database, storage, and hosting are all included. Most teams save **60–80
 └─────────────────────────────────────────────────────┘
 ```
 
-*\* Payments coming soon.*
+*Payments coming soon — deploy and monetize via the Varity App Store.*
 
 ## Documentation
 

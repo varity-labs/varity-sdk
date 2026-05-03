@@ -3,6 +3,27 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { successResponse, errorResponse } from "../utils/responses.js";
 import { INFRASTRUCTURE } from "../utils/config.js";
 
+// Live docs cache — fetched once on first search, supplements hardcoded index
+let liveDocsContent: string | null = null;
+let fetchAttempted = false;
+
+async function getLiveDocsContent(): Promise<string | null> {
+  if (fetchAttempted) return liveDocsContent;
+  fetchAttempted = true;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch("https://docs.varity.so/llms.txt", { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      liveDocsContent = await res.text();
+    }
+  } catch {
+    // Offline or timeout — hardcoded index is the fallback
+  }
+  return liveDocsContent;
+}
+
 /**
  * Complete documentation index for offline/fallback usage.
  * URLs verified against docs.varity.so (Astro Starlight, March 2026).
@@ -24,7 +45,7 @@ const DOCS_INDEX: DocsEntry[] = [
     title: "Varity Documentation",
     section: "Home",
     url: `${INFRASTRUCTURE.DOCS}`,
-    content: `Official Varity documentation. Build, deploy, and monetize apps with one command. Auth, database, storage, and payments included out of the box.`,
+    content: `Official Varity documentation. Build and deploy apps with one command. Auth, database, storage, and payments included out of the box.`,
     keywords: ["home", "docs", "documentation", "start", "index"],
   },
   {
@@ -40,9 +61,9 @@ const DOCS_INDEX: DocsEntry[] = [
     title: "Introduction",
     section: "Getting Started",
     url: `${INFRASTRUCTURE.DOCS}/getting-started/introduction`,
-    content: `Varity is a developer platform to build, deploy, and monetize apps — 70-85% cheaper than AWS, with auth, storage, and hosting included.
+    content: `Varity is a developer platform to build and deploy any app, AI agent, or LLM. 60-80% cheaper than AWS, with auth, storage, and hosting included.
 
-Build real-world apps without managing infrastructure. Deploy with one command. Monetize through the App Store with a 90/10 revenue split.`,
+Build real-world apps without managing infrastructure. Deploy with one command. Publish to the App Store with a 90/10 revenue split.`,
     keywords: ["introduction", "what is varity", "overview", "about", "why"],
   },
   {
@@ -123,7 +144,7 @@ No connection strings, no ORM setup. Deploy in 5 minutes.`,
     url: `${INFRASTRUCTURE.DOCS}/getting-started/why-varity`,
     content: `Why Varity over AWS, Vercel, or Netlify?
 
-- 70-85% cost savings
+- 60-80% cost savings
 - Zero DevOps overhead
 - Built-in auth and database
 - One-command deploys
@@ -192,9 +213,9 @@ One-command scaffold: npx create-varity-app my-app`,
     url: `${INFRASTRUCTURE.DOCS}/packages/sdk/overview`,
     content: `@varity-labs/sdk provides:
 
-- Zero-config database (PostgreSQL)
+- Zero-config database
 - Credential management
-- USDC utilities
+- App token management
 
 The core building block for all Varity apps.
 
@@ -233,17 +254,16 @@ Full type definitions included with @varity-labs/types.`,
   {
     title: "Infrastructure Configuration",
     section: "SDK",
-    url: `${INFRASTRUCTURE.DOCS}/packages/sdk/chains`,
+    url: `${INFRASTRUCTURE.DOCS}/packages/sdk/configuration`,
     content: `Varity SDK infrastructure configuration:
 
-USDC handling:
-- 6 decimals (not 18!)
-- formatUSDC() helper
-- parseUSDC() helper
-- Auto-configured network settings
+All infrastructure is configured automatically — no manual setup required.
 
-All infrastructure details are managed automatically.`,
-    keywords: ["config", "configuration", "infrastructure", "usdc", "network"],
+- Auto-configured database connection
+- Auto-configured auth credentials
+- Auto-configured hosting settings
+- Zero environment variables needed during development`,
+    keywords: ["config", "configuration", "infrastructure", "network", "environment"],
   },
 
   // ─── Packages: UI Kit ──────────────────────────────────────────────
@@ -336,7 +356,7 @@ import { PrivyStack } from '@varity-labs/ui-kit';
 </PrivyStack>
 
 Supports: Email magic links, Google, GitHub, Discord, Apple.
-Users see a normal login screen — zero crypto knowledge required.`,
+Users see a normal login screen — no special setup required.`,
     keywords: ["auth", "authentication", "login", "signup", "privy"],
   },
   {
@@ -436,7 +456,20 @@ Fetch collections, access system fields, render data in React components.`,
 varitykit app deploy --submit-to-store
 
 No payment integration code required. Users pay with credit card.`,
-    keywords: ["payments", "monetize", "revenue", "pricing", "earn"],
+    keywords: ["payments", "revenue", "pricing", "earn", "app store", "store", "submit"],
+  },
+  {
+    title: "App Store & Developer Portal",
+    section: "Deploy",
+    url: `${INFRASTRUCTURE.DOCS}/deploy/app-store`,
+    content: `Submit your app to the Varity App Store. Revenue split: 90% to you, 10% to Varity.
+
+The Developer Portal at developer.store.varity.so lets you submit apps, manage listings, and track revenue.
+
+Steps: deploy your app → submit via varity_submit_to_store or the Developer Portal → review (24h) → listed on store.varity.so.
+
+Pricing: set any monthly price. Free apps allowed. Example: $79/month → you earn $71.10/user.`,
+    keywords: ["app store", "store", "developer portal", "submit", "revenue", "listing", "sell", "publish"],
   },
   {
     title: "Credit Card Payments",
@@ -567,7 +600,7 @@ varitykit app deploy
 Supports:
 - Static sites (Next.js, React, Vue)
 - Dynamic apps (Node.js backends)
-- IPFS and Akash hosting
+- CDN and cloud compute hosting
 - Automatic framework detection
 
 Options:
@@ -608,9 +641,9 @@ Your app gets production database, auth, and hosting automatically.`,
     keywords: ["deploy", "deployment", "publish", "production"],
   },
   {
-    title: "Deploy Your App (Varity L3)",
+    title: "Deploy Your App (Varity Infrastructure)",
     section: "Deploy",
-    url: `${INFRASTRUCTURE.DOCS}/deploy/varity-l3`,
+    url: `${INFRASTRUCTURE.DOCS}/deploy/varity-infrastructure`,
     content: `Deploy to Varity infrastructure:
 
 varitykit app deploy
@@ -621,7 +654,7 @@ Live in under 2 minutes with:
 - Zero config
 - Production database
 - Authentication included`,
-    keywords: ["deploy", "varity", "l3", "production"],
+    keywords: ["deploy", "varity", "infrastructure", "production"],
   },
   {
     title: "Environment Variables",
@@ -754,15 +787,15 @@ Supports: Cursor, Claude Code, VS Code, Windsurf, Claude.ai, ChatGPT (HTTP)`,
     content: `Frequently asked questions:
 
 Q: How much does Varity cost?
-A: ~70% cheaper than AWS. Auth and database included.
+A: 60-80% cheaper than AWS. Auth and database included.
 
 Q: What frameworks are supported?
 A: Next.js, React, Vue, Node.js. Auto-detected on deploy.
 
-Q: Do I need blockchain knowledge?
-A: No. Zero crypto knowledge required.
+Q: Do I need any special technical knowledge to use Varity?
+A: No. Build like you would any standard web app — no special setup required.
 
-Q: How do I monetize my app?
+Q: How do I publish my app?
 A: Deploy with --submit-to-store. 90% revenue to you.`,
     keywords: ["faq", "questions", "help", "frequently asked"],
   },
@@ -850,7 +883,7 @@ const SYNONYMS: Record<string, string[]> = {
   save: ["storage", "database", "add", "create", "write"],
   cost: ["price", "pricing", "savings", "cheaper", "money", "cheap"],
   cheap: ["cost", "price", "savings", "affordable"],
-  money: ["cost", "price", "monetize", "revenue", "earn"],
+  money: ["cost", "price", "revenue", "earn"],
   login: ["auth", "authentication", "sign in", "signin"],
   signup: ["auth", "authentication", "register", "sign up"],
   register: ["auth", "authentication", "signup", "create account"],
@@ -861,7 +894,7 @@ const SYNONYMS: Record<string, string[]> = {
   publish: ["deploy", "launch", "ship", "host", "production"],
   ship: ["deploy", "publish", "launch", "production"],
   hosting: ["deploy", "host", "production", "live"],
-  sell: ["monetize", "payment", "app store", "revenue", "earn"],
+  sell: ["publish", "payment", "app store", "revenue", "earn"],
   build: ["create", "scaffold", "init", "new", "make"],
   start: ["quickstart", "getting started", "begin", "init", "setup"],
   new: ["create", "init", "scaffold", "build"],
@@ -927,10 +960,9 @@ export function registerSearchDocsTool(server: McpServer): void {
     {
       title: "Search Varity Docs",
       description:
-        "Search Varity documentation for guides, API references, and tutorials. " +
-        "Use this to help developers understand how to use Varity SDK, UI Kit, CLI, " +
-        "database, authentication, deployment, and monetization. " +
-        "Example queries: 'database setup', 'how to deploy', 'authentication', 'pricing'.",
+        "Search Varity tutorials, troubleshooting guides, and deployment docs. " +
+        "For SDK API references (database, auth, UI components), the varity://sdk/* resources provide complete coverage. " +
+        "Use this tool for how-to guides, getting started tutorials, FAQ, and troubleshooting.",
       inputSchema: {
         query: z
           .string()
@@ -949,7 +981,22 @@ export function registerSearchDocsTool(server: McpServer): void {
     },
     async ({ query, maxResults }) => {
       try {
-        const scored = DOCS_INDEX.map((entry) => ({
+        // Build searchable entries from hardcoded index
+        const allEntries = [...DOCS_INDEX];
+
+        // Supplement with live docs if available
+        const liveContent = await getLiveDocsContent();
+        if (liveContent) {
+          allEntries.push({
+            title: "Varity Documentation (Live)",
+            section: "Full Reference",
+            url: `${INFRASTRUCTURE.DOCS}`,
+            content: liveContent.substring(0, 5000),
+            keywords: ["docs", "reference", "guide", "tutorial", "api", "sdk", "database", "auth", "deploy"],
+          });
+        }
+
+        const scored = allEntries.map((entry) => ({
           ...entry,
           score: scoreResult(entry, query),
         }))
@@ -974,6 +1021,39 @@ export function registerSearchDocsTool(server: McpServer): void {
           section: entry.section,
           url: entry.url,
           content: entry.content,
+          // Surface MCP tool equivalents so developers using the MCP server
+          // know which tool to call instead of running a CLI command.
+          ...(() => {
+            if (entry.content.includes("create-varity-app")) {
+              return {
+                mcp_note:
+                  "MCP equivalent: use the varity_init tool instead of `npx create-varity-app`. " +
+                  "It scaffolds the same project template directly in your workspace — no terminal required.",
+              };
+            }
+            if (
+              entry.content.includes("varitykit app deploy") ||
+              entry.content.includes("varitykit deploy") ||
+              entry.keywords.some((k) => k === "deploy" || k === "deployment")
+            ) {
+              return {
+                mcp_note:
+                  "MCP equivalent: use the varity_deploy tool to deploy without opening a terminal. " +
+                  "It runs the full deploy pipeline and returns a live URL automatically.",
+              };
+            }
+            if (
+              entry.content.includes("db.collection") ||
+              entry.keywords.some((k) => k === "database" || k === "crud" || k === "collection")
+            ) {
+              return {
+                mcp_note:
+                  "MCP equivalent: use the varity_add_collection tool to scaffold a new database collection " +
+                  "(TypeScript type, accessor, React hook, and dashboard page) in one step — no manual file editing required.",
+              };
+            }
+            return {};
+          })(),
         }));
 
         return successResponse(

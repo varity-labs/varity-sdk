@@ -11,8 +11,8 @@ from pathlib import Path
 from datetime import datetime
 from unittest.mock import Mock, patch, MagicMock
 
-from varietykit.core.deployment_history import DeploymentHistory
-from varietykit.core.types import DeploymentResult, DeploymentError
+from varitykit.core.deployment_history import DeploymentHistory
+from varitykit.core.types import DeploymentResult, DeploymentError
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ class TestDeploymentHistoryInit:
     def test_init_default_storage_path(self):
         """Test default storage path is set correctly"""
         history = DeploymentHistory()
-        expected_path = Path.home() / '.varietykit' / 'deployments'
+        expected_path = Path.home() / '.varitykit' / 'deployments'
         assert history.storage_path == expected_path
 
     def test_init_custom_storage_path(self, temp_storage):
@@ -416,7 +416,7 @@ class TestGetLatest:
 class TestRollback:
     """Test rollback functionality"""
 
-    @patch('varietykit.core.deployment_history.DeploymentOrchestrator')
+    @patch('varitykit.core.deployment_history.DeploymentOrchestrator')
     def test_rollback_success(self, mock_orchestrator_class, history, sample_deployment_result):
         """Test successful rollback"""
         # Save deployment

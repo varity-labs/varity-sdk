@@ -18,6 +18,7 @@ Version: 1.0.0
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from typing import Optional
@@ -119,6 +120,14 @@ class PrivyCredentialsResponse(BaseModel):
 
 class GatewayCredentialsResponse(BaseModel):
     api_key: str
+
+
+class DatabaseCredentialsResponse(BaseModel):
+    jwt_secret: str
+
+
+class AkashCredentialsResponse(BaseModel):
+    console_api_key: str
 
 
 # Routes
@@ -277,6 +286,95 @@ async def get_gateway_credentials(
     logger.info(f"Providing gateway credentials: tier={tier}")
 
     return GatewayCredentialsResponse(api_key=api_key)
+
+
+@app.get("/api/credentials/database", response_model=DatabaseCredentialsResponse)
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_MINUTE}/minute")
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_HOUR}/hour")
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_DAY}/day")
+async def get_database_credentials(
+    request: Request,
+    tier: str = Depends(verify_api_key),
+):
+    """
+    Get database JWT secret for signing app tokens.
+
+    The CLI uses this to sign JWT tokens that authenticate app requests
+    to the database proxy. Each app gets a unique app_id in the token,
+    ensuring data isolation between apps.
+
+    **Authentication:**
+    ```
+    Authorization: Bearer <API_KEY>
+    ```
+
+    **Returns:**
+    - `jwt_secret`: JWT signing secret for database authentication
+    """
+    jwt_secret = CredentialConfig.DB_JWT_SECRET
+
+    if not jwt_secret:
+        logger.error("Database JWT secret not configured!")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Database credentials not configured on server"}
+        )
+
+    # SECURITY: Dev tier does NOT receive the production JWT secret.
+    # Dev apps use the public dev secret for the shared dev database.
+    if tier == "dev":
+        logger.info(f"Providing dev database credentials: tier={tier}")
+        return DatabaseCredentialsResponse(
+            jwt_secret="varity-dev-public-key-not-for-production"
+        )
+
+    logger.info(f"Providing database credentials: tier={tier}")
+
+    return DatabaseCredentialsResponse(jwt_secret=jwt_secret)
+
+
+@app.get("/api/credentials/akash", response_model=AkashCredentialsResponse)
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_MINUTE}/minute")
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_HOUR}/hour")
+@limiter.limit(f"{SecurityConfig.RATE_LIMIT_PER_DAY}/day")
+async def get_akash_credentials(
+    request: Request,
+    tier: str = Depends(verify_api_key),
+):
+    """
+    Get Akash Console API key for dynamic deployments.
+
+    Used by the CLI to deploy containers via Akash Managed Wallet API.
+    All deployments go through Varity's shared admin account.
+
+    **Authentication:**
+    ```
+    Authorization: Bearer <API_KEY>
+    ```
+
+    **Returns:**
+    - `console_api_key`: Akash Console API key for deployments
+    """
+    console_key = os.getenv("VARITY_AKASH_CONSOLE_KEY")
+
+    if not console_key:
+        logger.error("Akash Console API key not configured!")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Akash credentials not configured on server"}
+        )
+
+    # Dev tier does NOT receive the production Akash key
+    if tier == "dev":
+        logger.info(f"Akash credentials denied for dev tier")
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Dynamic hosting not available on dev tier"}
+        )
+
+    logger.info(f"Providing Akash credentials: tier={tier}")
+
+    return AkashCredentialsResponse(console_api_key=console_key)
 
 
 @app.exception_handler(Exception)

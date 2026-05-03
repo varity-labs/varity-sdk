@@ -298,7 +298,7 @@ export function getCredentialWarning(
   }
 
   return `Using shared Varity development credentials in ${environment} environment.
-Deploy with \`varitykit app deploy\` to use production credentials automatically.`;
+Deploy your app to use production credentials automatically.`;
 }
 
 // Track if the credential warning has already been logged (avoid spam during build)
@@ -354,13 +354,13 @@ export function validateCredentials(
 ): void {
   if (!appId || appId.trim() === '') {
     throw new Error(
-      'Auth credentials are not configured. Deploy with `varitykit app deploy` to set up credentials automatically.'
+      'Auth credentials are not configured. Deploy your app to set up credentials automatically.'
     );
   }
 
   if (!clientId || clientId.trim() === '') {
     throw new Error(
-      'Infrastructure credentials are not configured. Deploy with `varitykit app deploy` to set up credentials automatically.'
+      'Infrastructure credentials are not configured. Deploy your app to set up credentials automatically.'
     );
   }
 }

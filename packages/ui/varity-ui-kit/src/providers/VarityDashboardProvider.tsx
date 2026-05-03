@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, ReactNode, useMemo } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThirdwebProvider } from 'thirdweb/react';
-import { createThirdwebClient } from 'thirdweb';
 import { http } from 'viem';
 import { arbitrumSepolia, arbitrum } from 'viem/chains';
 import { createConfig } from 'wagmi';
@@ -217,11 +215,6 @@ export interface VarityDashboardProviderProps {
    */
   privyAppId?: string;
   /**
-   * Thirdweb Client ID (from thirdweb Dashboard)
-   * Can also be set via NEXT_PUBLIC_THIRDWEB_CLIENT_ID environment variable
-   */
-  thirdwebClientId?: string;
-  /**
    * Appearance configuration
    */
   appearance?: {
@@ -275,7 +268,6 @@ export interface VarityDashboardProviderProps {
  *   return (
  *     <VarityDashboardProvider
  *       privyAppId="your-privy-app-id"
- *       thirdwebClientId="your-thirdweb-client-id"
  *       appearance={{
  *         theme: 'light',
  *         accentColor: '#2563EB',
@@ -291,7 +283,6 @@ export interface VarityDashboardProviderProps {
 export function VarityDashboardProvider({
   children,
   privyAppId,
-  thirdwebClientId,
   appearance = {
     theme: 'light',
     accentColor: '#2563EB',
@@ -304,7 +295,6 @@ export function VarityDashboardProvider({
 }: VarityDashboardProviderProps) {
   // Get config from props or environment variables
   const appId = privyAppId || process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-  const clientId = thirdwebClientId || process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
 
   // Validate required config
   const [configError, setConfigError] = useState<string | null>(null);
@@ -312,32 +302,14 @@ export function VarityDashboardProvider({
   useEffect(() => {
     if (!appId) {
       setConfigError('Privy App ID is required (pass privyAppId prop or set NEXT_PUBLIC_PRIVY_APP_ID)');
-    } else if (!clientId) {
-      setConfigError('Thirdweb Client ID is required (pass thirdwebClientId prop or set NEXT_PUBLIC_THIRDWEB_CLIENT_ID)');
     } else {
       setConfigError(null);
     }
-  }, [appId, clientId]);
-
-  // Create thirdweb client
-  const thirdwebClient = useMemo(() => {
-    if (!clientId) return null;
-    try {
-      return createThirdwebClient({ clientId });
-    } catch (error) {
-      console.error('Failed to create thirdweb client:', error);
-      return null;
-    }
-  }, [clientId]);
+  }, [appId]);
 
   // Show config error
   if (configError) {
     return <ConfigErrorScreen error={configError} />;
-  }
-
-  // Show thirdweb error
-  if (!thirdwebClient) {
-    return <ConfigErrorScreen error="Failed to initialize thirdweb client" />;
   }
 
   const content = (
@@ -361,14 +333,12 @@ export function VarityDashboardProvider({
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={wagmiConfig}>
           <PrivyReadyGate logo={appearance.logo} initTimeout={initTimeout}>
-            <ThirdwebProvider>
-              <WalletSyncProvider
-                onAddressChange={onAddressChange}
-                onSyncStateChange={onWalletSyncChange}
-              >
-                {children}
-              </WalletSyncProvider>
-            </ThirdwebProvider>
+            <WalletSyncProvider
+              onAddressChange={onAddressChange}
+              onSyncStateChange={onWalletSyncChange}
+            >
+              {children}
+            </WalletSyncProvider>
           </PrivyReadyGate>
         </WagmiProvider>
       </QueryClientProvider>

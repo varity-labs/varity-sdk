@@ -1,12 +1,18 @@
 # varitykit
 
-> Build, deploy, and monetize production apps from your terminal
+> Deploy any app from your terminal in 60 seconds. 60-80% cheaper than AWS.
 
 [![PyPI version](https://img.shields.io/pypi/v/varitykit)](https://pypi.org/project/varitykit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/varity-labs/varity-sdk/blob/main/LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
 ## Install
+
+```bash
+pipx install varitykit
+```
+
+Or with pip:
 
 ```bash
 pip install varitykit
@@ -43,7 +49,7 @@ Check that your environment is ready to build and deploy.
 varitykit doctor
 ```
 
-Validates: Node.js, Python 3.8+, Git, npm, disk space, memory, network connectivity.
+Validates: Node.js 20+, Python 3.11+, Git, npm, disk space, memory, network connectivity.
 
 ### `varitykit init [name]`
 
@@ -75,7 +81,27 @@ varitykit app deploy --submit-to-store
 varitykit app deploy --path ./my-app
 ```
 
-Automatically detects your framework (Next.js, React, Vue), builds the project, and deploys it.
+Automatically detects your framework, builds the project, and deploys it. Supports both dynamic (server-side) and static apps.
+
+### `varitykit migrate`
+
+Migrate an existing app from Vercel to Varity.
+
+```bash
+# Migrate from a GitHub URL (clone + analyze + apply + deploy)
+varitykit migrate --url https://github.com/me/my-app
+
+# Migrate a local directory
+varitykit migrate --path ./my-app
+
+# Preview changes without applying
+varitykit migrate analyze ./my-app
+
+# Apply transforms without deploying
+varitykit migrate apply ./my-app
+```
+
+Removes Vercel-specific config, patches `next.config.js`, and renames environment variables automatically.
 
 ### `varitykit app list`
 
@@ -136,9 +162,9 @@ Built with Next.js 15, Tailwind CSS, and TypeScript.
 varitykit init my-saas --template saas-starter
 ```
 
-## Deploy and Earn
+## Deploy and Earn (Coming Soon)
 
-Every app deployed through Varity can be listed on the [Varity App Store](https://store.varity.so) — a marketplace where users discover and pay for apps.
+Every app deployed through Varity can be listed on the [Varity App Store](https://store.varity.so) -- a marketplace where users discover and pay for apps.
 
 **Revenue split: 90% to you, 10% to Varity.**
 
@@ -147,15 +173,21 @@ Every app deployed through Varity can be listed on the [Varity App Store](https:
 varitykit app deploy --submit-to-store
 ```
 
-Set your price. Users pay with credit card. You get paid monthly.
+Payments and monetization are coming soon.
 
 ## Supported Frameworks
 
-| Framework | Version | Status |
-|-----------|---------|--------|
-| Next.js | 13+ | Supported |
-| React (Vite) | 18+ | Supported |
-| Vue | 3+ | Supported |
+| Framework | Status |
+|-----------|--------|
+| Next.js 13+ | Supported |
+| React (Vite) 18+ | Supported |
+| Vue 3+ | Supported |
+| Express / Fastify / Nest / Koa / Hono | Supported |
+| FastAPI | Supported |
+| Django | Supported |
+| Flask | Supported |
+
+Go, Rust, Ruby, Elixir, Java, PHP, and .NET are on the roadmap.
 
 ## Use Varity from Your AI Editor
 
@@ -172,15 +204,15 @@ See [@varity-labs/mcp](https://github.com/varity-labs/varity-sdk/tree/main/packa
 
 ## Part of the Varity SDK
 
-varitykit is part of the [Varity SDK](https://github.com/varity-labs/varity-sdk) — everything you need to build, deploy, and monetize production apps.
+varitykit is part of the [Varity SDK](https://github.com/varity-labs/varity-sdk). Everything you need to build and deploy any app, AI agent, or LLM.
 
 | Package | Description |
 |---------|-------------|
-| [@varity-labs/sdk](https://www.npmjs.com/package/@varity-labs/sdk) | Core SDK — database, credentials, zero-config development |
-| [@varity-labs/ui-kit](https://www.npmjs.com/package/@varity-labs/ui-kit) | 19 React components — auth, dashboards, payments |
+| [@varity-labs/sdk](https://www.npmjs.com/package/@varity-labs/sdk) | Core SDK -- database, credentials, zero-config development |
+| [@varity-labs/ui-kit](https://www.npmjs.com/package/@varity-labs/ui-kit) | 52+ React components -- auth, dashboards, payments (coming soon) |
 | [@varity-labs/types](https://www.npmjs.com/package/@varity-labs/types) | TypeScript type definitions |
 | [create-varity-app](https://www.npmjs.com/package/create-varity-app) | Scaffold a new app in one command |
-| [@varity-labs/mcp](https://www.npmjs.com/package/@varity-labs/mcp) | MCP Server — use Varity from Cursor, Claude Code, and 10+ AI tools |
+| [@varity-labs/mcp](https://www.npmjs.com/package/@varity-labs/mcp) | MCP Server -- use Varity from Cursor, Claude Code, and 10+ AI tools |
 
 ## Support
 
@@ -190,4 +222,4 @@ varitykit is part of the [Varity SDK](https://github.com/varity-labs/varity-sdk)
 
 ## License
 
-MIT — see [LICENSE](../LICENSE) for details.
+MIT -- see [LICENSE](../LICENSE) for details.

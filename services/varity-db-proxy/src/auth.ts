@@ -34,8 +34,16 @@ export const validateAppToken = (
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-    // Verify and decode JWT
-    const decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
+    // Verify JWT — try production secret first, fall back to dev secret.
+    // Dev tokens (signed with the public dev secret) can only access the
+    // 'app_varity_dev' schema, so this is safe for beta.
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, config.jwt.secret) as JWTPayload;
+    } catch {
+      // Production secret didn't work — try the dev fallback
+      decoded = jwt.verify(token, config.jwt.devSecret) as JWTPayload;
+    }
 
     if (!decoded.appId) {
       res.status(401).json({

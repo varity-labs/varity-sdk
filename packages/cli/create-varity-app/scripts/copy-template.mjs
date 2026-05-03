@@ -48,11 +48,16 @@ cpSync(TEMPLATE_SRC, TEMPLATE_DST, {
   },
 });
 
-// Rename .gitignore → gitignore (npm strips .gitignore from packages)
-const gitignorePath = join(TEMPLATE_DST, ".gitignore");
-const renamedPath = join(TEMPLATE_DST, "gitignore");
-if (existsSync(gitignorePath)) {
-  renameSync(gitignorePath, renamedPath);
+// Rename dotfiles that npm strips from tarballs
+for (const [dotName, plainName] of [
+  [".gitignore", "gitignore"],
+  [".npmrc", "npmrc"],
+]) {
+  const dotPath = join(TEMPLATE_DST, dotName);
+  const plainPath = join(TEMPLATE_DST, plainName);
+  if (existsSync(dotPath)) {
+    renameSync(dotPath, plainPath);
+  }
 }
 
 console.log("✓ Template copied to ./template/");

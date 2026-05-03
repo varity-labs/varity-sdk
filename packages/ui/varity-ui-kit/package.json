@@ -1,6 +1,6 @@
 {
   "name": "@varity-labs/ui-kit",
-  "version": "2.0.0-beta.6",
+  "version": "2.0.0-beta.16",
   "description": "React component library for building applications with Varity - Auth, payments, dashboard components",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,6 +21,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
+    "postbuild": "node ../../../scripts/fix-esm-imports.mjs",
     "watch": "tsc --watch",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
@@ -42,7 +43,7 @@
     "auth",
     "payments",
     "dashboard",
-    "privy"
+    "auth"
   ],
   "author": "Varity",
   "license": "MIT",
@@ -58,26 +59,26 @@
   "dependencies": {
     "@privy-io/react-auth": "^1.88.4",
     "@tanstack/react-query": "^5.59.0",
-    "@varity-labs/sdk": "workspace:^",
-    "@varity-labs/types": "workspace:^",
+    "@varity-labs/sdk": "^2.0.0-beta.7",
+    "@varity-labs/types": "^2.0.0-beta.4",
     "lucide-react": "^0.554.0",
-    "react-hot-toast": "^2.6.0",
-    "thirdweb": "^5.112.0"
+    "react-hot-toast": "^2.6.0"
   },
   "optionalDependencies": {
     "@privy-io/wagmi": "^0.2.12",
     "@zerodev/ecdsa-validator": "^5.3.0",
     "@zerodev/sdk": "^5.3.0",
-    "axios": "^1.15.0",
+    "axios": "^1.6.0",
     "ethers": "^6.10.0",
     "viem": "^2.7.0",
     "wagmi": "^2.12.0"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
+    "thirdweb": "^5.112.0",
     "@storybook/addon-essentials": "^7.6.0",
     "@storybook/addon-interactions": "^7.6.0",
     "@storybook/addon-links": "^7.6.0",

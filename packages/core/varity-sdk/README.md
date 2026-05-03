@@ -130,7 +130,7 @@ import type {
 
 ---
 
-**Part of the [Varity SDK](https://github.com/varity-labs/varity-sdk)** -- Build, deploy, and monetize apps 70% cheaper than AWS.
+**Part of the [Varity SDK](https://github.com/varity-labs/varity-sdk).** Deploy any app, AI agent, or LLM in 60 seconds. 60-80% cheaper than AWS.
 
 [Documentation](https://docs.varity.so) | [GitHub](https://github.com/varity-labs/varity-sdk) | [Discord](https://discord.gg/7vWsdwa2Bg)
 

@@ -24,6 +24,10 @@ export const config = {
     apiKey: requireEnv('GATEWAY_API_KEY'),
     ipfsBackend: process.env.IPFS_BACKEND || 'ipfs.dweb.link',
   },
+  privy: {
+    appId: requireEnv('PRIVY_APP_ID'),
+    appSecret: requireEnv('PRIVY_APP_SECRET'),
+  },
   cache: {
     ttlSeconds: parseInt(process.env.CACHE_TTL || '300', 10), // 5 minutes
   },

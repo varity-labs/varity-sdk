@@ -3,7 +3,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { InitializingScreen } from './InitializingScreen';
 import { InitTimeoutScreen } from './InitTimeoutScreen';
 
-export interface PrivyReadyGateProps {
+export interface ReadyGateProps {
   /**
    * The content to render once Privy is ready
    */
@@ -69,12 +69,12 @@ export interface PrivyReadyGateProps {
  * </PrivyReadyGate>
  * ```
  */
-export function PrivyReadyGate({
+export function ReadyGate({
   children,
   timeout = 10000,
   initializingScreen,
   timeoutScreen,
-}: PrivyReadyGateProps): JSX.Element {
+}: ReadyGateProps): JSX.Element {
   const { ready } = usePrivy();
   const [showTimeoutScreen, setShowTimeoutScreen] = useState(false);
 
@@ -115,4 +115,4 @@ export function PrivyReadyGate({
   return <InitializingScreen />;
 }
 
-export default PrivyReadyGate;
+export default ReadyGate;

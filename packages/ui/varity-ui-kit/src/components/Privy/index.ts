@@ -1,24 +1,24 @@
 /**
- * Privy Authentication Components
+ * Authentication Components
  *
- * Components for email/social authentication with Privy.
+ * Components for email/social authentication.
  * Ideal for non-crypto native users who don't have wallets.
  *
  * Production Patterns: Extracted from generic-template-dashboard
  */
 
-export { PrivyLoginButton } from './PrivyLoginButton';
-export type { PrivyLoginButtonProps } from './PrivyLoginButton';
+export { LoginButton } from './PrivyLoginButton';
+export type { LoginButtonProps } from './PrivyLoginButton';
 
-export { PrivyUserProfile } from './PrivyUserProfile';
-export type { PrivyUserProfileProps } from './PrivyUserProfile';
+export { UserProfile } from './PrivyUserProfile';
+export type { UserProfileProps } from './PrivyUserProfile';
 
-export { PrivyProtectedRoute } from './PrivyProtectedRoute';
-export type { PrivyProtectedRouteProps } from './PrivyProtectedRoute';
+export { ProtectedRoute } from './PrivyProtectedRoute';
+export type { ProtectedRouteProps } from './PrivyProtectedRoute';
 
-// Production patterns for Privy initialization
-export { PrivyReadyGate } from './PrivyReadyGate';
-export type { PrivyReadyGateProps } from './PrivyReadyGate';
+// Production patterns for auth initialization
+export { ReadyGate } from './PrivyReadyGate';
+export type { ReadyGateProps } from './PrivyReadyGate';
 
 export { InitializingScreen } from './InitializingScreen';
 export type { InitializingScreenProps } from './InitializingScreen';

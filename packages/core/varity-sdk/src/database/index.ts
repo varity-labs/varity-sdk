@@ -63,7 +63,7 @@ export class Database {
       process.env.NEXT_PUBLIC_VARITY_DB_PROXY_URL ||
       process.env.VITE_VARITY_DB_PROXY_URL ||
       process.env.REACT_APP_VARITY_DB_PROXY_URL ||
-      'http://provider.akashprovid.com:31782';
+      'https://varity.app';
 
     // Resolve app token: use env var if available, otherwise fall back to
     // runtime-generated dev token (signed with a separate, public dev secret)
@@ -89,7 +89,7 @@ export class Database {
       console.info(
         '[Varity Database] Using shared development database. ' +
         'Data is stored in an isolated dev schema.\n' +
-        'Deploy with `varitykit app deploy` to get your own private database.'
+        'Deploy your app to get your own private database.'
       );
     }
   }

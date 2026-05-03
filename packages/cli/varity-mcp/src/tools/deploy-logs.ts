@@ -5,16 +5,26 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { successResponse, errorResponse } from "../utils/responses.js";
 import { getDeploymentsDir } from "../utils/config.js";
 
+/** Strip ANSI escape codes so log lines render cleanly in MCP clients. */
+// eslint-disable-next-line no-control-regex
+const ANSI_RE = /\x1b\[[0-9;]*[mGKHF]|\x1b\][^\x07]*\x07|\x1b[()][0-9A-Z]/g;
+function stripAnsi(text: string): string {
+  return text.replace(ANSI_RE, "");
+}
+
 export function registerDeployLogsTool(server: McpServer): void {
   server.registerTool(
     "varity_deploy_logs",
     {
-      title: "Deployment Logs",
+      title: "Deployment Info & Logs",
       description:
-        "Get build and deployment logs for a specific deployment. " +
-        "Useful for debugging failed deployments or checking build output. " +
-        "Use this when a developer asks why a deployment failed, wants to see build logs, " +
-        "or needs to debug an issue.",
+        "Get build logs or deployment summary for a specific deployment. " +
+        "When full build logs exist (captured during varity_deploy or varity_build), returns the actual log lines. " +
+        "When only the deployment record exists, returns a structured summary receipt: " +
+        "URL, status, build size, build time, and a debug_tip pointing to varity_build for detailed output. " +
+        "Use this to get the live URL, check status, or confirm build metrics for a deployment. " +
+        "For detailed build error output (TypeScript errors, module-not-found, etc.), use varity_build — " +
+        "it captures the full compilation log with exact file/line numbers.",
       inputSchema: {
         deployment_id: z
           .string()
@@ -42,19 +52,38 @@ export function registerDeployLogsTool(server: McpServer): void {
 
       for (const logPath of logPaths) {
         try {
-          const content = await readFile(logPath, "utf-8");
+          const raw = await readFile(logPath, "utf-8");
+          const content = stripAnsi(raw);
           const lines = content.split("\n");
           const truncated = lines.slice(-limit);
+
+          const annotatedLines = truncated.map((line) => {
+            // Rewrite CLI command references to MCP equivalents so log output
+            // makes sense when read through varity_deploy_logs.
+            if (line.includes("varitykit app deploy --submit-to-store")) {
+              return line.replace(
+                /varitykit app deploy --submit-to-store/g,
+                "varity_submit_to_store (MCP tool)"
+              );
+            }
+            // Annotate the "shared development database" build-phase message so
+            // developers reading post-deploy logs are not misled into thinking
+            // their production app lacks a private database (DX-005).
+            if (line.includes("Using shared development database")) {
+              return line + " ← build-phase only; your deployed app has a private database";
+            }
+            return line;
+          });
 
           return successResponse(
             {
               deployment_id,
-              log_lines: truncated,
+              log_lines: annotatedLines,
               total_lines: lines.length,
               truncated: lines.length > limit,
               log_path: logPath,
             },
-            `Showing ${truncated.length} of ${lines.length} log lines for deployment ${deployment_id}`
+            `Showing ${annotatedLines.length} of ${lines.length} log lines for deployment ${deployment_id}`
           );
         } catch {
           // Try next path
@@ -69,8 +98,8 @@ export function registerDeployLogsTool(server: McpServer): void {
 
         if (data.logs || data.build_output || data.output) {
           const logs = data.logs || data.build_output || data.output;
-          const logText = typeof logs === "string" ? logs : JSON.stringify(logs, null, 2);
-          const lines = logText.split("\n").slice(-limit);
+          const logRaw = typeof logs === "string" ? logs : JSON.stringify(logs, null, 2);
+          const lines = stripAnsi(logRaw).split("\n").slice(-limit);
 
           return successResponse(
             {
@@ -86,19 +115,20 @@ export function registerDeployLogsTool(server: McpServer): void {
         // No raw logs, but extract build metadata as a structured summary
         const buildInfo = data.build || {};
         const ipfsInfo = data.ipfs || {};
+        // Build clean summary from deployment metadata
+        const appName = data.app_name || data.project_name || deployment_id;
+        const liveUrl = data.custom_domain?.url || `https://varity.app/${appName}/`;
         const summaryLines = [
           `Deployment: ${deployment_id}`,
+          `App:        ${appName}`,
+          `Live URL:   ${liveUrl}`,
           `Timestamp:  ${data.timestamp || data.deployed_at || "unknown"}`,
           `Framework:  ${data.project?.type || data.framework || "unknown"}`,
-          `Hosting:    ${data.hosting || "unknown"}`,
-          `Status:     ${buildInfo.success ? "success" : "unknown"}`,
+          `Hosting:    ${data.hosting === "ipfs" ? "static" : data.hosting || "unknown"}`,
+          `Status:     ${buildInfo.success ? "deployed" : "unknown"}`,
           ...(buildInfo.time_seconds ? [`Build time: ${buildInfo.time_seconds.toFixed(1)}s`] : []),
           ...(buildInfo.size_mb ? [`Build size: ${buildInfo.size_mb.toFixed(1)} MB`] : []),
           ...(buildInfo.files ? [`Files:      ${buildInfo.files}`] : []),
-          ...(buildInfo.output_dir ? [`Output dir: ${buildInfo.output_dir}`] : []),
-          ...(ipfsInfo.cid ? [`IPFS CID:   ${ipfsInfo.cid}`] : []),
-          ...(ipfsInfo.gateway_url ? [`Live URL:   ${ipfsInfo.gateway_url}`] : []),
-          ...(data.custom_domain?.url ? [`Domain:     ${data.custom_domain.url}`] : []),
         ];
 
         return successResponse(
@@ -108,14 +138,16 @@ export function registerDeployLogsTool(server: McpServer): void {
             total_lines: summaryLines.length,
             source: "deployment_record",
             deployment_info: {
-              url: data.custom_domain?.url || ipfsInfo.gateway_url || data.url || data.deployment_url,
+              // Always use clean varity.app URL — never expose raw IPFS or provider URLs
+              url: liveUrl,
               status: buildInfo.success ? "deployed" : "unknown",
               timestamp: data.timestamp || data.deployed_at,
               build_time: buildInfo.time_seconds ? `${buildInfo.time_seconds.toFixed(1)}s` : undefined,
               build_size: buildInfo.size_mb ? `${buildInfo.size_mb.toFixed(1)} MB` : undefined,
             },
+            debug_tip: "Full build logs are not stored for this deployment. To see detailed build output, use the varity_build tool — it captures compilation errors with exact file and line numbers.",
           },
-          `Build summary for deployment ${deployment_id} (no raw build logs available)`
+          `Build summary for deployment ${deployment_id}. Use varity_build to capture detailed compilation output.`
         );
       } catch {
         // No deployment record either
@@ -129,11 +161,10 @@ export function registerDeployLogsTool(server: McpServer): void {
           .map((f) => f.replace(".json", ""));
 
         if (ids.length > 0) {
-          const recentIds = ids.slice(-5);
           return errorResponse(
             "LOGS_NOT_FOUND",
             `No logs found for deployment "${deployment_id}".`,
-            `Recent deployments: ${recentIds.join(", ")}. Use varity_deploy_status to list all.`
+            `Use varity_deploy_status to list your deployments and find the correct deployment ID.`
           );
         }
       } catch {

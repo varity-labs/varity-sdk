@@ -1,5 +1,5 @@
 """
-Tests for varietykit/cli/doctor.py
+Tests for varitykit/cli/doctor.py
 Currently 7% coverage - comprehensive tests needed
 """
 
@@ -22,7 +22,7 @@ class TestDoctor:
 
     def test_doctor_command_exists(self, runner):
         """Test that doctor command is available"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         result = runner.invoke(doctor, ['--help'])
         assert result.exit_code == 0
@@ -30,7 +30,7 @@ class TestDoctor:
 
     def test_doctor_all_checks_pass(self, runner, mocker):
         """Test doctor when all system checks pass"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         # Mock all subprocess calls to succeed
         mock_run = mocker.patch('subprocess.run')
@@ -51,7 +51,7 @@ class TestDoctor:
 
     def test_doctor_missing_dependencies(self, runner, mocker):
         """Test doctor when dependencies are missing"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         # Mock subprocess to fail (command not found)
         mock_run = mocker.patch('subprocess.run')
@@ -66,7 +66,7 @@ class TestDoctor:
 
     def test_doctor_checks_node(self, runner, mocker):
         """Test doctor checks for Node.js"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
 
@@ -87,7 +87,7 @@ class TestDoctor:
 
     def test_doctor_checks_npm(self, runner, mocker):
         """Test doctor checks for npm"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         npm_result = Mock()
@@ -103,7 +103,7 @@ class TestDoctor:
 
     def test_doctor_checks_docker(self, runner, mocker):
         """Test doctor checks for Docker"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
 
@@ -125,7 +125,7 @@ class TestDoctor:
 
     def test_doctor_checks_git(self, runner, mocker):
         """Test doctor checks for Git"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         git_result = Mock()
@@ -141,7 +141,7 @@ class TestDoctor:
 
     def test_doctor_checks_python(self, runner, mocker):
         """Test doctor checks for Python"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         python_result = Mock()
@@ -157,7 +157,7 @@ class TestDoctor:
 
     def test_doctor_with_verbose_flag(self, runner, mocker):
         """Test doctor with --verbose flag"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")
@@ -171,7 +171,7 @@ class TestDoctor:
 
     def test_doctor_checks_env_variables(self, runner, mocker):
         """Test doctor checks for required environment variables"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")
@@ -188,7 +188,7 @@ class TestDoctor:
 
     def test_doctor_checks_thirdweb_client_id(self, runner, mocker):
         """Test doctor checks for THIRDWEB_CLIENT_ID"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")
@@ -209,7 +209,7 @@ class TestDoctor:
 
     def test_doctor_docker_not_running(self, runner, mocker):
         """Test doctor when Docker is installed but not running"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
 
@@ -234,7 +234,7 @@ class TestDoctor:
 
     def test_doctor_old_node_version(self, runner, mocker):
         """Test doctor warns about old Node.js version"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
 
@@ -257,7 +257,7 @@ class TestDoctor:
 
     def test_doctor_all_checks_summary(self, runner, mocker):
         """Test doctor provides a summary of all checks"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")
@@ -273,7 +273,7 @@ class TestDoctor:
 
     def test_doctor_fix_flag(self, runner, mocker):
         """Test doctor with --fix flag to auto-fix issues"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")
@@ -287,7 +287,7 @@ class TestDoctor:
 
     def test_doctor_json_output(self, runner, mocker):
         """Test doctor with --json flag for machine-readable output"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")
@@ -301,7 +301,7 @@ class TestDoctor:
 
     def test_doctor_checks_config_file(self, runner, mocker):
         """Test doctor checks for varity config file"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")
@@ -318,7 +318,7 @@ class TestDoctor:
 
     def test_doctor_network_connectivity(self, runner, mocker):
         """Test doctor checks network connectivity"""
-        from varietykit.cli.doctor import doctor
+        from varitykit.cli.doctor import doctor
 
         mock_run = mocker.patch('subprocess.run')
         mock_run.return_value = Mock(returncode=0, stdout="version")

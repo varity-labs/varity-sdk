@@ -462,8 +462,8 @@ export type { CredentialConfig } from './core/credentials'
 // ============================================================================
 // Orchestration — Intelligent Infrastructure Selection
 // Available via subpath import: import { recommend } from '@varity-labs/sdk/orchestration'
+// NOT re-exported here — uses Node.js 'fs' which breaks browser/Next.js builds
 // ============================================================================
-export * as orchestration from './orchestration/index.js';
 
 // Database Module — Zero-Config Database API
 export {
@@ -479,5 +479,5 @@ export type {
 } from './database'
 
 // Version
-export const VERSION = '2.0.0-beta.2'
-export const SDK_VERSION = '2.0.0-beta.2'
+export const VERSION = '2.0.0-beta.14'
+export const SDK_VERSION = '2.0.0-beta.14'

@@ -21,8 +21,6 @@ from rich.progress import (
 )
 from rich.table import Table
 from varitykit.core.contract_verifier import ContractVerifier
-from varitykit.core.deployment_tracker import DeploymentStatus, DeploymentTracker
-from varitykit.core.gas_estimator import GasEstimator
 
 # Import SDK modules
 from varitykit.core.sdk_wrapper import SDKWrapperError, VaritySDKWrapper
@@ -86,44 +84,42 @@ def get_deployment_history(network: str) -> list:
     "--network",
     "-n",
     default="varity",
-    type=click.Choice(["local", "varity", "sepolia", "mainnet"]),
+    type=click.Choice(["local", "varity"]),
     help="Target network (default: varity)",
 )
-@click.option("--verify", is_flag=True, help="Verify contracts on block explorer after deployment")
+@click.option("--verify", is_flag=True, help="Verify deployment after completion")
 @click.option("--interactive", "-i", is_flag=True, help="Interactive deployment wizard")
 @click.option("--dry-run", is_flag=True, help="Simulate deployment without executing")
-@click.option("--gas-limit", type=int, help="Override gas limit")
+@click.option("--gas-limit", type=int, help="Override resource limit", hidden=True)
 @click.pass_context
 def run(ctx, network, verify, interactive, dry_run, gas_limit):
     """
-    Deploy contracts to blockchain network
+    Run infrastructure deployment
 
-    Deploys all contracts defined in your project to the specified network.
-    Automatically manages dependencies, tracks deployment state, and can
-    verify contracts on block explorers.
+    Deploys infrastructure defined in your project to the specified environment.
+    Automatically manages dependencies and tracks deployment state.
 
     \b
     Examples:
       varitykit deploy run --network local
-      varitykit deploy run --network testnet --verify
+      varitykit deploy run --network varity --verify
       varitykit deploy run --interactive
-      varitykit deploy run --dry-run --network mainnet
+      varitykit deploy run --dry-run --network varity
 
     \b
     Before Deploying:
       1. Make sure your .env file has required variables:
-         - WALLET_PRIVATE_KEY
          - <NETWORK>_RPC_URL
-         - ARBISCAN_API_KEY (for verification)
 
-      2. Check wallet balance:
-         varitykit task wallet balance --network <network>
-
-      3. Run dry-run first:
+      2. Run dry-run first:
          varitykit deploy run --dry-run --network <network>
     """
     console = Console()
     logger = ctx.obj["logger"]
+    # Import Web3-dependent modules only when this advanced command is invoked.
+    # This keeps base CLI startup usable without optional blockchain deps.
+    from varitykit.core.deployment_tracker import DeploymentStatus, DeploymentTracker
+    from varitykit.core.gas_estimator import GasEstimator
 
     # Network mapping (local -> testnet for SDK)
     network_map = {
@@ -422,8 +418,8 @@ def status(ctx, network):
     """
     Show current deployment status
 
-    Displays the most recent deployment for each network,
-    including contract addresses and verification status.
+    Displays the most recent deployment for each environment,
+    including deployed addresses and verification status.
     """
     console = Console()
     logger = ctx.obj["logger"]
@@ -444,7 +440,7 @@ def status(ctx, network):
     if network:
         networks = [network]
     else:
-        networks = ["local", "sepolia", "mainnet"]
+        networks = ["local", "varity"]
 
     for net in networks:
         history = get_deployment_history(net)
@@ -503,7 +499,7 @@ def list(ctx, network, limit):
     # Collect all deployments
     all_deployments = []
 
-    networks_to_check = [network] if network else ["local", "sepolia", "mainnet"]
+    networks_to_check = [network] if network else ["local", "varity"]
 
     for net in networks_to_check:
         history = get_deployment_history(net)
@@ -554,7 +550,7 @@ def list(ctx, network, limit):
     "--network",
     "-n",
     required=True,
-    type=click.Choice(["local", "sepolia", "mainnet"]),
+    type=click.Choice(["local", "varity"]),
     help="Network to rollback",
 )
 @click.option("--steps", "-s", default=1, type=int, help="Number of deployments to rollback")

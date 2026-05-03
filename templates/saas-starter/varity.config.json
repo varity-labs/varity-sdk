@@ -2,7 +2,7 @@
   "name": "my-saas-app",
   "version": "0.1.0",
   "framework": "nextjs",
-  "hosting": "ipfs",
+  "hosting": "static",
   "build": {
     "command": "npm run build",
     "output": "out"

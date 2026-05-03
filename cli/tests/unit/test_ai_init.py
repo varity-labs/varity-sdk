@@ -1,5 +1,5 @@
 """
-Tests for varietykit/cli/ai_init.py
+Tests for varitykit/cli/ai_init.py
 Currently 0% coverage - comprehensive tests needed
 """
 
@@ -22,7 +22,7 @@ class TestAIInit:
 
     def test_ai_init_command_exists(self, runner):
         """Test that ai-init command is available"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         result = runner.invoke(ai_init, ['--help'])
         assert result.exit_code == 0
@@ -30,10 +30,10 @@ class TestAIInit:
 
     def test_ai_init_with_name_option(self, runner, tmp_path, mocker):
         """Test ai-init with --name option"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         # Mock dependencies
-        mock_ai_engine = mocker.patch('varietykit.cli.ai_init.AITemplateEngine')
+        mock_ai_engine = mocker.patch('varitykit.cli.ai_init.AITemplateEngine')
         mock_logger = mocker.Mock()
 
         # Mock engine methods
@@ -58,10 +58,10 @@ class TestAIInit:
 
     def test_ai_init_interactive_mode(self, runner, tmp_path, mocker):
         """Test ai-init in interactive mode"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         # Mock dependencies
-        mock_ai_engine = mocker.patch('varietykit.cli.ai_init.AITemplateEngine')
+        mock_ai_engine = mocker.patch('varitykit.cli.ai_init.AITemplateEngine')
         mock_logger = mocker.Mock()
 
         result = runner.invoke(
@@ -76,7 +76,7 @@ class TestAIInit:
 
     def test_ai_init_with_industry_option(self, runner, mocker):
         """Test ai-init with --industry option"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         mock_logger = mocker.Mock()
 
@@ -92,7 +92,7 @@ class TestAIInit:
 
     def test_ai_init_with_size_option(self, runner, mocker):
         """Test ai-init with --size option"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         mock_logger = mocker.Mock()
 
@@ -108,9 +108,9 @@ class TestAIInit:
 
     def test_ai_init_all_options(self, runner, mocker):
         """Test ai-init with all options provided"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
-        mock_ai_engine = mocker.patch('varietykit.cli.ai_init.AITemplateEngine')
+        mock_ai_engine = mocker.patch('varitykit.cli.ai_init.AITemplateEngine')
         mock_logger = mocker.Mock()
 
         # Mock engine
@@ -139,9 +139,9 @@ class TestAIInit:
 
     def test_ai_init_error_handling(self, runner, mocker):
         """Test ai-init handles errors gracefully"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
-        mock_ai_engine = mocker.patch('varietykit.cli.ai_init.AITemplateEngine')
+        mock_ai_engine = mocker.patch('varitykit.cli.ai_init.AITemplateEngine')
         mock_logger = mocker.Mock()
 
         # Make engine raise an error
@@ -158,7 +158,7 @@ class TestAIInit:
 
     def test_ai_init_invalid_industry(self, runner, mocker):
         """Test ai-init with invalid industry"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         mock_logger = mocker.Mock()
 
@@ -173,7 +173,7 @@ class TestAIInit:
 
     def test_ai_init_invalid_size(self, runner, mocker):
         """Test ai-init with invalid company size"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         mock_logger = mocker.Mock()
 
@@ -188,7 +188,7 @@ class TestAIInit:
 
     def test_ai_init_with_path_option(self, runner, tmp_path, mocker):
         """Test ai-init with custom output path"""
-        from varietykit.cli.ai_init import ai_init
+        from varitykit.cli.ai_init import ai_init
 
         mock_logger = mocker.Mock()
         output_dir = tmp_path / "output"

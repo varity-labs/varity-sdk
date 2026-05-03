@@ -25,14 +25,14 @@ Transform this into your own branded SaaS app:
 
 1. **App name** — Edit `APP_NAME` in `src/lib/constants.ts`
 2. **Logo** — Replace `public/logo.svg` with your logo
-3. **Colors** — Open `src/app/globals.css` and uncomment a color preset (Purple, Green, or Orange) or set your own
-4. **Meta title** — Update the `title` and `description` in `src/app/layout.tsx`
+3. **Colors** — Open `app/globals.css` and uncomment a color preset (Purple, Green, or Orange) or set your own
+4. **Meta title** — Update the `title` and `description` in `app/layout.tsx`
 5. **Navigation** — Edit `NAVIGATION_ITEMS` in `src/lib/constants.ts` to rename or add sidebar links
 6. **Landing page** — Edit the sections in `src/components/landing/` (Hero, Features, Pricing, etc.)
 
 ## Built-in Color Themes
 
-Switch your entire app's color scheme by editing `src/app/globals.css`:
+Switch your entire app's color scheme by editing `app/globals.css`:
 
 | Theme | How |
 |-------|-----|
@@ -67,7 +67,7 @@ This template works immediately with **zero setup**:
 
 ### Instant Database
 - ✅ Create, read, update, delete data
-- ✅ Dev token built-in
+- ✅ Dev key built-in
 - ✅ Production-ready proxy
 - ❌ No credentials needed
 
@@ -142,7 +142,7 @@ Example: adding a `/dashboard/reports` page.
 **1. Create the page file:**
 
 ```tsx
-// src/app/dashboard/reports/page.tsx
+// app/dashboard/reports/page.tsx
 'use client';
 
 import { useProjects } from '@/lib/hooks';
@@ -216,7 +216,7 @@ The database collection is created automatically on first use — no migrations 
 | Variable | Required | Notes |
 |----------|----------|-------|
 | `NEXT_PUBLIC_VARITY_AUTH_ID` | No | Auth provider (auto-configured) |
-| `NEXT_PUBLIC_VARITY_APP_TOKEN` | No | Database token (auto-configured) |
+| `NEXT_PUBLIC_VARITY_APP_TOKEN` | No | Database key (auto-configured) |
 | `NEXT_PUBLIC_VARITY_APP_ID` | No | App ID (auto-configured) |
 
 ## Deployment

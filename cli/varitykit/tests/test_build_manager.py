@@ -6,6 +6,7 @@ Tests build execution and artifact collection.
 
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from varitykit.core.build_manager import BuildManager
@@ -195,6 +196,21 @@ class TestBuildManager:
                     build_command="nonexistent-command",
                     output_dir="build",
                 )
+
+            assert "not found" in str(exc_info.value).lower()
+
+    def test_build_fails_for_invalid_command_permission_error(self):
+        """PermissionError from subprocess (WSL/Linux EACCES) maps to BuildError like FileNotFoundError."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+
+            with patch("subprocess.Popen", side_effect=PermissionError(13, "Permission denied", "bad-cmd")):
+                with pytest.raises(BuildError) as exc_info:
+                    self.manager.build(
+                        project_path=str(project_path),
+                        build_command="bad-cmd",
+                        output_dir="build",
+                    )
 
             assert "not found" in str(exc_info.value).lower()
 

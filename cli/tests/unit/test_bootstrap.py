@@ -1,5 +1,5 @@
 """
-Tests for varietykit/cli/bootstrap.py
+Tests for varitykit/cli/bootstrap.py
 Currently 12% coverage - comprehensive tests needed
 """
 
@@ -22,14 +22,14 @@ class TestBootstrap:
 
     def test_bootstrap_command_exists(self, runner):
         """Test that bootstrap command is available"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         result = runner.invoke(bootstrap, ['--help'])
         assert result.exit_code == 0
 
     def test_bootstrap_default_options(self, runner, tmp_path, mocker):
         """Test bootstrap with default options"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -45,10 +45,10 @@ class TestBootstrap:
 
     def test_bootstrap_with_name(self, runner, tmp_path, mocker):
         """Test bootstrap with project name"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
         mock_template_gen.return_value.generate.return_value = True
 
         result = runner.invoke(
@@ -62,10 +62,10 @@ class TestBootstrap:
 
     def test_bootstrap_with_template(self, runner, tmp_path, mocker):
         """Test bootstrap with --template option"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
         mock_template_gen.return_value.generate.return_value = True
 
         result = runner.invoke(
@@ -78,10 +78,10 @@ class TestBootstrap:
 
     def test_bootstrap_with_framework(self, runner, mocker):
         """Test bootstrap with --framework option"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
 
         result = runner.invoke(
             bootstrap,
@@ -93,10 +93,10 @@ class TestBootstrap:
 
     def test_bootstrap_with_typescript(self, runner, mocker):
         """Test bootstrap with TypeScript option"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
 
         result = runner.invoke(
             bootstrap,
@@ -108,7 +108,7 @@ class TestBootstrap:
 
     def test_bootstrap_without_typescript(self, runner, mocker):
         """Test bootstrap without TypeScript"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -122,7 +122,7 @@ class TestBootstrap:
 
     def test_bootstrap_with_git_init(self, runner, mocker):
         """Test bootstrap initializes git repository"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.run')
@@ -137,7 +137,7 @@ class TestBootstrap:
 
     def test_bootstrap_without_git(self, runner, mocker):
         """Test bootstrap skips git initialization"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.run')
@@ -152,7 +152,7 @@ class TestBootstrap:
 
     def test_bootstrap_with_install_deps(self, runner, mocker):
         """Test bootstrap with --install flag to install dependencies"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.run')
@@ -168,7 +168,7 @@ class TestBootstrap:
 
     def test_bootstrap_skip_install_deps(self, runner, mocker):
         """Test bootstrap skips dependency installation"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.run')
@@ -183,7 +183,7 @@ class TestBootstrap:
 
     def test_bootstrap_with_path(self, runner, tmp_path, mocker):
         """Test bootstrap with custom output path"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
         output_dir = tmp_path / "output"
@@ -198,7 +198,7 @@ class TestBootstrap:
 
     def test_bootstrap_existing_directory_error(self, runner, tmp_path, mocker):
         """Test bootstrap fails when directory already exists"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -218,7 +218,7 @@ class TestBootstrap:
 
     def test_bootstrap_force_overwrite(self, runner, tmp_path, mocker):
         """Test bootstrap with --force to overwrite existing directory"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -236,7 +236,7 @@ class TestBootstrap:
 
     def test_bootstrap_with_features(self, runner, mocker):
         """Test bootstrap with additional features"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -253,7 +253,7 @@ class TestBootstrap:
 
     def test_bootstrap_with_industry(self, runner, mocker):
         """Test bootstrap with industry-specific template"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -267,7 +267,7 @@ class TestBootstrap:
 
     def test_bootstrap_with_company_size(self, runner, mocker):
         """Test bootstrap with company size option"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -281,7 +281,7 @@ class TestBootstrap:
 
     def test_bootstrap_interactive_mode(self, runner, mocker):
         """Test bootstrap in interactive mode"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -296,10 +296,10 @@ class TestBootstrap:
 
     def test_bootstrap_non_interactive_mode(self, runner, mocker):
         """Test bootstrap in non-interactive mode with all options"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
 
         result = runner.invoke(
             bootstrap,
@@ -318,7 +318,7 @@ class TestBootstrap:
 
     def test_bootstrap_invalid_template(self, runner, mocker):
         """Test bootstrap with invalid template name"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -333,7 +333,7 @@ class TestBootstrap:
 
     def test_bootstrap_invalid_framework(self, runner, mocker):
         """Test bootstrap with invalid framework"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -347,10 +347,10 @@ class TestBootstrap:
 
     def test_bootstrap_creates_package_json(self, runner, tmp_path, mocker):
         """Test bootstrap creates package.json"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
 
         # Mock to create files
         def generate_side_effect(*args, **kwargs):
@@ -371,10 +371,10 @@ class TestBootstrap:
 
     def test_bootstrap_creates_readme(self, runner, tmp_path, mocker):
         """Test bootstrap creates README.md"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
 
         result = runner.invoke(
             bootstrap,
@@ -386,7 +386,7 @@ class TestBootstrap:
 
     def test_bootstrap_creates_gitignore(self, runner, tmp_path, mocker):
         """Test bootstrap creates .gitignore"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
 
@@ -400,10 +400,10 @@ class TestBootstrap:
 
     def test_bootstrap_error_handling(self, runner, mocker):
         """Test bootstrap handles errors gracefully"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
         mock_template_gen.side_effect = Exception("Template generation failed")
 
         result = runner.invoke(
@@ -417,10 +417,10 @@ class TestBootstrap:
 
     def test_bootstrap_permission_error(self, runner, mocker):
         """Test bootstrap handles permission errors"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
         mock_template_gen.side_effect = PermissionError("Permission denied")
 
         result = runner.invoke(
@@ -433,10 +433,10 @@ class TestBootstrap:
 
     def test_bootstrap_disk_space_error(self, runner, mocker):
         """Test bootstrap handles disk space errors"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
         mock_template_gen.side_effect = OSError("No space left on device")
 
         result = runner.invoke(
@@ -449,10 +449,10 @@ class TestBootstrap:
 
     def test_bootstrap_displays_success_message(self, runner, mocker):
         """Test bootstrap displays success message"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
         mock_template_gen.return_value.generate.return_value = True
 
         result = runner.invoke(
@@ -468,10 +468,10 @@ class TestBootstrap:
 
     def test_bootstrap_displays_next_steps(self, runner, mocker):
         """Test bootstrap displays next steps after creation"""
-        from varietykit.cli.bootstrap import bootstrap
+        from varitykit.cli.bootstrap import bootstrap
 
         mock_logger = mocker.Mock()
-        mock_template_gen = mocker.patch('varietykit.cli.bootstrap.TemplateGenerator')
+        mock_template_gen = mocker.patch('varitykit.cli.bootstrap.TemplateGenerator')
         mock_template_gen.return_value.generate.return_value = True
 
         result = runner.invoke(

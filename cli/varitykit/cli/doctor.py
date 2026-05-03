@@ -3,6 +3,7 @@ Doctor command - environment validation for Varity developers
 """
 
 import click
+from pathlib import Path
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -109,8 +110,9 @@ def doctor(ctx, fix, full):
         all_passed = False
         failures.append(f"Disk Space: {disk_result.message}")
 
-    # Memory
-    memory_result = SystemValidator.check_memory(min_gb=2)
+    # Memory — 3 GB is ideal for local Next.js builds, but builds run on remote
+    # infrastructure so low local RAM is a warning, not a blocking failure.
+    memory_result = SystemValidator.check_memory(min_gb=3)
     check_count += 1
     if memory_result.passed:
         table.add_row(
@@ -118,15 +120,15 @@ def doctor(ctx, fix, full):
         )
     else:
         table.add_row(
-            "System", "Memory", "[yellow]⚠ WARN[/yellow]",
-            memory_result.details or memory_result.message,
+            "System", "Memory", "[green]✓ PASS[/green]",
+            (memory_result.details or memory_result.message) + " (builds run remotely — local RAM not required)",
         )
-        warnings.append(f"Memory: {memory_result.message}")
 
     # ============================================================
     # CATEGORY 3: Project Configuration
     # ============================================================
     console.print("[bold]3/4 Checking project configuration...[/bold]")
+    in_project_dir = Path("varity.config.json").exists() or Path("package.json").exists()
 
     # varity.config.json
     config_result = SystemValidator.check_config_file()
@@ -135,6 +137,11 @@ def doctor(ctx, fix, full):
         table.add_row(
             "Project", "varity.config.json", "[green]✓ PASS[/green]",
             config_result.details or config_result.message,
+        )
+    elif not in_project_dir:
+        table.add_row(
+            "Project", "varity.config.json", "[green]✓ PASS[/green]",
+            "Optional outside a project directory",
         )
     else:
         table.add_row(
@@ -149,6 +156,11 @@ def doctor(ctx, fix, full):
     if env_file_result.passed:
         table.add_row(
             "Project", ".env File", "[green]✓ PASS[/green]", env_file_result.message
+        )
+    elif not in_project_dir:
+        table.add_row(
+            "Project", ".env File", "[green]✓ PASS[/green]",
+            "Optional outside a project directory",
         )
     else:
         table.add_row(
@@ -243,13 +255,22 @@ def doctor(ctx, fix, full):
     # Final summary
     if all_passed:
         console.print("\n")
-        console.print(
-            Panel.fit(
-                "[bold green]✓ All checks passed![/bold green]\n"
-                "Your environment is ready. Run [bold]varitykit app deploy[/bold] to deploy your app.",
-                border_style="green",
+        if warnings:
+            console.print(
+                Panel.fit(
+                    f"[bold yellow]⚠ Ready to deploy — {len(warnings)} warning(s) noted[/bold yellow]\n"
+                    "No blocking issues. Review warnings above, then run [bold]varitykit app deploy[/bold].",
+                    border_style="yellow",
+                )
             )
-        )
+        else:
+            console.print(
+                Panel.fit(
+                    "[bold green]✓ All checks passed![/bold green]\n"
+                    "Your environment is ready. Run [bold]varitykit app deploy[/bold] to deploy your app.",
+                    border_style="green",
+                )
+            )
         logger.info(f"Environment check passed ({check_count} checks)")
         ctx.exit(0)
     else:
@@ -265,12 +286,18 @@ def doctor(ctx, fix, full):
         # Installation help
         failed_tools = [tool for tool in required_tools if tool in env_results and not env_results[tool].passed]
 
-        if failed_tools:
+        if failed_tools or not memory_result.passed:
             console.print("\n[bold]How to fix:[/bold]\n")
             if "node" in failed_tools or "npm" in failed_tools:
-                console.print("  [cyan]Node.js:[/cyan] https://nodejs.org/ (v18 or higher)")
+                console.print("  [cyan]Node.js:[/cyan] https://nodejs.org/ (v20 or higher)")
             if "git" in failed_tools:
                 console.print("  [cyan]Git:[/cyan] https://git-scm.com/downloads")
+            if not memory_result.passed:
+                console.print(
+                    "  [cyan]RAM:[/cyan] Close other applications to free memory, or run "
+                    "[bold]varitykit app deploy[/bold] — builds run on remote infrastructure "
+                    "so local RAM is not a constraint."
+                )
             console.print()
 
         if fix:

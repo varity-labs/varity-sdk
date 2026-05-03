@@ -54,7 +54,7 @@ const queryClient = new QueryClient();
 
 import { User } from '@privy-io/react-auth';
 
-export interface VarityPrivyProviderProps {
+export interface AuthBaseProviderProps {
   children: ReactNode;
   appId: string;
   onLoginSuccess?: (user: User) => void;
@@ -92,7 +92,7 @@ export interface VarityPrivyProviderProps {
  * }
  * ```
  */
-export function VarityPrivyProvider({
+export function AuthBaseProvider({
   children,
   appId,
   onLoginSuccess,
@@ -101,7 +101,7 @@ export function VarityPrivyProvider({
     theme: 'light',
     accentColor: '#6366f1',
   },
-}: VarityPrivyProviderProps): JSX.Element {
+}: AuthBaseProviderProps): JSX.Element {
   return (
     <BasePrivyProvider
       appId={appId}
@@ -182,4 +182,4 @@ function PrivyAuthWrapper({
   return <>{children}</>;
 }
 
-export default VarityPrivyProvider;
+export default AuthBaseProvider;

@@ -4,7 +4,7 @@ Tests for app deployment CLI commands
 
 import pytest
 from click.testing import CliRunner
-from varietykit.commands.app_deploy import app
+from varitykit.commands.app_deploy import app
 
 
 class TestAppDeployCommand:
@@ -42,7 +42,7 @@ class TestAppDeployCommand:
         (test_dir / "package.json").write_text('{"name": "test-app"}')
 
         # Mock the DeploymentOrchestrator
-        mock_orchestrator = mocker.patch('varietykit.commands.app_deploy.DeploymentOrchestrator')
+        mock_orchestrator = mocker.patch('varitykit.commands.app_deploy.DeploymentOrchestrator')
         mock_result = mocker.Mock()
         mock_result.frontend_url = "https://ipfs.io/ipfs/QmTest123"
         mock_result.thirdweb_url = "https://gateway.thirdweb.com/ipfs/QmTest123"
@@ -200,7 +200,7 @@ module.exports = {
 def mock_deployment_orchestrator(mocker):
     """Mock the DeploymentOrchestrator for testing"""
     # This will be used once orchestrator is integrated
-    mock = mocker.patch('varietykit.commands.app_deploy.DeploymentOrchestrator')
+    mock = mocker.patch('varitykit.commands.app_deploy.DeploymentOrchestrator')
     mock.return_value.deploy.return_value = {
         'deployment_id': 'deploy-1737492000',
         'frontend_url': 'https://ipfs.io/ipfs/QmTest123',

@@ -7,6 +7,8 @@ Login saves deploy key + gateway API key + JWT secret to ~/.varitykit/config.jso
 
 import json
 import os
+from typing import Optional
+
 import click
 from rich.console import Console
 from rich.panel import Panel
@@ -60,10 +62,70 @@ def _try_decode_deploy_key(raw_key: str) -> dict:
     return {"deploy_key": raw_key}
 
 
-def _do_login():
+def _auto_fetch_credentials(creds: dict) -> dict:
+    """Auto-fetch gateway key and DB JWT secret from credential proxy after login."""
+    from varitykit.services.credential_fetcher import fetch_database_credentials
+    from varitykit.services.gateway_client import _get_gateway_api_key
+
+    # Auto-fetch gateway API key if not already bundled
+    if "gateway_api_key" not in creds:
+        try:
+            gw_key = _get_gateway_api_key()
+            if gw_key:
+                creds["gateway_api_key"] = gw_key
+        except Exception:
+            pass
+
+    # Auto-fetch database JWT secret if not already bundled
+    if "jwt_secret" not in creds:
+        try:
+            jwt_secret = fetch_database_credentials()
+            if jwt_secret:
+                creds["jwt_secret"] = jwt_secret
+        except Exception:
+            pass
+
+    return creds
+
+
+def _show_configured(creds: dict) -> None:
+    """Print what credentials were configured."""
+    saved = ["deploy key"]
+    if "gateway_api_key" in creds:
+        saved.append("gateway key")
+    if "jwt_secret" in creds:
+        saved.append("database credentials")
+
+    console.print(f"  Configured: {', '.join(saved)}")
+    console.print("  Your domains are now protected. Run 'varitykit app deploy' to deploy.\n")
+
+
+def _do_login(key: Optional[str] = None):
     """Shared login logic used by both 'varitykit login' and 'varitykit auth login'."""
     from varitykit.services.gateway_client import get_deploy_key
 
+    # Non-interactive mode: --key flag or VARITY_DEPLOY_KEY env var
+    deploy_key = key or os.getenv("VARITY_DEPLOY_KEY")
+
+    if deploy_key:
+        deploy_key = deploy_key.strip()
+        if len(deploy_key) < 10:
+            console.print("\n  [red]Invalid deploy key.[/red] It should be at least 10 characters.")
+            return
+
+        creds = _try_decode_deploy_key(deploy_key)
+        _save_config(creds)
+
+        # Auto-fetch remaining credentials from proxy
+        creds = _auto_fetch_credentials(creds)
+        _save_config(creds)
+
+        console.print("\n  [green]Deploy key saved securely.[/green]")
+        console.print("\n  [green]Logged in successfully![/green]")
+        _show_configured(creds)
+        return
+
+    # Interactive mode
     existing = get_deploy_key()
     if existing:
         masked = existing[:8] + "..." + existing[-4:]
@@ -107,28 +169,22 @@ def _do_login():
     # Decode key — may be base64 JSON with bundled credentials (beta format)
     creds = _try_decode_deploy_key(deploy_key)
 
-    # Save all credentials to config
+    # Save deploy key first, then auto-fetch remaining credentials
+    _save_config(creds)
+    creds = _auto_fetch_credentials(creds)
     _save_config(creds)
 
     console.print("\n  [green]Deploy key saved securely.[/green]")
     console.print("\n  [green]Logged in successfully![/green]")
-
-    # Show what was configured
-    saved = ["deploy key"]
-    if "gateway_api_key" in creds:
-        saved.append("gateway key")
-    if "jwt_secret" in creds:
-        saved.append("database credentials")
-
-    console.print(f"  Configured: {', '.join(saved)}")
-    console.print("  Your domains are now protected. Run 'varitykit app deploy' to deploy.\n")
+    _show_configured(creds)
 
 
 # Top-level command: varitykit login
 @click.command()
-def login():
+@click.option("--key", "-k", default=None, help="Deploy key (non-interactive, for CI/MCP)")
+def login(key):
     """Log in with your deploy key from the developer portal."""
-    _do_login()
+    _do_login(key=key)
 
 
 # Command group: varitykit auth {login,logout,status}
@@ -139,9 +195,10 @@ def auth():
 
 
 @auth.command("login")
-def auth_login():
+@click.option("--key", "-k", default=None, help="Deploy key (non-interactive, for CI/MCP)")
+def auth_login(key):
     """Log in with your deploy key from the developer portal."""
-    _do_login()
+    _do_login(key=key)
 
 
 @auth.command()
@@ -158,8 +215,8 @@ def logout():
         try:
             with open(CONFIG_PATH, "r") as f:
                 config = json.load(f)
-            for key in ["deploy_key", "gateway_api_key", "jwt_secret", "cli_api_key"]:
-                config.pop(key, None)
+            for k in ["deploy_key", "gateway_api_key", "jwt_secret", "cli_api_key"]:
+                config.pop(k, None)
             with open(CONFIG_PATH, "w") as f:
                 json.dump(config, f, indent=2)
             # Maintain restricted permissions after rewrite

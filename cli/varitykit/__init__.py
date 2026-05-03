@@ -2,7 +2,7 @@
 VarityKit - AI-powered CLI for building and deploying apps
 """
 
-__version__ = "1.1.13"
+__version__ = "1.2.13"
 __author__ = "Varity Team"
 __email__ = "hello@varity.com"
 

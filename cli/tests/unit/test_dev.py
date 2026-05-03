@@ -1,5 +1,5 @@
 """
-Tests for varietykit/cli/dev.py
+Tests for varitykit/cli/dev.py
 Currently 20% coverage - comprehensive tests needed
 """
 
@@ -22,14 +22,14 @@ class TestDev:
 
     def test_dev_command_exists(self, runner):
         """Test that dev command is available"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         result = runner.invoke(dev, ['--help'])
         assert result.exit_code == 0
 
     def test_dev_starts_development_server(self, runner, tmp_path, mocker):
         """Test dev command starts development server"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.Popen')
@@ -53,7 +53,7 @@ class TestDev:
 
     def test_dev_with_port_option(self, runner, tmp_path, mocker):
         """Test dev command with custom port"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.Popen')
@@ -72,7 +72,7 @@ class TestDev:
 
     def test_dev_with_host_option(self, runner, tmp_path, mocker):
         """Test dev command with custom host"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -90,7 +90,7 @@ class TestDev:
 
     def test_dev_detects_nextjs_project(self, runner, tmp_path, mocker):
         """Test dev command detects Next.js project"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.Popen')
@@ -112,7 +112,7 @@ class TestDev:
 
     def test_dev_detects_react_project(self, runner, tmp_path, mocker):
         """Test dev command detects React project"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -132,7 +132,7 @@ class TestDev:
 
     def test_dev_detects_vue_project(self, runner, tmp_path, mocker):
         """Test dev command detects Vue project"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -152,7 +152,7 @@ class TestDev:
 
     def test_dev_with_hot_reload(self, runner, tmp_path, mocker):
         """Test dev command with hot reload enabled"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -170,7 +170,7 @@ class TestDev:
 
     def test_dev_without_hot_reload(self, runner, tmp_path, mocker):
         """Test dev command with hot reload disabled"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -188,7 +188,7 @@ class TestDev:
 
     def test_dev_with_env_file(self, runner, tmp_path, mocker):
         """Test dev command loads .env file"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -207,7 +207,7 @@ class TestDev:
 
     def test_dev_missing_package_json(self, runner, tmp_path, mocker):
         """Test dev command with missing package.json"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -225,7 +225,7 @@ class TestDev:
 
     def test_dev_port_already_in_use(self, runner, tmp_path, mocker):
         """Test dev command when port is already in use"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.Popen')
@@ -246,7 +246,7 @@ class TestDev:
 
     def test_dev_with_verbose_output(self, runner, tmp_path, mocker):
         """Test dev command with verbose output"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -264,7 +264,7 @@ class TestDev:
 
     def test_dev_with_open_browser(self, runner, tmp_path, mocker):
         """Test dev command opens browser automatically"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_webbrowser = mocker.patch('webbrowser.open')
@@ -283,7 +283,7 @@ class TestDev:
 
     def test_dev_without_open_browser(self, runner, tmp_path, mocker):
         """Test dev command doesn't open browser"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -301,7 +301,7 @@ class TestDev:
 
     def test_dev_handles_keyboard_interrupt(self, runner, tmp_path, mocker):
         """Test dev command handles Ctrl+C gracefully"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.Popen')
@@ -324,7 +324,7 @@ class TestDev:
 
     def test_dev_with_watch_option(self, runner, tmp_path, mocker):
         """Test dev command with file watching"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -342,7 +342,7 @@ class TestDev:
 
     def test_dev_custom_script(self, runner, tmp_path, mocker):
         """Test dev command with custom dev script"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
 
@@ -364,7 +364,7 @@ class TestDev:
 
     def test_dev_error_handling(self, runner, tmp_path, mocker):
         """Test dev command handles errors gracefully"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.Popen')
@@ -384,7 +384,7 @@ class TestDev:
 
     def test_dev_displays_server_info(self, runner, tmp_path, mocker):
         """Test dev command displays server information"""
-        from varietykit.cli.dev import dev
+        from varitykit.cli.dev import dev
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.Popen')

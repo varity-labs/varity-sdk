@@ -4,18 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { projects, tasks, teamMembers, userSettings } from './database';
 import type { Project, Task, TeamMember, UserSettings } from '../types';
 
-let usePrivyHook: any = null;
+let useAuthHook: any = null;
 try {
   const uiKit = require('@varity-labs/ui-kit');
-  usePrivyHook = uiKit.usePrivy;
+  useAuthHook = uiKit.useAuth;
 } catch {}
 
 export function useCurrentUser() {
   // eslint-disable-next-line react-hooks/rules-of-hooks -- conditional on require() success, stable across renders
-  const privy = usePrivyHook ? usePrivyHook() : { user: null, authenticated: false, logout: async () => {} };
+  const auth = useAuthHook ? useAuthHook() : { user: null, authenticated: false, logout: async () => {} };
 
-  // Extract email from any Privy auth method (email, Google, GitHub, etc.)
-  const user = privy.user;
+  // Extract email from any auth method (email, Google, GitHub, etc.)
+  const user = auth.user;
   const email =
     user?.email?.address ||
     user?.google?.email ||
@@ -30,8 +30,8 @@ export function useCurrentUser() {
     id: user?.id || 'dev-user-id',
     email,
     name,
-    authenticated: privy.authenticated,
-    logout: privy.logout,
+    authenticated: auth.authenticated,
+    logout: auth.logout,
   };
 }
 

@@ -1,14 +1,14 @@
 # Varity Database Proxy
 
-Zero-config document database for Varity apps. Provides schema-isolated database access with JWT authentication and rate limiting.
+Zero-config database for Varity apps. Provides schema-isolated PostgreSQL access with JWT authentication and rate limiting.
 
 ## How It Works
 
 ```
-Developer's App → @varity-labs/sdk → DB Proxy → Document Database
+Developer's App → @varity-labs/sdk → DB Proxy → PostgreSQL
 ```
 
-Each app gets its own database schema (`app_<id>`), so data is fully isolated between apps. Tables and schemas are created automatically on first use. All data is stored as flexible, schema-free documents.
+Each app gets its own PostgreSQL schema (`app_<id>`), so data is fully isolated between apps. Tables and schemas are created automatically on first use. All data is stored as JSONB for flexible, schema-free documents.
 
 ## API
 
@@ -30,7 +30,7 @@ All endpoints require `Authorization: Bearer <token>`.
 
 ### Health Check
 
-Returns `200` with `{"status":"healthy"}` when the DB proxy and database are both operational. Returns `503` with `{"status":"unhealthy"}` when the database is unreachable.
+Returns `200` with `{"status":"healthy"}` when the DB proxy and PostgreSQL are both operational. Returns `503` with `{"status":"unhealthy"}` when PostgreSQL is unreachable.
 
 ### Rate Limiting
 
@@ -40,9 +40,9 @@ Returns `200` with `{"status":"healthy"}` when the DB proxy and database are bot
 ## Security
 
 - **JWT Authentication** — Every request requires a valid Bearer token with an `appId` claim
-- **Schema Isolation** — Each app operates in its own database schema (`app_<appId>`)
+- **Schema Isolation** — Each app operates in its own PostgreSQL schema (`app_<appId>`)
 - **SQL Injection Protection** — All identifiers are quoted, ORDER BY is allowlisted, collection names and IDs are validated
-- **Row Level Security** — RLS is enabled on all tables
+- **Row Level Security** — PostgreSQL RLS is enabled on all tables
 - **Rate Limiting** — 100 req/min per IP
 - **Non-root Docker** — Container runs as unprivileged `varity` user
 - **Error Masking** — Internal error details are hidden in production
@@ -50,12 +50,12 @@ Returns `200` with `{"status":"healthy"}` when the DB proxy and database are bot
 ## Local Development
 
 ```bash
-# 1. Start database (Docker)
-docker run -d --name varity-db -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=varity -p 5432:5432 postgres:15
+# 1. Start PostgreSQL (Docker)
+docker run -d --name varity-pg -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=varity -p 5432:5432 postgres:15
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env with your database credentials and JWT secret
+# Edit .env with your PostgreSQL credentials and JWT secret
 
 # 3. Install and run
 npm install
@@ -80,9 +80,9 @@ npm run dev &                  # Start the proxy, then:
 bash tests/test-proxy.sh       # Integration tests (8 tests)
 ```
 
-## Deployment
+## Deployment (Akash Network)
 
-The DB proxy runs as a 2-service deployment on distributed cloud infrastructure.
+The DB proxy runs alongside PostgreSQL as a 2-service deployment on [Akash Network](https://akash.network).
 
 ```
 deploy.yaml (2 services):
@@ -91,7 +91,7 @@ deploy.yaml (2 services):
 ```
 
 1. Build and push the Docker image (see Deployment Checklist in KNOWN_ISSUES.md)
-2. Upload `deploy.yaml` to the cloud provider console
+2. Upload `deploy.yaml` to [Akash Console](https://console.akash.network)
 3. Accept a provider bid
 4. Note the TCP-forwarded port for the db-proxy service
 
@@ -99,10 +99,10 @@ deploy.yaml (2 services):
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DB_HOST` | No | `localhost` | Database host |
-| `DB_PORT` | No | `5432` | Database port |
-| `DB_USER` | No | `postgres` | Database user |
-| `DB_PASSWORD` | **Yes** | — | Database password |
+| `DB_HOST` | No | `localhost` | PostgreSQL host |
+| `DB_PORT` | No | `5432` | PostgreSQL port |
+| `DB_USER` | No | `postgres` | PostgreSQL user |
+| `DB_PASSWORD` | **Yes** | — | PostgreSQL password |
 | `DB_NAME` | No | `varity` | Database name |
 | `JWT_SECRET` | **Yes** | — | Secret for JWT validation |
 | `PORT` | No | `3001` | Server port |
@@ -116,7 +116,7 @@ Each collection table has this structure:
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | UUID | Auto-generated primary key |
-| `data` | JSONB | Your document data (indexed) |
+| `data` | JSONB | Your document data (indexed with GIN) |
 | `created_at` | TIMESTAMPTZ | Auto-set on insert |
 | `updated_at` | TIMESTAMPTZ | Auto-updated on modification |
 

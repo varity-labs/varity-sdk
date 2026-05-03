@@ -2,11 +2,11 @@ export { VarityProvider, type VarityProviderProps } from './VarityProvider';
 export { WalletProvider, useWallet, type WalletProviderProps, type WalletContextValue } from './WalletContext';
 export { ChainProvider, useChain, type ChainProviderProps, type ChainContextValue } from './ChainContext';
 
-// Privy Integration
-export { VarityPrivyProvider, type VarityPrivyProviderProps } from './PrivyProvider';
+// Authentication (base provider — requires appId)
+export { AuthBaseProvider, type AuthBaseProviderProps } from './PrivyProvider';
 
-// Privy Stack (All-in-one provider setup - PRODUCTION PATTERN)
-export { PrivyStack, type PrivyStackProps } from './PrivyStack';
+// Authentication (all-in-one provider — zero-config, PRODUCTION PATTERN)
+export { AuthProvider, type AuthProviderProps } from './PrivyStack';
 
 // ZeroDev Account Abstraction (gasless transactions)
 export { ZeroDevProvider, useSmartAccount, useZeroDev, type ZeroDevContextType, type ZeroDevProviderProps } from './ZeroDevProvider';

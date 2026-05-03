@@ -61,8 +61,8 @@ export interface NavigationItem {
 export interface UserInfo {
   /** User's display name */
   name: string
-  /** User's email or identifier */
-  address: string
+  /** User's email address */
+  email: string
   /** User's avatar URL */
   avatarUrl?: string
 }
@@ -75,7 +75,7 @@ export interface UserInfo {
  * <DashboardLayout
  *   companyName="Acme Corp"
  *   logoUrl="/logo.png"
- *   user={{ name: "John Doe", address: "0x..." }}
+ *   user={{ name: "John Doe", email: "john@example.com" }}
  *   navigationItems={[
  *     { label: "Dashboard", icon: "dashboard", path: "/" },
  *     { label: "Analytics", icon: "analytics", path: "/analytics" }

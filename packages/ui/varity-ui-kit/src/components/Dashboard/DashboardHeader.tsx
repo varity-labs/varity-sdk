@@ -52,9 +52,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const notificationRef = useRef<HTMLDivElement>(null)
   const profileRef = useRef<HTMLDivElement>(null)
 
-  const truncateAddress = (address: string) => {
-    if (!address) return ''
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  const truncateDisplay = (value: string) => {
+    if (!value) return ''
+    return `${value.slice(0, 6)}...${value.slice(-4)}`
   }
 
   // Close dropdowns when clicking outside
@@ -241,7 +241,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   {user.name}
                 </span>
                 <span style={{ fontSize: '12px', color: 'var(--varity-text-secondary, #757575)' }}>
-                  {truncateAddress(user.address)}
+                  {truncateDisplay(user.email)}
                 </span>
               </div>
 

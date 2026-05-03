@@ -1,19 +1,20 @@
-# Contributing to Varity
+# Contributing to Varity SDK
 
-Thanks for your interest in contributing to Varity! This guide will help you get started.
+Thanks for your interest in contributing to Varity! Whether it's a bug fix, new feature, documentation improvement, or feedback — we appreciate it.
 
 ## Getting Started
 
 ### Prerequisites
 
 - **Node.js** 18+
-- **pnpm** 8+ (`npm install -g pnpm`)
-- **Python** 3.8+ (for CLI)
+- **pnpm** (package manager)
+- **Python** 3.8+ (for the CLI)
+- **Git**
 
 ### Setup
 
 ```bash
-# Clone the repository
+# Clone the repo
 git clone https://github.com/varity-labs/varity-sdk.git
 cd varity-sdk
 
@@ -29,95 +30,116 @@ pnpm build
 ```
 varity-sdk/
 ├── packages/
-│   ├── core/varity-sdk/       # Backend SDK (database, credentials)
-│   ├── core/varity-types/     # Shared TypeScript types
-│   └── ui/varity-ui-kit/      # React components (19 components, providers, hooks)
-├── cli/
-│   └── varietykit/            # Python CLI (init, deploy, doctor)
-├── templates/
-│   └── saas-starter/          # SaaS template (Next.js)
+│   ├── core/
+│   │   ├── varity-sdk/          # @varity-labs/sdk — database, credentials
+│   │   └── varity-types/        # @varity-labs/types — TypeScript definitions
+│   ├── ui/
+│   │   └── varity-ui-kit/       # @varity-labs/ui-kit — React components
+│   └── cli/
+│       ├── create-varity-app/   # create-varity-app — project scaffolding
+│       └── varity-mcp/          # @varity-labs/mcp — MCP server for AI tools
+├── cli/                         # varitykit CLI (Python)
 ├── services/
-│   ├── varity-db-proxy/       # Database proxy service
-│   └── varity-credential-proxy/ # Credential proxy service
-└── docs/                      # Internal docs
+│   ├── varity-gateway/          # Custom domain gateway
+│   ├── varity-db-proxy/         # Database proxy
+│   └── varity-credential-proxy/ # Credential management
+└── templates/
+    └── saas-starter/            # SaaS starter template
 ```
 
-## Development Workflow
+## How to Contribute
 
-### Building
+### Reporting Bugs
+
+1. Check [existing issues](https://github.com/varity-labs/varity-sdk/issues) to avoid duplicates
+2. Use the [bug report template](https://github.com/varity-labs/varity-sdk/issues/new?template=bug_report.md)
+3. Include: steps to reproduce, expected behavior, actual behavior, environment details
+
+### Suggesting Features
+
+1. Open a [feature request](https://github.com/varity-labs/varity-sdk/issues/new?template=feature_request.md)
+2. Describe the problem you're solving and your proposed solution
+3. We'll discuss it before implementation starts
+
+### Submitting Code
+
+1. **Fork** the repository
+2. **Create a branch** from `main`: `git checkout -b fix/my-bug-fix`
+3. **Make your changes** and test them
+4. **Build** to verify: `pnpm build`
+5. **Commit** with a clear message (see conventions below)
+6. **Push** your branch and open a **Pull Request**
+
+### Commit Message Convention
+
+```
+type(scope): description
+
+# Examples:
+fix(sdk): correct database collection return type
+feat(ui-kit): add date picker component
+docs(cli): update deploy command examples
+chore: update dependencies
+```
+
+**Types:** `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `style`
+
+**Scopes:** `sdk`, `ui-kit`, `types`, `cli`, `mcp`, `gateway`, `template`
+
+## Development
+
+### Building Packages
 
 ```bash
-# Build all packages
+# Build everything
 pnpm build
 
 # Build a specific package
 cd packages/core/varity-sdk && npm run build
 cd packages/ui/varity-ui-kit && npm run build
-cd packages/core/varity-types && npm run build
+```
+
+### Running the CLI Locally
+
+```bash
+cd cli
+pip install -e .
+varitykit doctor
 ```
 
 ### Testing
 
 ```bash
-# Run tests for a service
-cd services/varity-db-proxy && npm test
-cd services/varity-credential-proxy && pytest
-```
+# Run all tests
+pnpm test
 
-### Working with the SaaS Template
-
-```bash
-cd templates/saas-starter
-pnpm install
-pnpm dev     # Start dev server
-pnpm build   # Build for production (static export)
-```
-
-## Making Changes
-
-1. **Fork** the repository
-2. **Create a branch** from `main`: `git checkout -b fix/my-fix`
-3. **Make your changes** and ensure the build passes
-4. **Submit a pull request** with a clear description
-
-### Branch Naming
-
-- `fix/description` — Bug fixes
-- `feat/description` — New features
-- `docs/description` — Documentation
-- `refactor/description` — Code refactoring
-
-### Commit Messages
-
-Write clear, concise commit messages that explain **why** a change was made:
-
-```
-Fix database query timeout on large collections
-
-The default timeout was too short for collections with 10k+ documents.
-Increased to 30s and added configurable timeout option.
+# Run tests for a specific package
+cd packages/core/varity-sdk && npm test
 ```
 
 ## Code Style
 
-- **TypeScript**: Follow existing patterns in the codebase
-- **React Components**: Use functional components with hooks
-- **Python CLI**: Follow PEP 8, use type hints
-- **No blockchain jargon** in user-facing code, docs, or messages
+- **TypeScript** for all packages (strict mode)
+- **ESM** — all packages use ES modules (`import`/`export`)
+- Use existing patterns in the codebase as reference
+- Keep it simple — avoid over-engineering
 
-## Reporting Bugs
+## What We're Looking For
 
-Use [GitHub Issues](https://github.com/varity-labs/varity-sdk/issues) with the bug report template.
+We especially welcome contributions in these areas:
 
-## Requesting Features
-
-Use [GitHub Issues](https://github.com/varity-labs/varity-sdk/issues) with the feature request template.
+- **Bug fixes** — anything that doesn't work as documented
+- **Documentation** — improvements to READMEs, code comments, examples
+- **UI components** — new components for `@varity-labs/ui-kit`
+- **Templates** — new starter templates or improvements to existing ones
+- **Developer experience** — CLI improvements, better error messages
 
 ## Community
 
-- **Discord**: [Join our Discord](https://discord.gg/7vWsdwa2Bg) for real-time help
-- **GitHub Discussions**: For longer-form conversations
+- **Discord** — [Join our server](https://discord.gg/7vWsdwa2Bg) for questions and discussion
+- **GitHub Issues** — Bug reports and feature requests
+- **X/Twitter** — [@VarityHQ](https://x.com/VarityHQ) for updates
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).

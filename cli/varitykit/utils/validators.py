@@ -25,7 +25,7 @@ class EnvironmentValidator:
     REQUIRED_TOOLS = {
         "docker": {"min_version": "20.10.0", "command": ["docker", "--version"]},
         "docker-compose": {"min_version": "1.29.0", "command": ["docker-compose", "--version"]},
-        "node": {"min_version": "16.0.0", "command": ["node", "--version"]},
+        "node": {"min_version": "20.0.0", "command": ["node", "--version"]},
         "npm": {"min_version": "8.0.0", "command": ["npm", "--version"]},
         "python": {"min_version": "3.10.0", "command": ["python3", "--version"]},
         "git": {"min_version": "2.0.0", "command": ["git", "--version"]},
@@ -126,6 +126,15 @@ class EnvironmentValidator:
 
 class ConfigValidator:
     """Validates configuration files and settings"""
+
+    @staticmethod
+    def normalize_project_name(name: str) -> str:
+        """Normalize user input into a safe project slug."""
+        normalized = name.strip().lower()
+        normalized = re.sub(r"[^a-z0-9-]+", "-", normalized)
+        normalized = re.sub(r"-{2,}", "-", normalized)
+        normalized = normalized.strip("-")
+        return normalized
 
     @staticmethod
     def validate_project_name(name: str) -> ValidationResult:

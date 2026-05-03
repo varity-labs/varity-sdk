@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 import toml
 
-from varietykit.core.config import (
+from varitykit.core.config import (
     Environment,
     VarityConfig,
     APIConfig,
@@ -60,7 +60,7 @@ class TestConfigManager:
     def test_save_and_load_config(self):
         """Test saving and loading configuration"""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_path = Path(tmpdir) / ".varietykit.toml"
+            config_path = Path(tmpdir) / ".varitykit.toml"
 
             # Create and save config
             manager = ConfigManager()

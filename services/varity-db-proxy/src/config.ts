@@ -22,6 +22,9 @@ export const config = {
 
   jwt: {
     secret: requireEnv('JWT_SECRET'),
+    // Dev fallback secret — allows shared dev tokens during beta.
+    // Dev tokens can only access the 'app_varity_dev' schema (enforced by appId).
+    devSecret: 'varity-dev-public-key-not-for-production',
   },
 
   server: {

@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 import tempfile
 
-from varietykit.core.templates import TemplateManager, TemplateInfo
+from varitykit.core.templates import TemplateManager, TemplateInfo
 
 
 class TestTemplateInfo:

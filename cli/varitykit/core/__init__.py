@@ -16,6 +16,7 @@ from varitykit.core.app_store import (
 from varitykit.core.build_manager import BuildManager
 from varitykit.core.config import ConfigManager, VarityConfig
 from varitykit.core.deployment_orchestrator import DeploymentOrchestrator
+from varitykit.core.learned_recommender import LearnedRecommender, Recommendation
 from varitykit.core.project_detector import ProjectDetector
 from varitykit.core.templates import TemplateManager
 from varitykit.core.types import (
@@ -44,6 +45,9 @@ __all__ = [
     "ProjectDetectionError",
     "BuildError",
     "IPFSUploadError",
+    # Learned recommender
+    "LearnedRecommender",
+    "Recommendation",
     # App Store integration
     "AppStoreClient",
     "MetadataBuilder",

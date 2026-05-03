@@ -1,5 +1,5 @@
 """
-Tests for varietykit/cli/init.py
+Tests for varitykit/cli/init.py
 Currently 20% coverage - comprehensive tests needed
 """
 
@@ -22,14 +22,14 @@ class TestInit:
 
     def test_init_command_exists(self, runner):
         """Test that init command is available"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         result = runner.invoke(init, ['--help'])
         assert result.exit_code == 0
 
     def test_init_default_options(self, runner, tmp_path, mocker):
         """Test init with default options in current directory"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -46,7 +46,7 @@ class TestInit:
 
     def test_init_creates_varity_config(self, runner, tmp_path, mocker):
         """Test init creates varity.config.json"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -62,7 +62,7 @@ class TestInit:
 
     def test_init_with_name_option(self, runner, tmp_path, mocker):
         """Test init with --name option"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -77,7 +77,7 @@ class TestInit:
 
     def test_init_with_framework_option(self, runner, tmp_path, mocker):
         """Test init with --framework option"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -92,7 +92,7 @@ class TestInit:
 
     def test_init_with_network_option(self, runner, tmp_path, mocker):
         """Test init with --network option"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -107,7 +107,7 @@ class TestInit:
 
     def test_init_already_initialized(self, runner, tmp_path, mocker):
         """Test init when project is already initialized"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -126,7 +126,7 @@ class TestInit:
 
     def test_init_force_reinitialize(self, runner, tmp_path, mocker):
         """Test init with --force to reinitialize"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -145,7 +145,7 @@ class TestInit:
 
     def test_init_interactive_mode(self, runner, tmp_path, mocker):
         """Test init in interactive mode"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -161,7 +161,7 @@ class TestInit:
 
     def test_init_non_interactive_mode(self, runner, tmp_path, mocker):
         """Test init in non-interactive mode with --yes"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -181,7 +181,7 @@ class TestInit:
 
     def test_init_with_typescript(self, runner, tmp_path, mocker):
         """Test init with TypeScript enabled"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -196,7 +196,7 @@ class TestInit:
 
     def test_init_without_typescript(self, runner, tmp_path, mocker):
         """Test init without TypeScript"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -211,7 +211,7 @@ class TestInit:
 
     def test_init_with_git(self, runner, tmp_path, mocker):
         """Test init initializes git repository"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.run')
@@ -227,7 +227,7 @@ class TestInit:
 
     def test_init_without_git(self, runner, tmp_path, mocker):
         """Test init skips git initialization"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -242,7 +242,7 @@ class TestInit:
 
     def test_init_creates_example_files(self, runner, tmp_path, mocker):
         """Test init creates example files"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -257,7 +257,7 @@ class TestInit:
 
     def test_init_without_examples(self, runner, tmp_path, mocker):
         """Test init without example files"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -272,7 +272,7 @@ class TestInit:
 
     def test_init_installs_dependencies(self, runner, tmp_path, mocker):
         """Test init installs npm dependencies"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
         mock_subprocess = mocker.patch('subprocess.run')
@@ -289,7 +289,7 @@ class TestInit:
 
     def test_init_skips_dependency_installation(self, runner, tmp_path, mocker):
         """Test init skips npm install"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -304,7 +304,7 @@ class TestInit:
 
     def test_init_with_custom_path(self, runner, tmp_path, mocker):
         """Test init with custom project path"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
         custom_path = tmp_path / "custom"
@@ -320,7 +320,7 @@ class TestInit:
 
     def test_init_invalid_framework(self, runner, tmp_path, mocker):
         """Test init with invalid framework"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -336,7 +336,7 @@ class TestInit:
 
     def test_init_invalid_network(self, runner, tmp_path, mocker):
         """Test init with invalid network"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -352,7 +352,7 @@ class TestInit:
 
     def test_init_creates_env_file(self, runner, tmp_path, mocker):
         """Test init creates .env file"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -367,7 +367,7 @@ class TestInit:
 
     def test_init_adds_thirdweb_client_id(self, runner, tmp_path, mocker):
         """Test init prompts for THIRDWEB_CLIENT_ID"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -383,7 +383,7 @@ class TestInit:
 
     def test_init_error_handling(self, runner, tmp_path, mocker):
         """Test init handles errors gracefully"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
         mock_file_write = mocker.patch('pathlib.Path.write_text')
@@ -401,7 +401,7 @@ class TestInit:
 
     def test_init_permission_error(self, runner, tmp_path, mocker):
         """Test init handles permission errors"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
         mock_file_write = mocker.patch('pathlib.Path.write_text')
@@ -418,7 +418,7 @@ class TestInit:
 
     def test_init_displays_success_message(self, runner, tmp_path, mocker):
         """Test init displays success message"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -436,7 +436,7 @@ class TestInit:
 
     def test_init_displays_next_steps(self, runner, tmp_path, mocker):
         """Test init displays next steps"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -451,7 +451,7 @@ class TestInit:
 
     def test_init_with_contracts(self, runner, tmp_path, mocker):
         """Test init with smart contracts enabled"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -466,7 +466,7 @@ class TestInit:
 
     def test_init_without_contracts(self, runner, tmp_path, mocker):
         """Test init without smart contracts"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -481,7 +481,7 @@ class TestInit:
 
     def test_init_detects_existing_project(self, runner, tmp_path, mocker):
         """Test init detects existing project structure"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 
@@ -500,7 +500,7 @@ class TestInit:
 
     def test_init_validates_project_name(self, runner, tmp_path, mocker):
         """Test init validates project name"""
-        from varietykit.cli.init import init
+        from varitykit.cli.init import init
 
         mock_logger = mocker.Mock()
 

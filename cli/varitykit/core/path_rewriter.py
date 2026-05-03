@@ -51,13 +51,11 @@ def rewrite_paths_for_static_hosting(output_dir: str) -> int:
         # Rewrite icon path: /icon.svg -> {prefix}icon.svg
         content = re.sub(r'"/icon\.svg', f'"{prefix}icon.svg', content)
 
-        # Rewrite navigation links: href="/login" -> href="{prefix}login"
-        # Preserve protocol-relative URLs (//) and anchor links (#)
-        content = re.sub(
-            r'href="/(?!/)([^"]*)"',
-            lambda m: f'href="{prefix}{m.group(1)}"',
-            content,
-        )
+        # Do NOT rewrite application navigation links (href="/...").
+        # Rewriting those to relative paths breaks when the app is served at
+        # varity.app/<name> without a trailing slash (it can resolve to /login).
+        # Route correctness is handled by basePath at build time and/or
+        # <base href="..."> injection in the deploy pipeline.
 
         if content != original:
             html_file.write_text(content, encoding="utf-8")

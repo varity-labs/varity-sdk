@@ -18,7 +18,7 @@ from unittest.mock import Mock, patch, MagicMock
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
 
-from varietykit.core.app_store.types import (
+from varitykit.core.app_store.types import (
     AppMetadata,
     SubmissionResult,
     AppStatus,
@@ -28,8 +28,8 @@ from varietykit.core.app_store.types import (
     ContractInteractionError
 )
 
-from varietykit.core.app_store.metadata_builder import MetadataBuilder
-from varietykit.core.app_store.client import AppStoreClient
+from varitykit.core.app_store.metadata_builder import MetadataBuilder
+from varitykit.core.app_store.client import AppStoreClient
 
 
 # ============================================================================
@@ -267,7 +267,7 @@ class TestMetadataBuilder:
         assert not url.startswith('git+')
         assert not url.endswith('.git')
 
-    @patch('varietykit.core.app_store.metadata_builder.MetadataBuilder.ipfs_uploader')
+    @patch('varitykit.core.app_store.metadata_builder.MetadataBuilder.ipfs_uploader')
     def test_build_from_deployment(self, mock_ipfs, temp_project):
         """Test building metadata from deployment"""
         # Mock IPFS upload
@@ -451,7 +451,7 @@ class TestAppStoreClient:
 class TestIntegration:
     """Integration tests for the complete workflow"""
 
-    @patch('varietykit.core.app_store.metadata_builder.MetadataBuilder.ipfs_uploader')
+    @patch('varitykit.core.app_store.metadata_builder.MetadataBuilder.ipfs_uploader')
     @patch('subprocess.run')
     def test_complete_submission_workflow(
         self,

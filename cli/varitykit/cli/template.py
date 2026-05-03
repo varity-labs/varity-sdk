@@ -4,9 +4,12 @@ Template creation and management commands for VarityKit
 
 import json
 import os
+import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
+
+import yaml
 
 import click
 from rich import box
@@ -718,3 +721,210 @@ def info(ctx, template_name):
             border_style="cyan",
         )
     )
+
+
+# ---------------------------------------------------------------------------
+# Infrastructure template helpers (templates/akash/ and templates/oss/)
+# ---------------------------------------------------------------------------
+
+_TEMPLATES_ROOT = Path(__file__).parent.parent / "templates"
+_OSS_DIR = _TEMPLATES_ROOT / "oss"
+_AKASH_DIR = _TEMPLATES_ROOT / "akash"
+
+
+def _find_infra_template(slug: str) -> Path | None:
+    """Locate a template YAML by slug, checking oss/ then akash/."""
+    for directory in (_OSS_DIR, _AKASH_DIR):
+        for candidate in (directory / f"{slug}.yaml", directory / f"{slug}-oss.yaml"):
+            if candidate.exists():
+                return candidate
+    return None
+
+
+def _load_infra_template(path: Path) -> dict:
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+def _apply_env_overrides(sdl: str, env_overrides: dict[str, str]) -> str:
+    """
+    Substitute user-supplied values into the SDL string.
+    Handles two patterns:
+      - "KEY=" (empty default → replace with KEY=VALUE)
+      - "KEY=<old>" (override any existing value)
+    """
+    for key, value in env_overrides.items():
+        # Pattern: "KEY=" or "KEY=anything" inside a quoted env line
+        sdl = re.sub(
+            rf'("{key}=)[^"]*(")',
+            lambda m, v=value: f'{m.group(1)}{v}{m.group(2)}',
+            sdl,
+        )
+        # Also handle unquoted: - KEY=
+        sdl = re.sub(
+            rf'^(\s+-\s+{re.escape(key)}=).*$',
+            lambda m, v=value: f'{m.group(1)}{v}',
+            sdl,
+            flags=re.MULTILINE,
+        )
+    return sdl
+
+
+# ---------------------------------------------------------------------------
+# `varitykit template catalog` command — list available infra templates
+# ---------------------------------------------------------------------------
+
+@template.command()
+@click.option("--category", "-c", default="", help="Filter by category (e.g. ai, analytics)")
+def catalog(category):
+    """List available infrastructure templates (OSS apps + compute presets)."""
+    console = Console()
+    rows = []
+    for directory in (_OSS_DIR, _AKASH_DIR):
+        if not directory.exists():
+            continue
+        for yaml_path in sorted(directory.glob("*.yaml")):
+            try:
+                data = _load_infra_template(yaml_path)
+            except Exception:
+                continue
+            cat = data.get("category", "")
+            if category and cat != category:
+                continue
+            rows.append((
+                data.get("slug", yaml_path.stem),
+                cat,
+                f"~${data.get('estimated_monthly_cost_usd', '?')}/mo",
+                (data.get("user_facing_description") or data.get("description", "")).split("\n")[0].strip()[:60],
+            ))
+
+    if not rows:
+        console.print("[yellow]No templates found.[/yellow]")
+        return
+
+    table = Table(title="Infrastructure Templates", box=box.ROUNDED, show_header=True, header_style="bold magenta")
+    table.add_column("Slug", style="cyan", width=20)
+    table.add_column("Category", style="white", width=14)
+    table.add_column("Est. Cost", style="green", width=12)
+    table.add_column("Description", style="dim", width=60)
+    for row in rows:
+        table.add_row(*row)
+    console.print("\n")
+    console.print(table)
+    console.print(f"\n[dim]Deploy with: varitykit template deploy <slug>[/dim]\n")
+
+
+# ---------------------------------------------------------------------------
+# `varitykit template deploy <slug>` command
+# ---------------------------------------------------------------------------
+
+@template.command()
+@click.argument("slug")
+@click.option("--env", "-e", "env_pairs", multiple=True,
+              help="Override env var: KEY=VALUE (repeatable)")
+@click.option("--name", default="", help="App name (defaults to slug)")
+@click.option("--dry-run", is_flag=True, help="Print the final SDL without deploying")
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+@click.pass_context
+def deploy(ctx, slug, env_pairs, name, dry_run, yes):
+    """
+    Deploy an infrastructure template to Varity compute.
+
+    Reads a template from templates/oss/ or templates/compute/, prompts for
+    any required environment variables, and deploys via Varity's compute layer.
+
+    \b
+    Examples:
+      varitykit template deploy n8n
+      varitykit template deploy open-webui --env WEBUI_SECRET_KEY=s3cr3t
+      varitykit template deploy postgres --dry-run
+    """
+    console = Console()
+
+    # 1. Locate template
+    tpl_path = _find_infra_template(slug)
+    if not tpl_path:
+        console.print(f"[red]Template '{slug}' not found.[/red]")
+        console.print("[dim]Run 'varitykit template catalog' to see available templates.[/dim]")
+        ctx.exit(1)
+        return
+
+    tpl = _load_infra_template(tpl_path)
+    sdl_raw: str = tpl.get("sdl", "")
+    if not sdl_raw:
+        console.print(f"[red]Template '{slug}' has no SDL — cannot deploy.[/red]")
+        ctx.exit(1)
+        return
+
+    # 2. Build env override dict from --env flags
+    env_overrides: dict[str, str] = {}
+    for pair in env_pairs:
+        if "=" not in pair:
+            console.print(f"[red]Invalid --env value '{pair}' — expected KEY=VALUE[/red]")
+            ctx.exit(1)
+        k, v = pair.split("=", 1)
+        env_overrides[k.strip()] = v.strip()
+
+    # 3. Prompt for required env vars (empty-string defaults not yet overridden)
+    default_env: dict = tpl.get("default_env", {}) or {}
+    sensitive_suffixes = ("PASSWORD", "SECRET", "KEY", "TOKEN", "SALT", "PSW")
+
+    for key, default_val in default_env.items():
+        if key in env_overrides:
+            continue
+        if default_val == "" or default_val is None:
+            is_sensitive = any(key.upper().endswith(s) for s in sensitive_suffixes)
+            prompt_text = f"  {key}"
+            prompted = Prompt.ask(
+                prompt_text,
+                password=is_sensitive,
+                console=console,
+            )
+            env_overrides[key] = prompted
+
+    # 4. Substitute into SDL
+    final_sdl = _apply_env_overrides(sdl_raw, env_overrides)
+
+    app_name = name or slug
+
+    # 5. Show summary
+    console.print()
+    console.print(Panel.fit(
+        f"[bold cyan]{tpl.get('name', slug)}[/bold cyan]\n\n"
+        f"[cyan]Category:[/cyan]  {tpl.get('category', 'unknown')}\n"
+        f"[cyan]App name:[/cyan]  {app_name}\n"
+        f"[cyan]Est. cost:[/cyan] ~${tpl.get('estimated_monthly_cost_usd', '?')}/month\n\n"
+        f"{tpl.get('user_facing_description', tpl.get('description', '')).strip()}",
+        border_style="cyan",
+    ))
+
+    if dry_run:
+        console.print("\n[bold yellow]--- SDL (dry run) ---[/bold yellow]")
+        console.print(final_sdl)
+        return
+
+    if not yes and not Confirm.ask("\n[bold]Deploy now?[/bold]", default=True, console=console):
+        console.print("[dim]Cancelled[/dim]")
+        return
+
+    # 6. Deploy
+    console.print("\n[cyan]Deploying...[/cyan]")
+    result: dict = {}
+    try:
+        from varitykit.core.akash.console_deployer import AkashConsoleDeployer
+        deployer = AkashConsoleDeployer()
+        result = deployer.deploy(final_sdl)
+    except Exception as exc:
+        console.print(f"\n[red]Deployment failed: {exc}[/red]")
+        ctx.exit(1)
+        return
+
+    url = result.get("url") or f"https://{result.get('dseq')}.provider.akash.network"
+    console.print()
+    console.print(Panel.fit(
+        f"[bold green]{tpl.get('name', slug)} is live![/bold green]\n\n"
+        f"[cyan]URL:[/cyan]   {url}\n"
+        f"[cyan]ID:[/cyan]    {result.get('dseq')}\n"
+        f"[cyan]Provider:[/cyan] {result.get('provider', 'unknown')}",
+        border_style="green",
+    ))

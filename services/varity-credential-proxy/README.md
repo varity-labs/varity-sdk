@@ -1,10 +1,10 @@
 # Varity Credential Proxy
 
-> **SECURITY CRITICAL**: This service provides Varity's internal infrastructure credentials to the CLI.
+> **SECURITY CRITICAL**: This service provides Varity's infrastructure credentials to the CLI.
 
 ## Purpose
 
-Enable zero-config deployments by providing Varity's platform credentials to the `varitykit` CLI without requiring developers to create their own accounts.
+Enable zero-config deployments by providing Varity's managed credentials to the `varitykit` CLI without requiring developers to create their own accounts on third-party services.
 
 ## Security Features
 
@@ -31,12 +31,11 @@ pip install -r requirements.txt
 # Copy example and edit
 cp .env.example .env
 
-# Edit .env and add:
-# - Platform secret keys
-# - Generate secure API keys for VARITY_CLI_PRODUCTION_KEY and VARITY_CLI_BETA_KEY
+# Edit .env and add your service credentials
+# Generate secure API keys for VARITY_CLI_PRODUCTION_KEY and VARITY_CLI_BETA_KEY
 ```
 
-**CRITICAL:** Add the actual platform secret keys to `.env` before starting!
+**CRITICAL:** Add actual service credentials to `.env` before starting!
 
 ### 3. Run Service
 
@@ -64,7 +63,7 @@ Expected:
 {
   "status": "healthy",
   "service": "varity-credential-proxy",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "environment": "development"
 }
 ```
@@ -73,7 +72,7 @@ Expected:
 
 ```bash
 curl -H "Authorization: Bearer <YOUR_API_KEY>" \
-  http://localhost:8001/api/credentials/platform
+  http://localhost:8001/api/credentials/storage
 ```
 
 Expected:
@@ -95,14 +94,14 @@ Health check endpoint. No authentication required.
 {
   "status": "healthy",
   "service": "varity-credential-proxy",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "environment": "development"
 }
 ```
 
-### `GET /api/credentials/platform`
+### `GET /api/credentials/storage`
 
-Get Varity's platform credentials.
+Get Varity's storage credentials.
 
 **Authentication:** Bearer token required
 
@@ -119,8 +118,8 @@ Authorization: Bearer <API_KEY>
 **Response:**
 ```json
 {
-  "secret_key": "platform-secret-key",
-  "client_id": "platform-client-id"
+  "secret_key": "storage-secret-key",
+  "client_id": "storage-client-id"
 }
 ```
 
@@ -199,12 +198,12 @@ System monitors for suspicious patterns:
 
 **1. Build Docker Image:**
 ```bash
-docker build -t ghcr.io/varity-labs/credential-proxy:1.0.4 .
-docker push ghcr.io/varity-labs/credential-proxy:1.0.4
+docker build -t ghcr.io/varity-labs/credential-proxy:1.1.1 .
+docker push ghcr.io/varity-labs/credential-proxy:1.1.1
 ```
 
-**2. Deploy to production cloud:**
-- Upload deployment config
+**2. Deploy:**
+- Upload deployment YAML (contains secrets - private file)
 - Select provider and accept bid
 - Get production URL
 
@@ -237,9 +236,9 @@ Set up alerts for:
 
 ### "Credentials not configured on server"
 
-**Problem:** Missing platform secret key in `.env`
+**Problem:** Missing service credentials in `.env`
 
-**Solution:** Add the actual secret key to `.env`
+**Solution:** Add the actual credentials to `.env`
 
 ### "Invalid API key"
 
@@ -262,7 +261,7 @@ Set up alerts for:
 ## Security Checklist
 
 Before production:
-- [ ] Platform secret keys added to .env
+- [ ] Service credentials added to .env
 - [ ] Production API keys generated (32+ chars, random)
 - [ ] ENV=production set
 - [ ] HTTPS configured

@@ -5,15 +5,69 @@ Deploy applications with one command.
 """
 
 import os
+import sys
 import json
+import time
 import subprocess
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import click
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 
+from varitykit.utils.logger import get_logger
+
 console = Console()
+
+_INGRESS_NOT_READY_STATUS = {502, 503}
+
+
+def _probe_http_status(url: str, timeout: float = 10.0):
+    """Return HTTP status code for `url`, or None on network/protocol errors."""
+    try:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return getattr(resp, "status", None) or resp.getcode()
+    except urllib.error.HTTPError as e:
+        return e.code
+    except Exception:
+        return None
+
+
+def _wait_for_live_url(
+    url: str,
+    timeout: float = 120.0,
+    poll_interval: float = 5.0,
+    require_http_200: bool = False,
+    consecutive_successes: int = 1,
+) -> bool:
+    """Wait until the public app URL is reachable.
+
+    Default mode accepts any non-502/503 response.
+    Strict mode (`require_http_200=True`) requires stable HTTP 200 responses.
+    """
+    start = time.monotonic()
+    streak = 0
+    while True:
+        if time.monotonic() - start >= timeout:
+            return False
+
+        status = _probe_http_status(url)
+        if require_http_200:
+            if status == 200:
+                streak += 1
+                if streak >= max(1, consecutive_successes):
+                    return True
+            else:
+                streak = 0
+        else:
+            if status is not None and status not in _INGRESS_NOT_READY_STATUS:
+                return True
+
+        time.sleep(poll_interval)
 
 
 # Advanced: On-chain pricing (available post-beta)
@@ -158,6 +212,177 @@ console = Console()
 #         return False, str(e)
 
 
+def _push_prebuilt_artifacts(
+    project_path: Path,
+    project_type: str,
+    hosting: str,
+    console_: Console,
+) -> bool:
+    """
+    Force-add, commit, and push pre-built Next.js artifacts (`.next/`) to the
+    current branch so that the Akash container can skip `npm install && npm run
+    build` at runtime.
+
+    This is a critical fix for heavy Next.js apps (MUI + thirdweb + Privy):
+    building inside a 4Gi Akash container reliably OOMs. By shipping `.next/`
+    via git, the container's entrypoint detects it and skips the build.
+
+    Behavior:
+      - Only runs when `hosting == "akash"` and `project_type` is a Node-family
+        framework (`nextjs`, `react`, `vue`, `nodejs`) AND `.next/` exists.
+      - Uses `git add -f` because `.next/` is gitignored by default.
+      - Uses `git commit --no-verify` so user pre-commit hooks (which may
+        themselves run a build) don't re-trigger the expensive build.
+      - Uses `git push` (no args) — pushes current branch to its tracking remote.
+      - On any failure: prints a warning and returns False. NEVER raises.
+        The deploy still succeeds; the Akash container will build at runtime
+        (slower path, but the app eventually comes up).
+
+    Args:
+        project_path: Absolute path to the project directory.
+        project_type: Detected project type (e.g., "nextjs").
+        hosting: Resolved hosting type (e.g., "akash", "static", "ipfs").
+        console_: Rich Console used to emit status messages.
+
+    Returns:
+        True if the push succeeded end-to-end; False if skipped or warned.
+    """
+    # Only Akash dynamic deploys benefit from this; static/IPFS don't use `.next/`.
+    if hosting != "akash":
+        return False
+
+    # Only Node-family frameworks produce `.next/`. Python/other are out of scope.
+    if project_type not in {"nextjs", "react", "vue", "nodejs"}:
+        return False
+
+    next_dir = project_path / ".next"
+    if not next_dir.exists() or not next_dir.is_dir():
+        # No `.next/` → nothing to ship. IPFS/static path may still apply,
+        # or the project simply isn't a Next.js app. Not an error.
+        return False
+
+    # Discover the git repo root — handles projects nested in a repo subdirectory.
+    try:
+        git_root_result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(project_path),
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, OSError):
+        console_.print(
+            "[yellow]⚠ Could not push pre-built artifacts; "
+            "build will run at runtime (slower)[/yellow]"
+        )
+        return False
+
+    if git_root_result.returncode != 0:
+        console_.print(
+            "[yellow]⚠ Could not push pre-built artifacts; "
+            "build will run at runtime (slower)[/yellow]"
+        )
+        return False
+
+    git_root = git_root_result.stdout.strip()
+
+    console_.print(
+        "  Uploading pre-built output to GitHub (so deploy skips build step)..."
+    )
+
+    # Force-add `.next/` EXCEPT `.next/cache/` (webpack/SWC cache, can be
+    # hundreds of MB — pointless for serving) and `.next/trace` (dev
+    # telemetry). `next start` needs the rest: BUILD_ID, static/, server/,
+    # standalone/ (if output:'standalone'), and ~10 JSON manifests. Being
+    # surgical about subpaths misses version-specific files; the cleaner
+    # approach is "everything except the bloat."
+    try:
+        add_result = subprocess.run(
+            ["git", "add", "-f", ".next"],
+            cwd=str(project_path),
+            capture_output=True,
+            text=True,
+        )
+        # Unstage the cache/trace dirs. --ignore-unmatch so this is safe
+        # when they don't exist.
+        subprocess.run(
+            ["git", "rm", "--cached", "-r", "--ignore-unmatch",
+             ".next/cache", ".next/trace"],
+            cwd=str(project_path),
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, OSError):
+        console_.print(
+            "[yellow]⚠ Could not push pre-built artifacts; "
+            "build will run at runtime (slower)[/yellow]"
+        )
+        return False
+
+    if add_result.returncode != 0:
+        stderr_trim = (add_result.stderr or "").strip().splitlines()
+        detail = stderr_trim[-1] if stderr_trim else ""
+        console_.print(
+            "[yellow]⚠ Could not push pre-built artifacts; "
+            "build will run at runtime (slower)[/yellow]"
+        )
+        if detail:
+            console_.print(f"  [dim]{detail}[/dim]")
+        return False
+
+    # Commit — use --no-verify to bypass pre-commit hooks that might re-run
+    # the entire build (generic-template-dashboard has such a hook).
+    commit_result = subprocess.run(
+        ["git", "commit", "-m", "chore: Varity pre-built artifacts [skip ci]", "--no-verify"],
+        cwd=git_root,
+        capture_output=True,
+        text=True,
+    )
+
+    # A non-zero return from `git commit` commonly means "nothing to commit" —
+    # the `.next/` contents were byte-identical to the last push. That's fine;
+    # we still try to push (in case an earlier commit hasn't been pushed yet).
+    commit_skipped = False
+    if commit_result.returncode != 0:
+        combined = ((commit_result.stdout or "") + (commit_result.stderr or "")).lower()
+        if "nothing to commit" in combined or "no changes added" in combined:
+            commit_skipped = True
+        else:
+            stderr_trim = (commit_result.stderr or commit_result.stdout or "").strip().splitlines()
+            detail = stderr_trim[-1] if stderr_trim else ""
+            console_.print(
+                "[yellow]⚠ Could not push pre-built artifacts; "
+                "build will run at runtime (slower)[/yellow]"
+            )
+            if detail:
+                console_.print(f"  [dim]{detail}[/dim]")
+            return False
+
+    # Push current branch to its tracking remote.
+    push_result = subprocess.run(
+        ["git", "push"],
+        cwd=git_root,
+        capture_output=True,
+        text=True,
+    )
+
+    if push_result.returncode != 0:
+        stderr_trim = (push_result.stderr or push_result.stdout or "").strip().splitlines()
+        detail = stderr_trim[-1] if stderr_trim else ""
+        console_.print(
+            "[yellow]⚠ Could not push pre-built artifacts; "
+            "build will run at runtime (slower)[/yellow]"
+        )
+        if detail:
+            console_.print(f"  [dim]{detail}[/dim]")
+        return False
+
+    if commit_skipped:
+        console_.print("  ✓ Pre-built artifacts already up-to-date")
+    else:
+        console_.print("  ✓ Pre-built artifacts uploaded")
+    return True
+
+
 @click.group()
 def app():
     """
@@ -193,8 +418,9 @@ def app():
 @click.option(
     "--target",
     default=None,
-    help="Target platform: varity (default), avalanche",
-    type=click.Choice(["varity", "avalanche"], case_sensitive=False),
+    help="Target platform (default: varity)",
+    type=click.Choice(["varity"], case_sensitive=False),
+    hidden=True,
 )
 @click.option(
     "--mode",
@@ -217,13 +443,21 @@ def app():
     "--skip-build", is_flag=True, help="Skip build step (use existing build output)",
 )
 @click.option(
+    "--repo-url",
+    default=None,
+    help="GitHub repository URL (required for dynamic hosting). Auto-detected from .git/config if not provided.",
+)
+@click.option(
     "--path",
     default=".",
     help="Project directory (default: current directory)",
     type=click.Path(exists=True),
 )
+@click.option(
+    "--dry-run", is_flag=True, help="Simulate deployment: detect framework and show what would deploy, without deploying.",
+)
 @click.pass_context
-def deploy(ctx, hosting, target, submit_to_store, mode, tier, name, skip_build, path):
+def deploy(ctx, hosting, target, submit_to_store, mode, tier, name, skip_build, repo_url, path, dry_run):
     """
     Deploy your application.
 
@@ -267,14 +501,30 @@ def deploy(ctx, hosting, target, submit_to_store, mode, tier, name, skip_build, 
       • React 18+ (Create React App, Vite)
       • Vue 3+
     """
-    logger = ctx.obj["logger"]
+    logger = (ctx.obj or {}).get("logger") or get_logger()
     network = "varity"
 
     # Convert path to absolute early for orchestration
     project_path = Path(path).resolve()
 
+    # Deploy-key gate — applies to ALL deploys (static AND dynamic).
+    # Beta testers must add a payment method in the developer portal to get
+    # their deploy key, then run `varitykit login --key ...`. Without a key,
+    # the credential proxy rejects both IPFS upload and Akash deploys.
+    # Fail fast here with a clear message instead of letting the deploy get
+    # deep enough to show a cryptic 401 stack trace.
+    from varitykit.services.credential_fetcher import _get_cli_api_key
+    if not _get_cli_api_key():
+        console.print(
+            "\n[red]Deploy blocked — no deploy key configured.[/red]\n\n"
+            "Run [cyan]varitykit login[/cyan] to get your deploy key from the "
+            "developer portal (it's generated after you add a payment method).\n"
+            "Then retry this command.\n"
+        )
+        raise click.Abort()
+
     # Normalize --target aliases to internal chain IDs
-    target_to_chain = {"varity": "varity-l3", "avalanche": "avax-l1"}
+    target_to_chain = {"varity": "varity-l3"}
     chain = target_to_chain.get(target, target) if target else None
 
     # Normalize hosting option: "dynamic" is an alias for "akash"
@@ -519,7 +769,11 @@ NEXT_PUBLIC_VARITY_APP_TOKEN={credentials['jwt_token']}
 NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
 """
 
-                with open(env_file_path, 'w') as f:
+                # newline='' disables Python's automatic \n→CRLF conversion
+                # on Windows. Next.js reads .env.local line-by-line and treats
+                # bare \r as part of the value — producing invisible trailing
+                # \r on every env var and corrupting credential resolution.
+                with open(env_file_path, 'w', encoding='utf-8', newline='') as f:
                     f.write(env_content)
 
                 console.print("  ✓ Injected database credentials into build")
@@ -529,23 +783,27 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
 
         # Auto-fetch hosting credentials (zero-config)
         if not os.environ.get("THIRDWEB_SECRET_KEY"):
-            try:
-                from varitykit.services.credential_fetcher import fetch_thirdweb_credentials
-                creds = fetch_thirdweb_credentials()
+            def _apply_hosting_creds(creds):
+                """Apply credentials and print accurate status."""
                 os.environ["THIRDWEB_CLIENT_ID"] = creds.thirdweb_client_id
                 if creds.thirdweb_secret_key:
                     os.environ["THIRDWEB_SECRET_KEY"] = creds.thirdweb_secret_key
-                console.print("  ✓ Hosting credentials ready")
+                    console.print("  ✓ Hosting credentials ready")
+                else:
+                    console.print("  [yellow]⚠️  Hosting: public-only credentials (deploy key may be invalid)[/yellow]")
+                    console.print("  [dim]Run 'varitykit login' to configure your deploy key[/dim]")
+
+            from varitykit.services.credential_fetcher import fetch_thirdweb_credentials
+            try:
+                creds = fetch_thirdweb_credentials()
+                _apply_hosting_creds(creds)
             except Exception:
                 # Retry once — credential proxy can be flaky on cold start
                 import time
                 time.sleep(1)
                 try:
                     creds = fetch_thirdweb_credentials()
-                    os.environ["THIRDWEB_CLIENT_ID"] = creds.thirdweb_client_id
-                    if creds.thirdweb_secret_key:
-                        os.environ["THIRDWEB_SECRET_KEY"] = creds.thirdweb_secret_key
-                    console.print("  ✓ Hosting credentials ready")
+                    _apply_hosting_creds(creds)
                 except Exception:
                     console.print("  [yellow]⚠️  Could not connect to Varity servers. Please try again.[/yellow]")
 
@@ -553,6 +811,80 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
         from varitykit.core.deployment_orchestrator import DeploymentOrchestrator
 
         orchestrator = DeploymentOrchestrator(verbose=False)  # We'll handle output ourselves
+
+        # Dry-run: print summary and exit without building or deploying
+        if dry_run:
+            from varitykit.core.project_detector import ProjectDetector
+            _det = ProjectDetector()
+            try:
+                _info = _det.detect(str(project_path))
+                framework = _info.project_type
+            except Exception:
+                framework = "unknown"
+            hosting_label = "static CDN" if hosting not in ("akash", "dynamic") else "dynamic (cloud compute)"
+            console.print("\n[bold yellow]DRY RUN — no deployment will occur[/bold yellow]\n")
+            console.print(f"  Project:  {project_path}")
+            console.print(f"  Framework: {framework}")
+            console.print(f"  Hosting:  {hosting_label}")
+            console.print(f"  Platform: {chain_config.get('name', selected_chain)}")
+            if submit_to_store:
+                console.print("  App Store: would submit after deploy")
+            console.print("\n[dim]Run without --dry-run to deploy.[/dim]\n")
+            return
+
+        # Pre-build + push `.next/` for Akash Next.js deploys.
+        # Context: heavy Next.js apps (MUI + thirdweb + Privy, 1400+ npm packages)
+        # OOM when building inside a 4Gi Akash container. Running `npm run build`
+        # locally and shipping `.next/` via git lets the container skip the build.
+        # The SDL already has `if [ ! -d .next ] && [ -f next.config.js ]; then
+        # npm run build; fi`, so if `.next/` is present in the cloned repo the
+        # build step is skipped automatically.
+        if hosting == "akash":
+            # Pre-built artifact push runs regardless of --skip-build. The
+            # flag means "don't RUN a build here" (e.g. MCP already ran
+            # varity_build separately). It does NOT mean "don't push the
+            # artifacts that build produced." Without this push, MCP deploys
+            # of Next.js apps ship without `.next/` → Akash container tries
+            # `npm run build` at runtime → OOM / 5-min timeout.
+            try:
+                from varitykit.core.project_detector import ProjectDetector
+                _detector = ProjectDetector()
+                _project_info = _detector.detect(str(project_path))
+            except Exception:
+                _project_info = None
+
+            if _project_info and _project_info.project_type in {"nextjs", "react", "vue", "nodejs"}:
+                # If the caller asked us to build (not --skip-build), run it.
+                if _project_info.project_type == "nextjs" and not skip_build:
+                    try:
+                        from varitykit.core.build_manager import BuildManager
+                        console.print("[bold]Running local build...[/bold]")
+                        _builder = BuildManager()
+                        _build_artifacts = _builder.build(
+                            project_path=str(project_path),
+                            build_command=_project_info.build_command,
+                            output_dir=_project_info.output_dir,
+                        )
+                        if not (_build_artifacts and _build_artifacts.success):
+                            console.print(
+                                "  [yellow]⚠ Local build returned no artifacts[/yellow]"
+                            )
+                    except Exception as _e:
+                        console.print(
+                            f"  [yellow]⚠ Local pre-build skipped: {_e}[/yellow]"
+                        )
+                        console.print(
+                            "  [dim]build will run at runtime (slower).[/dim]"
+                        )
+
+                # Push pre-built artifacts if `.next/` exists — whether we
+                # built here or the MCP built earlier.
+                _push_prebuilt_artifacts(
+                    project_path=project_path,
+                    project_type=_project_info.project_type,
+                    hosting=hosting,
+                    console_=console,
+                )
 
         # Execute deployment (app store submission handled separately via browser)
         try:
@@ -564,12 +896,41 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
                 tier=tier or "free",
                 custom_name=name,
                 skip_build=skip_build,
+                repo_url=repo_url,
             )
-        finally:
-            # Clean up credentials file
+        except Exception:
+            # Preserve credentials on failure so developer can retry
             if env_file_path and env_file_path.exists():
-                env_file_path.unlink()
-                logger.debug("Cleaned up temporary credentials file")
+                console.print("  [dim]Credentials preserved in .env.local for retry[/dim]")
+            raise
+
+        # Clean up credentials file only after successful deployment
+        if env_file_path and env_file_path.exists():
+            env_file_path.unlink()
+            logger.debug("Cleaned up temporary credentials file")
+
+        # Guardrail: don't report success until the user-facing URL responds.
+        # Orchestration can complete while gateway/provider is still returning
+        # ingress warmup 502/503, which is a broken first-run UX.
+        if result.hosting_type == "akash" and result.frontend_url:
+            console.print("  [dim]Verifying live URL readiness...[/dim]")
+            strict_mode = os.environ.get("VARITYKIT_STRICT_PUBLIC_URL_200") == "1"
+            live_ok = _wait_for_live_url(
+                result.frontend_url,
+                timeout=300.0 if strict_mode else 120.0,
+                poll_interval=5.0,
+                require_http_200=strict_mode,
+                consecutive_successes=3 if strict_mode else 1,
+            )
+            if not live_ok:
+                expected = "stable HTTP 200" if strict_mode else "non-502/503 response"
+                raise click.ClickException(
+                    f"Deployment finished but live URL did not reach {expected} within "
+                    f"{300 if strict_mode else 120}s. "
+                    f"URL: {result.frontend_url}. "
+                    f"Provider: {getattr(result, 'provider_url', 'N/A')}. "
+                    "This indicates a remaining runtime/gateway blocker."
+                )
 
         # Display success
         console.print("\n" + "="*60)
@@ -614,7 +975,7 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
 
         # Next steps
         next_steps = "[cyan]What's next?[/cyan]\n"
-        next_steps += "  Submit to App Store:  varitykit app deploy --submit-to-store\n"
+        next_steps += "  Publish to App Store: use varity_submit_to_store (MCP tool)\n"
         next_steps += "  Read the docs:        https://docs.varity.so\n"
         next_steps += "  Get help:             https://discord.gg/7vWsdwa2Bg\n"
         next_steps += "  Report a bug:         https://github.com/varity-labs/varity-sdk/issues"
@@ -670,24 +1031,28 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
                 console.print("[dim]Sign in and fill in your app details to submit.[/dim]\n")
             else:
                 console.print("[dim]Sign in, complete payment, and fill in your app details.[/dim]\n")
+            # Cross-OS browser open:
+            # 1. Python stdlib webbrowser.open — correct default for every OS
+            #    (uses `open` on Mac, os.startfile on Windows, xdg-open on Linux)
+            # 2. WSL needs a separate fallback because webbrowser.open silently
+            #    fails inside WSL — wslview is the canonical WSL tool.
             browser_opened = False
             try:
-                import subprocess as _sp
-                _sp.Popen(['explorer.exe', portal_url], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
-                browser_opened = True
-            except (FileNotFoundError, OSError):
+                browser_opened = webbrowser.open(portal_url)
+            except Exception:
                 pass
-            if not browser_opened:
+            if not browser_opened and sys.platform == "linux":
+                # WSL fallback — harmless no-op on native Linux if wslview missing
                 try:
                     import subprocess as _sp
-                    _sp.run(["wslview", portal_url], capture_output=True, timeout=5)
+                    _sp.run(
+                        ["wslview", portal_url],
+                        capture_output=True,
+                        timeout=5,
+                        check=False,
+                    )
                     browser_opened = True
-                except (FileNotFoundError, OSError, Exception):
-                    pass
-            if not browser_opened:
-                try:
-                    webbrowser.open(portal_url)
-                except Exception:
+                except (FileNotFoundError, OSError):
                     pass
             console.print(f"\n[bold cyan]  Developer Portal:[/bold cyan] {portal_url}")
             console.print("  [dim]Copy the URL above if your browser didn't open automatically.[/dim]\n")
@@ -733,7 +1098,13 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
 
     except Exception as e:
         console.print(f"\n[bold red]❌ Deployment Failed[/bold red]")
-        console.print(f"[red]Error: {str(e)}[/red]\n")
+        # escape() prevents Rich from mis-parsing exception messages that contain
+        # square brackets (e.g. OSError "[Errno 13]", MarkupError "Tag '[x]'").
+        # Without this, a secondary MarkupError escapes the except block, so
+        # click.Abort() is never reached, "Aborted!" never appears in stderr,
+        # and the MCP tool falls through to DEPLOY_FAILED even when the deploy
+        # actually succeeded before the post-deploy step failed.
+        console.print(f"[red]Error: {escape(str(e))}[/red]\n")
 
         # Show helpful error messages
         error_str = str(e).lower()
@@ -761,7 +1132,7 @@ def list(ctx, network, limit):
       varitykit app list --network varity
       varitykit app list --limit 20
     """
-    logger = ctx.obj["logger"]
+    logger = (ctx.obj or {}).get("logger") or get_logger()
 
     try:
         from rich.table import Table
@@ -792,20 +1163,22 @@ def list(ctx, network, limit):
             deployment_id = dep.get("deployment_id", "unknown")
             dep_network = dep.get("network", "unknown")
 
-            # Extract deployment type
-            deployment_type = dep.get("deployment", {}).get("type", "ipfs")
+            # Extract deployment type — map internal "ipfs" to user-facing "static"
+            raw_type = dep.get("deployment", {}).get("type", "static")
             if "deployment" not in dep and "ipfs" in dep:
-                deployment_type = "ipfs"
+                raw_type = "ipfs"
+            deployment_type = "static" if raw_type == "ipfs" else raw_type
 
-            # Extract frontend URL
+            # Extract frontend URL — prefer custom domain over raw storage gateway
             frontend_url = "N/A"
+            custom_domain_url = dep.get("custom_domain", {}).get("url", "")
             if "deployment" in dep:
                 if "frontend" in dep["deployment"]:
                     frontend_url = dep["deployment"]["frontend"].get("url", "N/A")
                 elif "ipfs" in dep["deployment"]:
-                    frontend_url = dep["deployment"]["ipfs"].get("gateway_url", "N/A")
+                    frontend_url = custom_domain_url or dep["deployment"]["ipfs"].get("gateway_url", "N/A")
             elif "ipfs" in dep:
-                frontend_url = dep["ipfs"].get("gateway_url", "N/A")
+                frontend_url = custom_domain_url or dep["ipfs"].get("gateway_url", "N/A")
 
             # Truncate URL if too long
             if len(frontend_url) > 50:
@@ -847,13 +1220,13 @@ def info(ctx, deployment_id):
     Show deployment details
 
     Display detailed information about a specific deployment including
-    URLs, CIDs, contract addresses, and metadata.
+    URLs, build details, and status.
 
     \b
     Example:
       varitykit app info deploy-1737492000
     """
-    logger = ctx.obj["logger"]
+    logger = (ctx.obj or {}).get("logger") or get_logger()
 
     try:
         from varitykit.core.deployment_history import DeploymentHistory
@@ -888,16 +1261,16 @@ def info(ctx, deployment_id):
         build_size_mb = build.get("size_mb", 0.0)
         build_time = build.get("time_seconds", 0.0)
 
-        # Deployment URLs
+        # Deployment URLs — "ipfs" is an internal type; surface it as "static"
         frontend_url = "N/A"
         backend_url = "N/A"
-        ipfs_cid = "N/A"
-        ipfs_gateway = "N/A"
-        thirdweb_url = "N/A"
         deployment_type = "unknown"
 
+        _custom_domain_url = deployment.get("custom_domain", {}).get("url", "")
+
         if "deployment" in deployment:
-            deployment_type = deployment["deployment"].get("type", "unknown")
+            raw_type = deployment["deployment"].get("type", "unknown")
+            deployment_type = "static" if raw_type == "ipfs" else raw_type
 
             # Frontend
             if "frontend" in deployment["deployment"]:
@@ -907,18 +1280,12 @@ def info(ctx, deployment_id):
             if "backend" in deployment["deployment"]:
                 backend_url = deployment["deployment"]["backend"].get("url", "N/A")
 
-            # IPFS
+            # Static (formerly ipfs) — prefer custom domain URL
             if "ipfs" in deployment["deployment"]:
-                ipfs_cid = deployment["deployment"]["ipfs"].get("cid", "N/A")
-                ipfs_gateway = deployment["deployment"]["ipfs"].get("gateway_url", "N/A")
-                thirdweb_url = deployment["deployment"]["ipfs"].get("thirdweb_url", "N/A")
+                frontend_url = _custom_domain_url or deployment["deployment"]["ipfs"].get("gateway_url", "N/A")
         elif "ipfs" in deployment:
-            # Phase 1 format
-            deployment_type = "ipfs"
-            ipfs_cid = deployment["ipfs"].get("cid", "N/A")
-            ipfs_gateway = deployment["ipfs"].get("gateway_url", "N/A")
-            thirdweb_url = deployment["ipfs"].get("thirdweb_url", "N/A")
-            frontend_url = ipfs_gateway
+            deployment_type = "static"
+            frontend_url = _custom_domain_url or deployment["ipfs"].get("gateway_url", "N/A")
 
         # App Store info
         app_store = deployment.get("app_store", {})
@@ -959,7 +1326,6 @@ def info(ctx, deployment_id):
 [bold]URLs[/bold]
 [cyan]App URL:[/cyan] {frontend_url}
 [cyan]Backend:[/cyan] {backend_url}
-[cyan]CDN:[/cyan] {thirdweb_url}
 
 [bold]App Store[/bold]
 [cyan]Submitted:[/cyan] {'✅ Yes' if app_store_submitted else '❌ No'}
@@ -1011,7 +1377,7 @@ def rollback(ctx, deployment_id, confirm):
       varitykit app rollback deploy-1737492000
       varitykit app rollback deploy-1737492000 --confirm
     """
-    logger = ctx.obj["logger"]
+    logger = (ctx.obj or {}).get("logger") or get_logger()
 
     try:
         from varitykit.core.deployment_history import DeploymentHistory
@@ -1114,7 +1480,7 @@ def status(ctx, network):
       varitykit app status
       varitykit app status --network varity
     """
-    logger = ctx.obj["logger"]
+    logger = (ctx.obj or {}).get("logger") or get_logger()
 
     try:
         from varitykit.core.deployment_history import DeploymentHistory
@@ -1151,7 +1517,8 @@ def status(ctx, network):
         deployment_status = "✅ Active"
 
         if "deployment" in latest:
-            deployment_type = latest["deployment"].get("type", "unknown")
+            raw_type = latest["deployment"].get("type", "unknown")
+            deployment_type = "static" if raw_type == "ipfs" else raw_type
 
             if "frontend" in latest["deployment"]:
                 frontend_url = latest["deployment"]["frontend"].get("url", "N/A")
@@ -1159,8 +1526,13 @@ def status(ctx, network):
             if "backend" in latest["deployment"]:
                 backend_url = latest["deployment"]["backend"].get("url", "N/A")
         elif "ipfs" in latest:
-            deployment_type = "ipfs"
-            frontend_url = latest["ipfs"].get("gateway_url", "N/A")
+            deployment_type = "static"
+            # Prefer the custom domain URL; hide raw storage gateway URLs
+            custom_domain = latest.get("custom_domain", {})
+            if custom_domain.get("url"):
+                frontend_url = custom_domain["url"]
+            else:
+                frontend_url = latest["ipfs"].get("gateway_url", "N/A")
 
         # Build info
         build = latest.get("build", {})

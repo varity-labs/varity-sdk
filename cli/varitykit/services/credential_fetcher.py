@@ -11,6 +11,7 @@ Security:
 """
 
 import os
+import sys
 import json
 import urllib.request
 import urllib.error
@@ -94,8 +95,16 @@ def fetch_thirdweb_credentials(
                     thirdweb_client_id=data.get("client_id", client_id),
                     thirdweb_secret=data.get("secret_key", ""),
                 )
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                print(
+                    "  Warning: Authentication failed (401). "
+                    "Check your deploy key with: varitykit login",
+                    file=sys.stderr,
+                )
         except Exception:
-            pass  # Fall through to public-only credentials
+            # Network errors, timeouts, etc. — fall through to public-only credentials
+            pass
 
     return VarityCredentials(thirdweb_client_id=client_id)
 
@@ -136,6 +145,83 @@ def fetch_privy_credentials(
 
     except Exception as e:
         raise CredentialFetchError(f"Failed to fetch Privy credentials: {e}")
+
+
+def fetch_database_credentials(
+    api_key: Optional[str] = None,
+    proxy_url: Optional[str] = None
+) -> Optional[str]:
+    """
+    Fetch database JWT secret from the Varity credential proxy.
+
+    The JWT secret is used to sign app tokens for DB proxy authentication.
+    Each app gets a unique app_id in the token, ensuring data isolation.
+
+    Args:
+        api_key: Override API key
+        proxy_url: Override proxy URL
+
+    Returns:
+        JWT secret string, or None if not available
+    """
+    key = api_key or os.getenv("VARITY_CLI_API_KEY") or _get_cli_api_key()
+    if not key:
+        return None
+
+    url = f"{proxy_url or CREDENTIAL_PROXY_URL}/api/credentials/database"
+
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {key}"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            return data.get("jwt_secret")
+    except Exception:
+        return None
+
+
+def fetch_akash_credentials(
+    api_key: Optional[str] = None,
+    proxy_url: Optional[str] = None
+) -> Optional[str]:
+    """
+    Fetch Akash Console API key from the Varity credential proxy.
+
+    The key is Varity's shared admin account — developers never create
+    their own Akash accounts. Falls back to AKASH_CONSOLE_API_KEY env var
+    for local development.
+
+    Args:
+        api_key: Override API key for proxy auth
+        proxy_url: Override proxy URL
+
+    Returns:
+        Akash Console API key string, or None if not available
+    """
+    # Check env var first (local dev)
+    env_key = os.getenv("AKASH_CONSOLE_API_KEY")
+    if env_key:
+        return env_key
+
+    # Fetch from credential proxy
+    key = api_key or os.getenv("VARITY_CLI_API_KEY") or _get_cli_api_key()
+    if not key:
+        return None
+
+    url = f"{proxy_url or CREDENTIAL_PROXY_URL}/api/credentials/akash"
+
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {key}"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            return data.get("console_api_key")
+    except Exception:
+        return None
 
 
 def get_thirdweb_client_id() -> Optional[str]:

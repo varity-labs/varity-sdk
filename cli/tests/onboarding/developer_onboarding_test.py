@@ -87,7 +87,7 @@ class OnboardingTest:
 
         return result
 
-    def step_1_install_varietykit(self) -> float:
+    def step_1_install_varitykit(self) -> float:
         """
         Step 1: Install VarityKit CLI
         Target: < 2 minutes
@@ -97,7 +97,7 @@ class OnboardingTest:
 
         try:
             # Check if already installed
-            result = self.run_command(['varietykit', '--version'], check=False)
+            result = self.run_command(['varitykit', '--version'], check=False)
 
             if result.returncode == 0:
                 self.log(f"VarityKit already installed: {result.stdout.strip()}", 'success')
@@ -114,7 +114,7 @@ class OnboardingTest:
                 )
 
                 # Verify installation
-                result = self.run_command(['varietykit', '--version'])
+                result = self.run_command(['varitykit', '--version'])
                 self.log(f"Installed: {result.stdout.strip()}", 'success')
 
             step_duration = time.time() - step_start
@@ -148,7 +148,7 @@ class OnboardingTest:
             self.log("Initializing finance dashboard...")
 
             self.run_command([
-                'varietykit', 'init',
+                'varitykit', 'init',
                 str(self.test_dir / 'my-finance-dashboard'),
                 '--industry', 'finance',
                 '--skip-git'  # Skip git init for testing
@@ -159,7 +159,7 @@ class OnboardingTest:
 
             required_files = [
                 'contracts',
-                'varietykit.config.json',
+                'varitykit.config.json',
                 '.env.example'
             ]
 
@@ -192,7 +192,7 @@ class OnboardingTest:
 
             # Start LocalDePin with build
             self.run_command([
-                'varietykit', 'localdepin', 'start',
+                'varitykit', 'localdepin', 'start',
                 '--build'
             ], timeout=180)
 
@@ -201,7 +201,7 @@ class OnboardingTest:
 
             # Check status
             result = self.run_command([
-                'varietykit', 'localdepin', 'status',
+                'varitykit', 'localdepin', 'status',
                 '--format', 'json'
             ])
 
@@ -258,7 +258,7 @@ class OnboardingTest:
                 # Deploy with dry-run first to test
                 self.log("Running deployment dry-run...")
                 self.run_command([
-                    'varietykit', 'deploy', 'run',
+                    'varitykit', 'deploy', 'run',
                     '--network', 'local',
                     '--dry-run'
                 ])
@@ -271,7 +271,7 @@ class OnboardingTest:
 
                 # In real scenario, deployment would happen here
                 # self.run_command([
-                #     'varietykit', 'deploy', 'run',
+                #     'varitykit', 'deploy', 'run',
                 #     '--network', 'local'
                 # ], timeout=300)
 
@@ -336,7 +336,7 @@ class OnboardingTest:
         try:
             # Stop LocalDePin
             self.log("Stopping LocalDePin services...")
-            self.run_command(['varietykit', 'localdepin', 'stop'], check=False)
+            self.run_command(['varitykit', 'localdepin', 'stop'], check=False)
 
             # Remove test directory
             if self.test_dir.exists():
@@ -370,7 +370,7 @@ class OnboardingTest:
         try:
             # Run all steps
             step_results = [
-                ('Install VarityKit', self.step_1_install_varietykit),
+                ('Install VarityKit', self.step_1_install_varitykit),
                 ('Initialize Project', self.step_2_initialize_project),
                 ('Start LocalDePin', self.step_3_start_localdepin),
                 ('Deploy Dashboard', self.step_4_deploy_dashboard),
