@@ -11,6 +11,7 @@ interface DomainRecord {
   deploymentType?: string;
   deploymentId?: string;
   ownerId?: string;
+  status?: string;
 }
 
 interface BillingCustomerRecord {
@@ -125,7 +126,7 @@ export async function runMeterTick(): Promise<void> {
   );
 
   console.log(
-    `[meter] Found ${akashDeployments.length} active Akash deployments out of ${domains.length} total`,
+    `[meter] Found ${akashDeployments.length} Akash deployment records with owner/deployment IDs out of ${domains.length} total`,
   );
 
   if (akashDeployments.length === 0) return;
@@ -146,6 +147,10 @@ export async function runMeterTick(): Promise<void> {
     }
   });
   await Promise.all(costFetches);
+
+  console.log(
+    `[meter] Confirmed ${costResults.size} live billable Akash deployments after console status/cost checks`,
+  );
 
   const ownerAggregates = new Map<
     string,
@@ -170,7 +175,8 @@ export async function runMeterTick(): Promise<void> {
   console.log(`[meter] Aggregated usage for ${ownerAggregates.size} developers`);
 
   let sentCount = 0;
-  let skippedCount = 0;
+  let skippedNoCustomerCount = 0;
+  let skippedBelowCentCount = 0;
   let cappedCount = 0;
   let errorCount = 0;
 
@@ -196,7 +202,7 @@ export async function runMeterTick(): Promise<void> {
       if (!stripeCustomerId) {
         audit.status = 'skipped_no_customer';
         await writeAuditRecord(audit);
-        skippedCount++;
+        skippedNoCustomerCount++;
         continue;
       }
 
@@ -214,7 +220,7 @@ export async function runMeterTick(): Promise<void> {
       if (centValue < 1) {
         audit.status = 'skipped_below_cent';
         await writeAuditRecord(audit);
-        skippedCount++;
+        skippedBelowCentCount++;
         continue;
       }
 
@@ -248,6 +254,6 @@ export async function runMeterTick(): Promise<void> {
 
   const elapsed = Date.now() - tickStart;
   console.log(
-    `[meter] Tick complete in ${elapsed}ms — sent: ${sentCount}, skipped: ${skippedCount}, capped: ${cappedCount}, errors: ${errorCount}`,
+    `[meter] Tick complete in ${elapsed}ms — sent: ${sentCount}, skipped_no_customer: ${skippedNoCustomerCount}, skipped_below_cent: ${skippedBelowCentCount}, capped: ${cappedCount}, errors: ${errorCount}`,
   );
 }
