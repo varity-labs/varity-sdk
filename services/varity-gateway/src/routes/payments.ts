@@ -22,15 +22,34 @@ interface BillingCustomerRecord {
   updatedAt?: string;
 }
 
-async function getOptionalOwnerId(req: Request): Promise<string | null> {
+async function getOptionalOwnerIdentifiers(req: Request): Promise<string[]> {
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) return null;
+  if (!authHeader?.startsWith('Bearer ')) return [];
 
   try {
     const claims = await privy.utils().auth().verifyAccessToken(authHeader.slice(7));
-    return claims.user_id;
+    const ids = new Set<string>([claims.user_id]);
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const user = await (privy.users() as any)._get(claims.user_id);
+      for (const account of (user.linked_accounts ?? [])) {
+        if (typeof account.address === 'string' && account.address) {
+          ids.add(account.address);
+          ids.add(account.address.toLowerCase());
+        }
+        if (typeof account.email === 'string' && account.email) {
+          ids.add(account.email);
+          ids.add(account.email.toLowerCase());
+        }
+      }
+    } catch {
+      // Best-effort alias expansion. The primary Privy user_id still maps.
+    }
+
+    return [...ids];
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -52,42 +71,46 @@ async function fetchBillingCustomerRecords(): Promise<BillingCustomerRecord[]> {
 }
 
 async function upsertBillingCustomer(params: {
-  ownerId: string | null;
+  ownerIds: string[];
   email: string;
   stripeCustomerId: string;
   subscriptionId?: string | null;
 }): Promise<void> {
-  if (!params.ownerId) return;
+  if (params.ownerIds.length === 0) return;
 
   try {
     const records = await fetchBillingCustomerRecords();
-    const existing = records.find((r) => r.ownerId === params.ownerId);
     const now = new Date().toISOString();
-    const record = {
-      ownerId: params.ownerId,
-      email: params.email,
-      stripeCustomerId: params.stripeCustomerId,
-      subscriptionId: params.subscriptionId ?? existing?.subscriptionId ?? null,
-      createdAt: existing?.createdAt ?? now,
-      updatedAt: now,
-    };
+    const ownerIds = [...new Set(params.ownerIds.filter(Boolean))];
 
-    const url = existing
-      ? `${config.dbProxy.url}/db/${BILLING_CUSTOMERS_COLLECTION}/update/${existing.id}`
-      : `${config.dbProxy.url}/db/${BILLING_CUSTOMERS_COLLECTION}/add`;
+    for (const ownerId of ownerIds) {
+      const existing = records.find((r) => r.ownerId === ownerId);
+      const record = {
+        ownerId,
+        email: params.email,
+        stripeCustomerId: params.stripeCustomerId,
+        subscriptionId: params.subscriptionId ?? existing?.subscriptionId ?? null,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
+      };
 
-    const res = await fetch(url, {
-      method: existing ? 'PUT' : 'POST',
-      headers: {
-        Authorization: `Bearer ${config.dbProxy.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(record),
-      signal: AbortSignal.timeout(5000),
-    });
+      const url = existing
+        ? `${config.dbProxy.url}/db/${BILLING_CUSTOMERS_COLLECTION}/update/${existing.id}`
+        : `${config.dbProxy.url}/db/${BILLING_CUSTOMERS_COLLECTION}/add`;
 
-    if (!res.ok) {
-      console.error(`[stripe] Billing customer upsert failed: ${res.status}`);
+      const res = await fetch(url, {
+        method: existing ? 'PUT' : 'POST',
+        headers: {
+          Authorization: `Bearer ${config.dbProxy.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(record),
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (!res.ok) {
+        console.error(`[stripe] Billing customer upsert failed for owner ${ownerId}: ${res.status}`);
+      }
     }
   } catch (error) {
     console.error('[stripe] Billing customer upsert error:', error);
@@ -107,7 +130,7 @@ paymentsRouter.post('/api/stripe/create-checkout', async (req: Request, res: Res
   }
 
   const { email, successUrl, cancelUrl } = req.body;
-  const ownerId = await getOptionalOwnerId(req);
+  const ownerIds = await getOptionalOwnerIdentifiers(req);
 
   if (!email) {
     res.status(400).json({ error: 'Email is required' });
@@ -134,7 +157,7 @@ paymentsRouter.post('/api/stripe/create-checkout', async (req: Request, res: Res
 
     if (subscriptions.data.length > 0) {
       await upsertBillingCustomer({
-        ownerId,
+        ownerIds,
         email,
         stripeCustomerId: customerId,
         subscriptionId: subscriptions.data[0].id,
@@ -158,7 +181,7 @@ paymentsRouter.post('/api/stripe/create-checkout', async (req: Request, res: Res
     });
 
     await upsertBillingCustomer({
-      ownerId,
+      ownerIds,
       email,
       stripeCustomerId: customerId,
     });
@@ -183,7 +206,7 @@ paymentsRouter.get('/api/stripe/customer-status', async (req: Request, res: Resp
   }
 
   const email = req.query.email as string;
-  const ownerId = await getOptionalOwnerId(req);
+  const ownerIds = await getOptionalOwnerIdentifiers(req);
   if (!email) {
     res.status(400).json({ error: 'Email query parameter required' });
     return;
@@ -211,7 +234,7 @@ paymentsRouter.get('/api/stripe/customer-status', async (req: Request, res: Resp
     });
 
     await upsertBillingCustomer({
-      ownerId,
+      ownerIds,
       email,
       stripeCustomerId: customer.id,
       subscriptionId: subscriptions.data[0]?.id ?? null,
@@ -241,7 +264,7 @@ paymentsRouter.post('/api/stripe/create-portal', async (req: Request, res: Respo
   }
 
   const { email, returnUrl } = req.body;
-  const ownerId = await getOptionalOwnerId(req);
+  const ownerIds = await getOptionalOwnerIdentifiers(req);
 
   if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     res.status(400).json({ error: 'A valid email address is required' });
@@ -281,7 +304,7 @@ paymentsRouter.post('/api/stripe/create-portal', async (req: Request, res: Respo
     });
 
     await upsertBillingCustomer({
-      ownerId,
+      ownerIds,
       email,
       stripeCustomerId: customer.id,
       subscriptionId: subscriptions.data[0]?.id ?? null,
