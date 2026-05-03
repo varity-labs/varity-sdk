@@ -39,6 +39,11 @@ function generateSubdomain(repoName: string): string {
     .slice(0, 40);
 }
 
+function isResolvedProviderUrl(url: string | undefined): boolean {
+  if (!url?.trim()) return false;
+  return !url.trim().toLowerCase().includes('deployment-unknown.akash.network');
+}
+
 /**
  * POST /api/deploy/from-github
  *
@@ -97,7 +102,7 @@ deployRouter.post('/api/deploy/from-github', verifyPrivyToken, deployRateLimit, 
       createdAt: new Date().toISOString(),
       deploymentType: 'akash',
       deploymentId: result.deploymentId,
-      deploymentUrl: result.providerUrl,
+      ...(isResolvedProviderUrl(result.providerUrl) ? { deploymentUrl: result.providerUrl } : {}),
       provider: result.provider,
       billing: result.estimatedMonthlyCost != null
         ? { monthlyUsd: result.estimatedMonthlyCost, currency: 'USD' }

@@ -76,6 +76,11 @@ async function proxyRootAssetFromReferer(
   return true;
 }
 
+function isUnresolvedAkashUrl(url: string | undefined | null): boolean {
+  if (!url?.trim()) return true;
+  return url.trim().toLowerCase().includes('deployment-unknown.akash.network');
+}
+
 /**
  * Proxy IPFS content (original logic, unchanged)
  */
@@ -191,19 +196,27 @@ async function proxyDeployment(
   } else if (deploymentType === 'akash') {
     let deploymentUrl = record.deploymentUrl;
 
-    if (!deploymentUrl) {
+    if (isUnresolvedAkashUrl(deploymentUrl)) {
       if (!record.deploymentId) {
         console.error(`[proxy-v2] Akash deployment has no URL or ID: ${appName}`);
         res.status(500).send('Invalid deployment configuration');
         return;
       }
-      // URL not yet stored — resolve from Akash status API (container may still be provisioning)
+      // The portal deploy route returns immediately after Akash accepts the
+      // deployment. At that point Console may not have exposed the service URI
+      // yet, so records can contain an empty or placeholder URL. Resolve the
+      // current provider URI from Akash status before proxying.
       const status = await getDeploymentStatus(record.deploymentId);
       if (!status.url) {
         res.status(503).set('Retry-After', '30').send('Deployment is starting up, please try again shortly');
         return;
       }
       deploymentUrl = status.url;
+    }
+
+    if (!deploymentUrl) {
+      res.status(503).set('Retry-After', '30').send('Deployment is starting up, please try again shortly');
+      return;
     }
 
     // Akash deployments serve from root — forward all methods and body
