@@ -18,8 +18,11 @@ from varitykit.core.deployment_orchestrator import DeploymentOrchestrator
 from varitykit.services.akash_deploy_service import _generate_sdl, detect_hosting_type
 
 
-def _pkg(tmp_path: Path, deps: dict) -> Path:
-    (tmp_path / "package.json").write_text(json.dumps({"dependencies": deps}))
+def _pkg(tmp_path: Path, deps: dict, scripts: dict | None = None) -> Path:
+    data = {"dependencies": deps}
+    if scripts:
+        data["scripts"] = scripts
+    (tmp_path / "package.json").write_text(json.dumps(data))
     return tmp_path
 
 
@@ -224,6 +227,28 @@ class TestEndToEndAutoSelectionMatrix:
         (tmp_path / "next.config.js").write_text('module.exports={output:"export"}\n')
 
         assert detect_hosting_type(str(tmp_path)) == "static"
+        assert DeploymentOrchestrator._detect_services(str(tmp_path)) == []
+
+    def test_vite_react_preview_start_script_still_selects_static_ipfs_path(self, tmp_path):
+        _pkg(
+            tmp_path,
+            {
+                "vite": "^5.0.0",
+                "@vitejs/plugin-react": "^4.0.0",
+                "react": "^18.2.0",
+                "react-dom": "^18.2.0",
+            },
+            scripts={"build": "vite build", "start": "vite --host 0.0.0.0"},
+        )
+
+        assert detect_hosting_type(str(tmp_path)) == "static"
+        assert DeploymentOrchestrator._detect_services(str(tmp_path)) == []
+
+    def test_next_standalone_selects_akash_path(self, tmp_path):
+        _pkg(tmp_path, {"next": "^14.0.0", "react": "^18.2.0"})
+        (tmp_path / "next.config.js").write_text("module.exports={output:'standalone'}\n")
+
+        assert detect_hosting_type(str(tmp_path)) == "akash"
         assert DeploymentOrchestrator._detect_services(str(tmp_path)) == []
 
     def test_next_prisma_postgres_selects_akash_with_postgres_pgvector(self, tmp_path):

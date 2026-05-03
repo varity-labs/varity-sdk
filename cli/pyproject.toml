@@ -1,6 +1,6 @@
 [project]
 name = "varitykit"
-version = "1.2.14"
+version = "1.2.15"
 description = "Deploy any app in 60 seconds. 60-80% cheaper than AWS."
 readme = "README.md"
 authors = [

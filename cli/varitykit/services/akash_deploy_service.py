@@ -25,6 +25,21 @@ console = Console()
 _NEXT_STATIC_EXPORT_RE = re.compile(r"\boutput\s*:\s*['\"]export['\"]")
 
 
+def _result_value(result, *names: str, default=""):
+    if isinstance(result, dict):
+        for name in names:
+            value = result.get(name)
+            if value:
+                return value
+        return default
+
+    for name in names:
+        value = getattr(result, name, None)
+        if value:
+            return value
+    return default
+
+
 # ---------------------------------------------------------------------------
 # SDL templates (f-string, no Jinja2)
 # ---------------------------------------------------------------------------
@@ -434,6 +449,7 @@ def deploy(
     package_manager: str = "npm",
     api_key: Optional[str] = None,
     verbose: bool = True,
+    wait_for_health: bool = True,
 ) -> AkashDeploymentResult:
     """
     Deploy a GitHub repo to Akash.
@@ -452,6 +468,9 @@ def deploy(
         package_manager: Package manager detected from lockfiles (npm/yarn/pnpm)
         api_key: Akash Console API key (falls back to env / credential proxy)
         verbose: Print progress messages
+        wait_for_health: Wait until the app responds before returning. CLI
+            deploys keep this enabled; long-running API callers can disable it
+            and poll the deployment status separately.
 
     Returns:
         AkashDeploymentResult with URL and deployment info
@@ -492,17 +511,23 @@ def deploy(
         # pull an image, npm install / pip install, and bind to the port —
         # that's 1-10 minutes of "502 / Content not available" for the user
         # if we don't wait here.
-        if isinstance(result, AkashDeploymentResult):
-            if not result.success:
+        if not isinstance(result, dict):
+            if getattr(result, "success", True) is False:
                 return result
-            raw_url = result.url
-            dseq = result.dseq
-            provider = result.provider
-        else:
-            raw_url = result.get("url", "")
-            dseq = result.get("dseq", "")
-            provider = result.get("provider", "")
+
+        raw_url = _result_value(result, "url", "service_url", "frontend_url")
+        dseq = _result_value(result, "dseq", "deployment_id", "deploymentId")
+        provider = _result_value(result, "provider")
         health_url = _ensure_scheme(raw_url)
+
+        if not wait_for_health:
+            return AkashDeploymentResult(
+                success=True,
+                dseq=dseq,
+                url=health_url,
+                provider=provider,
+                estimated_monthly_cost=0.0,
+            )
 
         # Python apps need more time: python:3.11-slim (~200MB) pull + pip install
         # can take 4-8 min on slow Akash provider nodes (VAR-234). Node apps keep
@@ -734,7 +759,8 @@ def detect_hosting_type(project_path: str) -> str:
         if dynamic_deps & set(dependencies.keys()):
             return "akash"
 
-        # Next.js: check for static export
+        # Next.js can be either static export or server-rendered. Check it
+        # before the generic React/Vite static rule below.
         if "next" in dependencies:
             for config_file in ["next.config.js", "next.config.mjs", "next.config.ts", "next.config.cjs"]:
                 config_path = path / config_file
@@ -746,6 +772,26 @@ def detect_hosting_type(project_path: str) -> str:
                     except IOError:
                         pass
             return "akash"
+
+        # Frontend build tools/frameworks are static unless a server framework,
+        # Dockerfile, server/ directory, or SSR-only framework above says otherwise.
+        # Many static apps define `start` as a local preview command; that must
+        # not force a compute deployment.
+        static_frontend_deps = {
+            "vite",
+            "react-scripts",
+            "@vitejs/plugin-react",
+            "@vitejs/plugin-react-swc",
+            "@vitejs/plugin-vue",
+            "@vitejs/plugin-vue-jsx",
+            "astro",
+        }
+        if static_frontend_deps & set(dependencies.keys()):
+            return "static"
+
+        if "react" in dependencies or "vue" in dependencies:
+            if pkg.get("scripts", {}).get("build"):
+                return "static"
 
         # Plain Node.js: scripts.start present but no recognized framework dep -> dynamic
         if pkg.get("scripts", {}).get("start"):

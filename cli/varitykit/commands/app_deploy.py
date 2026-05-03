@@ -832,6 +832,22 @@ NEXT_PUBLIC_VARITY_DB_PROXY_URL={credentials['db_proxy_url']}
             console.print("\n[dim]Run without --dry-run to deploy.[/dim]\n")
             return
 
+        if hosting == "static":
+            from varitykit.core.project_detector import ProjectDetector
+            try:
+                _static_info = ProjectDetector().detect(str(project_path))
+            except Exception:
+                _static_info = None
+            if (
+                _static_info
+                and _static_info.project_type == "nextjs"
+                and _static_info.output_dir != "out"
+            ):
+                raise click.ClickException(
+                    "This Next.js app is configured for server output, but static hosting was selected. "
+                    "Set output: 'export' in next.config.js, or deploy with --hosting dynamic."
+                )
+
         # Pre-build + push `.next/` for Akash Next.js deploys.
         # Context: heavy Next.js apps (MUI + thirdweb + Privy, 1400+ npm packages)
         # OOM when building inside a 4Gi Akash container. Running `npm run build`

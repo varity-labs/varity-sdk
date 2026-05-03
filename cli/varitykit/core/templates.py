@@ -442,7 +442,11 @@ class TemplateManager:
 
         text_files = {
             "next.config.js": "/** @type {import('next').NextConfig} */\n"
-            "const nextConfig = { output: 'standalone' };\n"
+            "const nextConfig = {\n"
+            "  output: 'export',\n"
+            "  images: { unoptimized: true },\n"
+            "  trailingSlash: true,\n"
+            "};\n"
             "module.exports = nextConfig;\n",
             "tsconfig.json": json.dumps(
                 {

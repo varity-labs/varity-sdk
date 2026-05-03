@@ -76,4 +76,5 @@ def test_packaged_saas_starter_can_scaffold_when_monorepo_template_absent(
 
     assert (project_path / "app" / "page.tsx").exists()
     assert "'Packaged App'" in (project_path / "src" / "lib" / "constants.ts").read_text()
+    assert "output: 'export'" in (project_path / "next.config.js").read_text()
     assert TemplateManager._scaffold_has_required_paths("saas-starter", project_path)
